@@ -1,0 +1,75 @@
+:root {
+  --background-dark: #292124;
+  --neon-purple: #dc995f;
+  --neon-cyan: #f2d4a1;
+  --golden-yellow: #ffbb67;
+  --text-primary: #FFFFFF;
+  --text-secondary: #dbc9b4;
+
+  
+  --font-title: 'Spectral', Georgia, serif;
+  --font-text: 'Source Sans 3', system-ui, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  font-family: var(--font-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--neon-cyan); 
+  letter-spacing: 1.5px;
+}
+
+/* === LOADING SPINNER (NEON) === */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  width: 100%;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(159, 80, 255, 0.1); /* Roxo Transparente */
+  border-left-color: var(--neon-cyan); /* Ciano Brilhante */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+:focus-visible {outline:3px solid #b56a25;outline-offset:3px;}
+.App h1,.App h2,.App h3,.App .header-title {text-shadow:none;}
+.App .main-header {background:#292124;border-bottom:3px double #d59357;box-shadow:none;}
+.App .header-title {letter-spacing:-.04em;font-weight:700;}
+.App .nav-link.active,.App .nav-link:hover {color:#241c1b;}
+.App .header-logo {background:#f7eedb;border-radius:2px;}
+.App .main-footer {background:#211b1c;border-top:4px double #bf895a;}
+.programacao-link {margin:15px auto 25px;text-align:center;}
+.programacao-link a {color:#ffcd96;}
+.App .nav-link.active,.App .nav-link:hover,.App .leaderboard-container,.App .login-container,
+.App .detalhe-container,.App .perfil-card,.App .admin-section,.App .admin-card {box-shadow:none;}
+@media (max-width:700px) {
+  .App .admin-content,.App .admin-content-inner,.App .monitor-horarios-container {min-width:0;max-width:100%;padding-inline:12px;}
+  .App .admin-section,.App .admin-card {min-width:0;padding:16px;}
+  .App .admin-form-inline {display:flex;flex-direction:column;align-items:stretch;gap:14px;}
+  .App .admin-form-inline .input-group {min-width:0!important;width:100%!important;}
+  .App .admin-form-inline input,.App .admin-form-inline select,.App .admin-section input[type=file],
+  .App .admin-card input[type=file] {max-width:100%;}
+  .App .admin-tabela-container,.App .hall-list {overflow-x:auto;max-width:100%;}
+  .App .acordeao-titulo,.App .header-titulo-horario {overflow-wrap:anywhere;}
+  .App .admin-content h2 {font-size:1.45rem;}
+}

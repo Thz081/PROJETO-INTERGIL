@@ -1,0 +1,9 @@
+node_modules
+.env*
+build
+uploads
+.git
+*seed.js
+README.md
+src/utils
+src/data

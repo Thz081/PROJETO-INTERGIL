@@ -1,0 +1,43 @@
+.main-content {display:flow-root;min-height:65vh;}
+.main-content :is(.horarios-wrapper,.page-modalidade-wrapper,.ranking-page-container,.perfil-wrapper,.historia-container,.galeria-edicao) {
+  --text-primary:#2d2223;--text-secondary:#61534a;--neon-cyan:#6f321b;--neon-purple:#a98760;--golden-yellow:#853919;--background-dark:#fff7e8;
+  background:#f7eedb;color:var(--text-primary);
+}
+.App .galeria-edicao {max-width:none;padding-inline:max(6vw,calc((100vw - 1050px)/2));}
+.App :is(.horarios-container,.perfil-container,.detalhe-container,.historia-origem,.ranking-page-container .leaderboard-container) {
+  background:#fff8e8;border:0;border-top:6px double #a5693c;border-radius:0;box-shadow:none;padding:clamp(16px,4vw,42px);
+}
+.App .historia-container {display:flow-root;}
+.App .historia-paragrafo {color:#35282a;text-align:left;font:1.08rem/1.75 var(--font-text);}
+.App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.detalhe-titulo,.ranking-page-container h2,.galeria-edicao h1){
+  font:700 clamp(2.15rem,4.5vw,3.8rem)/1.08 var(--font-title);letter-spacing:-.045em;color:#302124;
+}
+.App .historia-contato {background:#352729;border:0;border-top:5px double #c69665;border-radius:0;box-shadow:none;}
+.App .historia-contato::before {display:none;}
+.App .timeline-content {background:#352729;border-radius:2px;}
+.App .horarios-acordeao {gap:0;}
+.App .acordeao-item-horario {border:0;border-bottom:1px solid #bfa68a;border-radius:0;}
+.App .acordeao-header-horario {border:0;background:transparent;padding:12px 4px;}
+.App .acordeao-header-horario.aberta,.App .acordeao-header-horario:hover {background:#ecdcc3;}
+.App .header-img-horario {border:1px solid #a78358;border-radius:2px;}
+.App .horarios-subtitulo {margin:10px 0 16px;}
+.App .programacao-link a {color:#763719;}
+.App .perfil-icone-gigante {font-size:44px;}
+.App .perfil-card {background:#f7ecd8;border-color:#c9ae8d;border-radius:0;}
+.App .perfil-container .btn-cancelar-inscricao,.App .perfil-logout-btn {color:#87351e!important;border-color:#a26b4b!important;}
+.App .detalhe-imagem[src*="/gravuras/"] {border-radius:0;}
+.App .submodalidade-item {background:#f3e7d1;border-bottom:1px solid #bda688;}
+.App .galeria-edicao .visor-momento h2 {color:#f9edda;}
+.App .admin-menu-link.active {color:#241c1a;}
+@media(max-width:600px){
+ .App .historia-origem {margin:20px auto;}
+ .App .perfil-wrapper,.App .horarios-wrapper,.App .page-modalidade-wrapper {padding:20px 12px;}
+ .App .horarios-tabela td {color:#302124;}
+ .App .nav-link {min-height:40px;}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+@media(max-width:700px){
+  .admin-card :is(.form-grid,.form-grid-modalidade){display:grid;grid-template-columns:minmax(0,1fr);}
+  .admin-card :is(.form-grid,.form-grid-modalidade)>*{min-width:0;max-width:100%;grid-column:1;}
+  .admin-card .admin-input {width:100%;min-width:0;}
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "ano": 2024,
+    "turma": "BLUESTORM",
+    "logo_path": "/images/historia/bluestorm.webp",
+    "instagram": "https://www.instagram.com/3badm_2022"
+  },
+  {
+    "ano": 2023,
+    "turma": "INFERNAIS",
+    "logo_path": "/images/historia/infernais.webp",
+    "instagram": "https://www.instagram.com/3ads.2021"
+  },
+  {
+    "ano": 2022,
+    "turma": "INFINITY JEWELS",
+    "logo_path": "/images/historia/infinityjewels.webp",
+    "instagram": "https://www.instagram.com/3a.adm__2020/"
+  },
+  {
+    "ano": 2021,
+    "turma": "CORINGAS",
+    "logo_path": "/images/historia/vipers.webp",
+    "instagram": "https://www.instagram.com/3rao.dsa_2019/"
+  },
+  {
+    "ano": 2020,
+    "turma": "PANDEMIA",
+    "logo_path": "/images/gravuras/tocha.webp",
+    "instagram": "#"
+  },
+  {
+    "ano": 2019,
+    "turma": "GORILAS",
+    "logo_path": "/images/historia/gorillaz.webp",
+    "instagram": "https://www.instagram.com/3bds2020mopas/"
+  },
+  {
+    "ano": 2018,
+    "turma": "SALA VERDE",
+    "logo_path": "/images/historia/sala-verde.webp",
+    "instagram": "https://www.instagram.com/sistemasa/"
+  },
+  {
+    "ano": 2017,
+    "turma": "SALA VERDE",
+    "logo_path": "/images/historia/sala-verde.webp",
+    "instagram": "https://www.instagram.com/sistemasa/"
+  },
+  {
+    "ano": 2016,
+    "turma": "SALA VERDE",
+    "logo_path": "/images/historia/sala-verde.webp",
+    "instagram": "https://www.instagram.com/sistemasa/"
+  }
+]

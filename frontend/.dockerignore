@@ -1,0 +1,15 @@
+node_modules
+.env*
+build
+uploads
+.git
+*seed.js
+README.md
+dist
+public/images/*.png
+!public/images/armoriar.png
+public/favicon.ico
+public/logo192.png
+public/logo512.png
+src/data
+src/assets/images

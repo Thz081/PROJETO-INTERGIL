@@ -1,0 +1,8 @@
+.env
+**/.env
+**/node_modules/
+**/build/
+**/dist/
+
+.acesso-gestao-local
+.acesso-monitor-local

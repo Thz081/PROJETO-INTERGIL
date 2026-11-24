@@ -1,0 +1,47 @@
+// Blocos da planilha INTERGIL 2026. As abas informam o dia da semana.
+const horarios = {};
+function bloco(slug, data, local, horario, categoria) {
+  (horarios[slug] ||= []).push({ data, local, horario, categoria });
+}
+const ter = 'Terça-feira', qua = 'Quarta-feira', qui = 'Quinta-feira', sex = 'Sexta-feira';
+bloco('futsal', ter, 'Quadra', '07:30–10:00', 'Masculino');
+bloco('futsal', ter, 'Quadra', '10:30–12:00', 'Feminino');
+bloco('futsal', ter, 'Quadra', '13:10–14:30', 'Fases finais');
+bloco('bocha', ter, 'Hall da quadra', '15:00–16:30', 'Misto');
+bloco('dama', ter, 'Sala 10', '08:00–12:00', 'Individual');
+bloco('just-dance', ter, 'Sala 01', '08:00–16:40', 'Individual');
+bloco('sudoku', ter, 'Lab. de informática', '08:00–12:00', 'Individual');
+bloco('uno', ter, 'Sala 04', '08:00–12:00', 'Individual');
+bloco('xadrez', ter, 'Sala 02', '13:00–16:30', 'Individual');
+bloco('street-fight', ter, 'Sala 09', '13:00–16:30', 'Individual');
+bloco('ping-pong', ter, 'Laboratórios especiais', '13:00–16:30', 'Tênis de mesa');
+bloco('volei-quase-de-praia', ter, 'Quintal', '08:00–16:40', 'Duplas');
+bloco('arremesso-de-peso', ter, 'Praça de Eli', '08:00–10:00', 'Individual');
+bloco('futmesa', ter, 'Carga e descarga', '08:00–10:00', 'Dupla feminina');
+bloco('futmesa', ter, 'Carga e descarga', '10:00–12:00', 'Dupla masculina');
+bloco('badminton', qua, 'Quadra', '07:30–10:00', 'Masculino e feminino');
+bloco('volei', qua, 'Quadra', '10:00–12:00', 'Masculino');
+bloco('volei', qua, 'Quadra', '13:00–15:00', 'Feminino');
+bloco('volei', qua, 'Quadra', '13:10–14:30', 'Fases finais');
+bloco('rpg', qua, 'Laboratório de física', '07:30–16:30', 'RPG de mesa, PVP e Card Game');
+bloco('rpg', qua, 'Pátio', '13:00–16:30', 'Cosplay');
+bloco('corrida', qua, 'Carga e descarga', '15:00–16:30', 'Revezamento');
+bloco('fifa', qua, 'Sala 09', '08:00–16:30', 'FIFA');
+bloco('volei-quase-de-praia', qua, 'Quintal', '08:00–16:40', 'Duplas');
+bloco('voleimesa', qua, 'Carga e descarga', '08:00–10:00', 'Feminino');
+bloco('voleimesa', qua, 'Carga e descarga', '13:00–15:00', 'Masculino');
+bloco('kata', qua, 'Refeitório', '15:00–16:40', 'Lutas');
+bloco('basquete', qui, 'Quadra', '07:30–10:00', '3×3 feminino e masculino');
+bloco('basquete', qui, 'Quadra', '10:30–12:00', 'Masculino');
+bloco('basquete', qui, 'Quadra', 'A organizar após as inscrições', 'Feminino · tarde');
+bloco('free-fire', qui, 'Biblioteca', '08:00–12:00', 'Free Fire');
+bloco('calistenia', qui, 'Hall de entrada', '08:00–12:00', 'Calistenia');
+bloco('fifa', qui, 'Sala 09', '08:00–16:40', 'FIFA');
+bloco('corrida', qui, 'Carga e descarga', '15:00–16:30', '100 m e 200 m');
+bloco('quadrado', qui, 'Carga e descarga', '08:00–12:00', 'Duplas');
+bloco('queimado', sex, 'Quadra', '07:30–10:00', 'Misto');
+bloco('domino', sex, 'Refeitório', '08:00–12:00', 'Duplas');
+bloco('futmesa', sex, 'Carga e descarga', '08:00–12:00', 'Individual');
+bloco('mobile-legends', sex, 'Sala 09', '08:00–12:00', 'Equipe');
+bloco('cubo-magico', sex, 'Sala 07', '08:00–12:00', '3×3');
+module.exports = horarios;

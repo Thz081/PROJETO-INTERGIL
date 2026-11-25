@@ -1,0 +1,29 @@
+name: intergil2026
+
+services:
+  api:
+    image: ghcr.io/thz081/intergil-api:${INTERGIL_VERSAO:?Defina INTERGIL_VERSAO no .env}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MONGO_URI: ${MONGO_URI:?Defina a URI do MongoDB Atlas no .env}
+      JWT_SECRET: ${JWT_SECRET:?Gere JWT_SECRET no .env}
+    volumes:
+      - arquivos:/app/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/modalidades').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  web:
+    image: ghcr.io/thz081/intergil-web:${INTERGIL_VERSAO:?Defina INTERGIL_VERSAO no .env}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${INTERGIL_PORT:-8086}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  arquivos:

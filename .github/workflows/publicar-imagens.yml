@@ -1,0 +1,75 @@
+name: Verificar e publicar imagens do Intergil
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Testar o código e construir as imagens
+    runs-on: ubuntu-24.04
+    env:
+      INTERGIL_PORT: 18086
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Testar as regras de inscrição
+        run: node --test backend/test/*.test.js
+
+      - name: Subir a aplicação com banco isolado
+        run: |
+          export JWT_SECRET="$(openssl rand -hex 48)"
+          docker compose up -d --build --wait
+          curl --fail --silent --show-error http://127.0.0.1:18086/api/modalidades | node -e '
+            const itens = JSON.parse(require("node:fs").readFileSync(0));
+            if (!itens.some(item => item.slug === "mobile-legends")) process.exit(1);'
+          curl --fail --silent --show-error --output /dev/null http://127.0.0.1:18086/login-monitor
+          curl --fail --silent --show-error --output /dev/null http://127.0.0.1:18086/images/gravuras/banners/futsal.webp
+          docker compose exec -T api node - < backend/test/monitoria.integracao.cjs
+          MONGO_URI=mongodb+srv://exemplo.invalid/intergil2026 INTERGIL_VERSAO="$GITHUB_SHA" docker compose -f compose.vps.yaml config --quiet
+
+      - name: Guardar imagens verificadas
+        if: github.event_name != 'pull_request' && github.ref_name == 'develop'
+        run: docker save intergil2026-api intergil2026-web | gzip -1 > imagens.tar.gz
+
+      - name: Enviar imagens para a etapa de publicação
+        if: github.event_name != 'pull_request' && github.ref_name == 'develop'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: imagens-intergil
+          path: imagens.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  publicar:
+    name: Publicar no GitHub Container Registry
+    needs: verificar
+    if: github.event_name != 'pull_request' && github.ref_name == 'develop'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Baixar as imagens verificadas
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: imagens-intergil
+
+      - name: Publicar web e API com o SHA do commit
+        env:
+          TOKEN_GHCR: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$TOKEN_GHCR" | docker login ghcr.io -u "$GITHUB_REPOSITORY_OWNER" --password-stdin
+          docker load -i imagens.tar.gz
+          for servico in api web; do
+            destino="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/intergil-$servico:$GITHUB_SHA"
+            docker tag "intergil2026-$servico" "$destino"
+            docker push "$destino"
+          done

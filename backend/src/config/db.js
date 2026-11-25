@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const connectDB = async (options = {}) => {
     const uri = process.env.MONGO_URI?.trim();
     if (!uri) {
-        throw new Error('MONGO_URI não definida. Crie o arquivo backend/.env com a URI do MongoDB Atlas.');
+        throw new Error('MONGO_URI não definida. Configure a conexão com o MongoDB no ambiente da aplicação.');
     }
 
     try {

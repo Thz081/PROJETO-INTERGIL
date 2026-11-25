@@ -2,7 +2,24 @@
 
 A aplicação usa React com JavaScript e Vite, uma API Express e um MongoDB com replica set de um membro. O Nginx entrega o site, os arquivos e o WebSocket pelo mesmo domínio. O Docker Compose persiste o banco e os uploads em volumes nomeados. A aplicação usa o banco `intergil2026`.
 
-## Subir a edição
+## Subir na VPS com GHCR e Atlas
+
+O Silvio recebe `compose.vps.yaml`, `.env.example` e o SHA completo da versão publicado no GitHub Actions. O Compose usa `ghcr.io/thz081/intergil-web` e `ghcr.io/thz081/intergil-api`. As duas imagens têm a mesma tag e foram montadas para `linux/amd64`. Em cada atualização, altere apenas a tag no `.env` e repita os comandos. Para voltar, use o SHA anterior.
+
+1. No Atlas, autorize o IP público de saída da VPS em **Network Access** e crie um usuário da aplicação com acesso de leitura e escrita ao banco `intergil2026`. Copie a string de conexão do próprio Atlas. A API usa `intergil2026`. A coleção antiga permanece na base `test`.
+2. Na VPS, execute `umask 077` e `cp .env.example .env` apenas na primeira instalação. No `.env`, preencha `MONGO_URI` com a string do Atlas, `INTERGIL_VERSAO` com o SHA e `JWT_SECRET` com o resultado de `openssl rand -hex 48`. Use um canal privado para a URI. O ZIP de entrega acompanha apenas o modelo de variáveis.
+3. Se os pacotes estiverem privados, entre em `ghcr.io` com o GitHub do operador autorizado e um token com `read:packages`, fornecido via `docker login ghcr.io --password-stdin -u USUARIO`. Pacotes públicos admitem download anônimo. [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+4. No proxy HTTPS do Silvio, encaminhe `intergil.etegilrodrigues.com.br` para `127.0.0.1:8086`, incluindo o WebSocket e o limite de upload descritos abaixo.
+
+```sh
+docker compose -f compose.vps.yaml pull
+docker compose -f compose.vps.yaml up -d --no-build --wait
+curl -fsS https://intergil.etegilrodrigues.com.br/api/config
+```
+
+O Atlas armazena as contas, as inscrições e o catálogo editável. Os arquivos enviados pelo painel ficam no volume Docker `arquivos`. Uma migração dos envios depende da cópia privada desse volume. As capas, banners, brasões e agenda padrão já vêm na imagem web. [Conexão ao Atlas](https://www.mongodb.com/docs/atlas/connect-to-database-deployment/)
+
+## Subir com Mongo local e build na máquina
 
 Extraia o pacote de implantação em um diretório próprio na VPS com Docker Engine e Compose instalados. A partir desse diretório, crie o segredo da instalação, apenas na primeira vez.
 
@@ -71,7 +88,14 @@ A galeria aceita fotos JPEG, PNG, WebP ou GIF e vídeos MP4 ou WebM até 100 MB.
 
 ## Atribuir modalidades aos monitores
 
-Cadastre a matrícula e, depois, atribua até três modalidades pelo slug. O primeiro comando cria um acesso e retorna a senha gerada ao operador. O segundo substitui a lista de modalidades atribuídas. O monitor só vê e altera horários, editais e chaveamentos dessas modalidades.
+Para alunos da escola, a Monitoria usa a matrícula e a mesma senha do Portal do Aluno. Prepare um JSON privado com uma lista de objetos. Cada objeto tem `matricula`, `nome` completo, `turma` e `modalidades`, uma lista de até três objetos com `slug` e, se a atribuição for específica, `formatos` com os nomes do catálogo. O comando valida todos os vínculos antes de aplicar. O monitor só vê e altera horários, editais e chaveamentos da sua atribuição.
+
+```sh
+docker compose -f compose.vps.yaml exec -T api node src/edicao/vincular-monitores.js < monitores-privado.json
+docker compose -f compose.vps.yaml exec -T api node src/edicao/vincular-monitores.js --aplicar < monitores-privado.json
+```
+
+Para monitores externos à base de alunos, crie um acesso próprio e atribua as modalidades pelo slug. O primeiro comando retorna a senha gerada ao operador. O segundo substitui a lista de atribuições. Os exemplos seguintes usam o Compose local.
 
 ```sh
 docker compose exec api node src/edicao/criar-acesso.js monitor MATRICULA "Nome do monitor"

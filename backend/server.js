@@ -42,13 +42,12 @@ if (fs.existsSync(uploadsPath)) {
     }
 }
 
-// Serve a pasta
-app.use('/uploads', express.static(uploadsPath));
-app.use('/arquivos', express.static(uploadsPath));
-// Garante compatibilidade se alguém chamar /api/uploads
-app.use('/api/uploads', express.static(uploadsPath));
-
-app.use('/api/arquivos', express.static(uploadsPath));
+const servirArquivos = express.static(uploadsPath, {
+  setHeaders(res, arquivo) {
+    if (path.extname(arquivo).toLowerCase() === '.mp4') res.type('video/mp4');
+  }
+});
+app.use(['/uploads', '/arquivos', '/api/uploads', '/api/arquivos'], servirArquivos);
 
 // Rotas
 app.use('/api/auth', authRoutes);

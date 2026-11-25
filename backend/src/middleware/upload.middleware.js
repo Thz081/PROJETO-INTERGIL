@@ -11,6 +11,7 @@ function upload(formatos, megabytes) {
   return multer({ storage, limits: { fileSize: megabytes * 1024 * 1024 },
     fileFilter: (_req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase();
+      if (ext === '.mp4' && file.mimetype === 'application/mp4') file.mimetype = 'video/mp4';
       if (formatos[ext] === file.mimetype) return cb(null,true);
       cb(Object.assign(new Error('Formato de arquivo não aceito.'), { status: 400 }));
     }

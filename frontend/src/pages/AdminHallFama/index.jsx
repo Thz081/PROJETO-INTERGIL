@@ -1,15 +1,14 @@
-import { assetOrigin } from '../../api';
+import { assetURL } from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
 import { FaTrophy, FaTrash, FaPlus } from 'react-icons/fa';
 import './style.css'; 
 
-// URL BASE (Ajuste o IP se necessário)
-const BASE_URL_IMG = assetOrigin;
-
 const AdminHallFama = () => {
     const [hall, setHall] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [retorno, setRetorno] = useState(null);
 
     // Form
     const [ano, setAno] = useState('');
@@ -27,13 +26,13 @@ const AdminHallFama = () => {
             const res = await api.get('/admin/hall');
             setHall(res.data);
         } catch (error) {
-            console.error("Erro ao buscar hall", error);
+            setRetorno({ erro: true, texto: "Não foi possível carregar o Hall da Fama." });
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) return alert("Selecione uma imagem!");
+        if (!file || loading) return;
 
         setLoading(true);
         const formData = new FormData();
@@ -47,12 +46,11 @@ const AdminHallFama = () => {
             await api.post('/admin/hall', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert('Campeão adicionado!');
+            setRetorno({ texto: 'Campeão adicionado.' });
             setAno(''); setTurma(''); setPontos(''); setInstagram(''); setFile(null);
-            document.getElementById('fileInput').value = "";
             fetchHall();
         } catch (error) {
-            alert('Erro ao salvar. Verifique se o ano já existe.');
+            setRetorno({ erro: true, texto: error.response?.data?.message || 'Não foi possível salvar o campeão.' });
         } finally {
             setLoading(false);
         }
@@ -64,7 +62,7 @@ const AdminHallFama = () => {
                 await api.delete(`/admin/hall/${id}`);
                 fetchHall();
             } catch (error) {
-                alert("Erro ao deletar.");
+                setRetorno({ erro: true, texto: error.response?.data?.message || "Não foi possível excluir." });
             }
         }
     };
@@ -79,32 +77,31 @@ const AdminHallFama = () => {
                 <h3>Novo Campeão</h3>
                 <form onSubmit={handleSubmit} className="form-grid">
                     <div className="input-group">
-                        <label>Ano</label>
-                        <input type="number" value={ano} onChange={e=>setAno(e.target.value)} required className="admin-input" placeholder="2024"/>
+                        <label htmlFor="hall-ano">Ano</label>
+                        <input id="hall-ano" type="number" min="1900" value={ano} onChange={e=>setAno(e.target.value)} required className="admin-input" placeholder="2024"/>
                     </div>
                     <div className="input-group">
-                        <label>Nome da Turma/Equipe</label>
-                        <input value={turma} onChange={e=>setTurma(e.target.value)} required className="admin-input" placeholder="Ex: BLUESTORM"/>
+                        <label htmlFor="hall-equipe">Equipe campeã</label>
+                        <input id="hall-equipe" value={turma} onChange={e=>setTurma(e.target.value)} required className="admin-input" placeholder="Ex: BLUESTORM"/>
                     </div>
                     <div className="input-group">
-                        <label>Pontos (Opcional)</label>
-                        <input value={pontos} onChange={e=>setPontos(e.target.value)} className="admin-input" placeholder="Ex: 1500"/>
+                        <label htmlFor="hall-pontos">Pontos (opcional)</label>
+                        <input id="hall-pontos" value={pontos} onChange={e=>setPontos(e.target.value)} className="admin-input" placeholder="Ex: 1500"/>
                     </div>
                     <div className="input-group">
-                        <label>Instagram (URL Completa)</label>
-                        <input value={instagram} onChange={e=>setInstagram(e.target.value)} className="admin-input" placeholder="https://instagram.com/..."/>
+                        <label htmlFor="hall-insta">Instagram (opcional)</label>
+                        <input id="hall-insta" type="url" value={instagram} onChange={e=>setInstagram(e.target.value)} className="admin-input" placeholder="https://instagram.com/..."/>
                     </div>
-                    <div className="input-group">
-                        <label>Foto / Logo</label>
-                        <input id="fileInput" type="file" onChange={e=>setFile(e.target.files[0])} required accept="image/*" className="admin-input"/>
-                    </div>
+                    <ArquivoCampo titulo="Brasão da equipe campeã" tipo="imagem" arquivos={file ? [file] : []}
+                        selecionar={arquivos => setFile(arquivos[0] || null)} required disabled={loading}/>
                     <button disabled={loading} className="upload-btn-submit full-width">
                         {loading ? "Salvando..." : <><FaPlus/> Adicionar</>}
                     </button>
                 </form>
+                {retorno && <p role={retorno.erro ? 'alert' : 'status'} className={'painel-retorno' + (retorno.erro ? ' erro' : '')}>{retorno.texto}</p>}
             </div>
 
-            <div className="hall-list" style={{marginTop: '30px'}}>
+            <div className="hall-list painel-tabela-scroll" role="region" aria-label="Histórico de campeões" tabIndex={0} style={{marginTop: '20px'}}>
                 <table className="admin-table">
                     <thead>
                         <tr>
@@ -120,7 +117,7 @@ const AdminHallFama = () => {
                                 <td data-label="Ano">{h.ano}</td>
                                 <td data-label="Foto">
                                     <img 
-                                        src={`${BASE_URL_IMG}${h.logo_path}`} 
+                                        src={assetURL(h.logo_path)}
                                         alt={h.turma} 
                                         style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%', border: '2px solid #fff'}}
                                         onError={(e)=>{e.target.src='/images/armoriar.png'}}
@@ -133,7 +130,7 @@ const AdminHallFama = () => {
                                     </div>
                                 </td>
                                 <td data-label="Ações">
-                                    <button onClick={() => handleDelete(h._id)} className="btn-delete"><FaTrash/> Excluir</button>
+                                    <button onClick={() => handleDelete(h._id)} className="painel-secundario" aria-label={`Excluir campeão de ${h.ano}`}><FaTrash/> Excluir</button>
                                 </td>
                             </tr>
                         ))}

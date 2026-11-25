@@ -17,7 +17,7 @@ O GitHub é público. Planilhas nominais, credenciais, variáveis de ambiente e 
 - **Portais.** Aluno, Gestão e Monitoria compartilham o padrão de campos, senha e feedback. Os logins de Gestão e Monitoria foram exercitados localmente.
 - **Inscrição e perfil.** A inscrição agrupa as opções por categoria, mostra limite, formatos e vagas ao vivo e mantém o resumo acessível durante a rolagem. O perfil mostra confirmação, lista por modalidade e cancelamento com confirmação na própria tela. A lista e a exportação da Gestão exibem cada inscrição uma vez.
 - **História.** Alatares está no Hall local como campeã de 2025. Sua arte acompanha o código. A carga idempotente de 2025 para instalações novas e para bancos em que o ano ainda estiver ausente faz parte da entrega de dados do Erick.
-- **Gestão e Monitoria.** A estrutura visual da Gestão foi aprovada. Ainda faltam organização de modalidades no painel, seletor de arquivos, prévias e correção dos cortes horizontais. A Monitoria precisa de vistoria completa dos fluxos operacionais.
+- **Gestão e Monitoria.** Os painéis compartilham menu responsivo, campos de arquivo e feedback. Gestão consulta inscritos e pendentes por turma, exporta as duas situações e edita categorias e formatos. Cada monitor atua em até três modalidades atribuídas e consegue publicar PDF ou link para o edital e o chaveamento.
 - **Trilha e apresentações.** Avaliar uma gravação autorizada ou uma faixa original com rabeca, pífano, viola e zabumba. Referências de som incluem “Repente”, do repertório armorial, e o Quinteto Armorial. Xaxado e cangaceiros, caboclo de lança e rei do Congo, caboclinho e bumba meu boi, vaqueiro e cavalo-marinho seguem como temas de apresentação. [Sesc](https://www.sescsp.org.br/editorial/a-musica-armorial-ana-de-oliveira-e-sergio-raz/) · [Instituto Moreira Salles](https://radiobatuta.ims.com.br/programas/instrumental-brasileiro/quinteto-armorial)
 
 ## Catálogo e regras confirmadas
@@ -47,7 +47,7 @@ Categoria agrupa modalidades. Modalidade é a unidade de contagem da inscrição
 - **Futsal, Quadrado e Futmesa** são modalidades independentes. O mesmo vale para Vôlei, Vôleimesa e Vôlei quase de praia. Golzinho, X1 de futsal, Brawl e Clash saíram.
 - **Vagas** são conferidas no servidor pela sala e pelo formato. UNO tem quatro vagas por sala. Inscrição e cancelamento atualizam o contador ao vivo. Cada inscrição pertence à turma do aluno. A migração preserva escolhas gravadas e contabiliza todas pela turma de origem.
 
-A atualização dos banners no catálogo persistido é tarefa da frente de Erick.
+O catálogo persistido já distingue capa e banner. A atualização automática mantém imagens personalizadas e preenche o Hall de 2025 nas instalações em que o ano está ausente.
 
 ## Referências
 

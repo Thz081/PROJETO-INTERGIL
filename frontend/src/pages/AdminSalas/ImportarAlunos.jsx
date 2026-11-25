@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
 
 const normal = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
 const campos = {
@@ -36,8 +37,9 @@ function lerAba(XLSX, ws, arquivo, aba, salas, date1904) {
 export default function ImportarAlunos({ salas }) {
   const [abas, setAbas] = useState([]), [completa, setCompleta] = useState(false);
   const [preview, setPreview] = useState(null), [mensagem, setMensagem] = useState(''), [ocupado, setOcupado] = useState(false);
-  async function ler(e) {
-    const arquivos = [...e.target.files];
+  const [arquivos, setArquivos] = useState([]);
+  async function ler(arquivos) {
+    setArquivos(arquivos);
     setPreview(null); setAbas([]); setMensagem(''); setOcupado(true);
     try {
       const XLSX = await import('xlsx');
@@ -56,23 +58,23 @@ export default function ImportarAlunos({ salas }) {
       const linhas = abas.filter(a => a.turma).flatMap(a => a.linhas.map(l => ({ ...l, turma: a.turma })));
       const { data } = await api.post('/admin/importar-alunos', { linhas, completa, confirmar });
       setPreview(confirmar ? null : data);
-      if (confirmar) { setAbas([]); setMensagem('Importação concluída.'); }
+      if (confirmar) { setAbas([]); setArquivos([]); setMensagem('Importação concluída.'); }
     } catch (e) { setMensagem(e.response?.data?.message || 'Falha na importação.'); setPreview(null); }
     finally { setOcupado(false); }
   }
   return <section className="admin-section importacao"><h2>Importar alunos</h2>
     <p>Selecione juntas as planilhas de Administração e DS. Confira a turma de cada aba e a prévia dos cadastros.</p>
-    <label>Planilhas de alunos <input type="file" multiple accept=".xlsx,.xls" onChange={ler} disabled={ocupado}/></label>
+    <ArquivoCampo titulo="Planilhas de alunos" tipo="planilha" multiple arquivos={arquivos} selecionar={ler} disabled={ocupado}/>
     {abas.map((a,i) => <label key={i}>{a.arquivo} · {a.aba} · {a.linhas.length} linhas
       <select value={a.turma} disabled={ocupado || !a.reconhecida} onChange={e => {
         setPreview(null);setAbas(abas.map((x,j) => j === i ? { ...x, turma: e.target.value } : x));
       }}><option value="">{a.reconhecida ? 'Ignorar aba' : 'Cabeçalho de nome e matrícula ausente'}</option>
       {salas.map(s => <option key={s._id} value={s.turma}>{s.turma} · {s.nome}</option>)}</select></label>)}
     {!!abas.length && <><label><input type="checkbox" checked={completa} disabled={ocupado} onChange={e => {setCompleta(e.target.checked);setPreview(null);}}/> Lista completa das turmas · inativar matrículas ausentes</label>
-      <button disabled={ocupado} onClick={() => importar()}>Conferir prévia</button></>}
+      <button className="painel-secundario" disabled={ocupado} onClick={() => importar()}>Conferir prévia</button></>}
     {preview && <><h3>Conferência de {preview.previa.length} cadastros</h3>
-      <ul>{preview.erros.map((e,i) => <li key={i}>{e}</li>)}</ul><div className="previa-alunos"><table><thead><tr><th>Aluno</th><th>Matrícula</th><th>Origem</th><th>Destino</th><th>Ação</th></tr></thead>
+      <ul>{preview.erros.map((e,i) => <li key={i}>{e}</li>)}</ul><div className="previa-alunos" tabIndex={0} role="region" aria-label="Prévia de importação"><table><thead><tr><th>Aluno</th><th>Matrícula</th><th>Origem</th><th>Destino</th><th>Ação</th></tr></thead>
       <tbody>{preview.previa.map((a,i) => <tr key={i}><td>{a.nome}</td><td>{a.matricula}</td><td>{a.de || '—'}</td><td>{a.para || '—'}</td><td>{a.acao}</td></tr>)}</tbody></table></div>
-      <button disabled={ocupado || !!preview.erros.length} onClick={() => importar(preview.versao)}>Confirmar importação</button></>}
+      <button className="painel-primario" disabled={ocupado || !!preview.erros.length} onClick={() => importar(preview.versao)}>Confirmar importação</button></>}
     {mensagem && <p role="status">{mensagem}</p>}</section>;
 }

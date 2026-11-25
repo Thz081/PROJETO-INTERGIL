@@ -36,3 +36,12 @@ Os testes de tela estreita usaram navegador desktop redimensionado. O domínio p
 - Inscrição e perfil validados de 360 a 1280 px, com atalho de categoria no celular, confirmação, cancelamento e estado vazio.
 - Momentos com upload real de WebP e MP4, reprodução e tela cheia em ambos. O proxy entrega MP4 como `video/mp4`, inclusive quando o navegador envia o arquivo como `application/mp4`.
 - Monitoria com criação, edição e exclusão de horário, publicação de chaveamento e upload e download de PDF de modalidade e de formato, em base de homologação.
+
+## Rodada Gestão e Monitoria
+
+- Gestão e Monitoria autenticadas em navegador real. As dez rotas dos painéis passaram em 360, 390, 860 e 1366 px. Menu, foco ao fechar com Escape e rolagem dentro das tabelas conferidos.
+- No Docker isolado, a Monitoria criou, editou e excluiu horários, publicou edital e chaveamento em PDF por modalidade e formato, e publicou link externo. Validou-se o máximo de três atribuições e a rejeição de consulta ou publicação de Gestão e de publicação em modalidade alheia.
+- No navegador, a Gestão testou nome, cartaz, logo horizontal, edital geral, sala, brasão, pontos, importação, Excel, modalidade, edital de modalidade, Hall, Momentos e Registro de ações.
+- A API recusou excluir modalidade com inscrição gravada. O banco novo trouxe os banners e Alatares 2025. Foto e MP4 foram enviados e exibidos em tela cheia na galeria isolada.
+- As planilhas ADM e DS foram comparadas à base local sem confirmar importação. As 503 matrículas já estavam nas 12 turmas de destino, sem conflitos nem transferências. O Excel local retornou uma linha por aluno nas três abas.
+- Dois PDFs publicados simultaneamente pela Monitoria abriram em links distintos. O backup do Mongo de homologação foi restaurado em outro banco e as contagens das 11 coleções coincidiram. O backup dos uploads foi extraído e continha PDFs e vídeo MP4.

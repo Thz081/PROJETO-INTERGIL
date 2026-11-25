@@ -55,7 +55,6 @@ const AdminLog = () => {
   }, []);
 
   return (
-    // Reusando as classes do AdminLayout/style.css
     <div className="admin-content-inner" style={{padding: '30px'}}>
       
       {/* Título (reusando o estilo do AdminSalas) */}

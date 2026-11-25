@@ -1,7 +1,6 @@
 /* Arquivo: intergil-client/src/pages/AdminLog/style.css */
 
 /* Reusa o CSS do layout para o card */
-@import url('../../components/AdminLayout/style.css');
 
 .log-list {
   list-style: none;

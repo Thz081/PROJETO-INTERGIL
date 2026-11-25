@@ -7,7 +7,7 @@ const {
   deleteHorario, editarHorario,
   getModalidadesParaLinks,
   updateLink,
-  uploadEdital
+  uploadEdital, uploadChaveamento, escopoMonitor
 } = require('../controllers/monitor.controller.js');
 
 const { protect, isMonitor } = require('../middleware/auth.middleware.js');
@@ -17,7 +17,7 @@ const { protect, isMonitor } = require('../middleware/auth.middleware.js');
 // Agora: Puxa o 'upload' de DENTRO do objeto
 const { verificarPDF, uploadGeral } = require('../middleware/upload.middleware');
 
-router.use(protect, isMonitor);
+router.use(protect, isMonitor, escopoMonitor);
 
 // ... (rotas de horários e links continuam iguais) ...
 router.route('/horarios').get(getHorarios).post(addHorario);
@@ -29,7 +29,9 @@ router.post('/links', updateLink);
 router.post(
   '/upload-edital', 
  uploadGeral.single('edital'), verificarPDF,// 'upload' agora é a função certa
-  uploadEdital
+  uploadEdital, uploadChaveamento, escopoMonitor
 );
   
+router.post('/upload-chaveamento', uploadGeral.single('chaveamento'), verificarPDF, uploadChaveamento);
+
 module.exports = router;

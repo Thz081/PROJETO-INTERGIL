@@ -27,3 +27,7 @@ O arquivo `frontend/public/fonts/armoriar.css` declara as fontes locais e `front
 - As capas quadradas continuam em `public/images/gravuras/`. Os banners 16:9 ficam em `public/images/gravuras/banners/`. Um banner publicado pelo painel tem prioridade sobre o padrão.
 - A prova tem um banner de Futsal criado para essa modalidade e composições preliminares com as demais gravuras. O acervo de 2025 continua disponível como referência de composição e para a revisão posterior.
 - O carrossel mostra um trecho do card seguinte no celular, setas em todas as larguras e navegação pelo gesto nativo. O avanço automático dispõe de botão para pausar, para durante a interação e inicia desligado com preferência por movimento reduzido. As artes reservam espaço nominal para evitar deslocamento durante o carregamento.
+
+## Gestão e Monitoria
+
+O componente `PainelEquipe` usa a marca horizontal e as fontes públicas com superfícies próprias de trabalho. O menu lateral vira uma navegação recolhível em telas estreitas. O botão mantém o rótulo e a indicação de menu aberto. Tabelas largas rolam dentro da região nomeada. Campos de arquivo compartilham o estilo, as instruções de formato e a mensagem de validação.

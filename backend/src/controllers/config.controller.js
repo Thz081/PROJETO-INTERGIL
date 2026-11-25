@@ -21,9 +21,15 @@ async function updateConfig(req, res) {
 }
 async function updateLogo(req, res) {
   if (!req.file) return res.status(400).json({ message: 'Selecione uma imagem.' });
+  const destino = req.body.destino || 'cartaz';
+  if (!['cartaz', 'cabecalho'].includes(destino)) {
+    await fs.promises.unlink(req.file.path).catch(() => {});
+    return res.status(400).json({ message: 'Selecione o destino da imagem.' });
+  }
   const atual = await configuracao();
-  atual.logoUrl = '/arquivos/' + req.file.filename;
+  const campo = destino === 'cabecalho' ? 'headerLogoUrl' : 'logoUrl';
+  atual[campo] = '/arquivos/' + req.file.filename;
   await atual.save();
-  res.json({ logoUrl: atual.logoUrl, config: atual });
+  res.json({ logoUrl: atual.logoUrl, headerLogoUrl: atual.headerLogoUrl, config: atual });
 }
 module.exports = { getConfig, updateConfig, updateLogo };

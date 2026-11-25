@@ -1,256 +1,229 @@
-import { assetURL } from '../../api';
-import React, { useState, useEffect } from 'react';
-import api from '../../api';
-import { FaGamepad, FaTrash, FaPlus, FaImage, FaEdit, FaTimes } from 'react-icons/fa';
-import './style.css'; 
+import React, { useEffect, useRef, useState } from 'react';
+import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
+import api, { assetURL } from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
+import './style.css';
 
-// Ajuste para o seu IP
+const vazio = () => ({ nome: '', categoria: '', limite: '', maxEscolhas: 1, formatos: [] });
+const formatoVazio = { nome: '', genero: 'X', limite: '' };
+const generos = { X: 'Aberto ou misto', M: 'Masculino', F: 'Feminino' };
 
+export default function AdminModalidades() {
+  const [modalidades, setModalidades] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [buscando, buscar] = useState(true);
+  const [filtro, filtrar] = useState('');
+  const [edicao, editar] = useState(null);
+  const [campos, definir] = useState(vazio);
+  const [arquivos, setArquivos] = useState({ capa: [], banner: [], edital: [] });
+  const [retorno, setRetorno] = useState(null);
+  const [ocupado, ocupar] = useState(false);
+  const formRef = useRef(null);
+  const primeiroCampo = useRef(null);
 
-const AdminModalidades = () => {
-    const [modalidades, setModalidades] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [editingId, setEditingId] = useState(null); // ID de quem estou editando
+  async function carregar() {
+    buscar(true);
+    try {
+      const [lista, grupos] = await Promise.all([api.get('/modalidades'), api.get('/admin/modalidades/categorias')]);
+      setCategorias(grupos.data);
+      setModalidades(lista.data.filter(Boolean));
+    } catch (erro) {
+      setRetorno({ erro: erro.response?.data?.message || 'Não foi possível carregar o catálogo.' });
+    } finally { buscar(false); }
+  }
 
-    // Form States
-    const [edital, setEdital] = useState(null);
-    const [statusEdital, setStatusEdital] = useState('');
-    const [nome, setNome] = useState('');
-    const [maxInscritos, setMaxInscritos] = useState('20');
-    const [tipo, setTipo] = useState('coletivo');
-    const [subcategorias, setSubcategorias] = useState('');
-    
-    // UPLOADS
-    const [fileCarrossel, setFileCarrossel] = useState(null);
-    const [fileDetalhe, setFileDetalhe] = useState(null);
+  useEffect(() => { carregar(); }, []);
+  const atualizar = (nome, valor) => definir(atual => ({ ...atual, [nome]: valor }));
+  const selecionar = nome => lista => setArquivos(atual => ({ ...atual, [nome]: lista }));
 
-    useEffect(() => {
-        fetchModalidades();
-    }, []);
+  function alterarFormato(indice, chave, valor) {
+    atualizar('formatos', campos.formatos.map((opcao, i) => i === indice ? { ...opcao, [chave]: valor } : opcao));
+  }
 
-    const fetchModalidades = async () => {
-        try {
-            const res = await api.get('/modalidades');
-            setModalidades(res.data.filter(m => m).sort((a,b) => a.nome.localeCompare(b.nome)));
-        } catch (error) {
-            console.error("Erro ao buscar modalidades", error);
-        }
-    };
+  function selecionarEdicao(modalidade) {
+    editar(modalidade);
+    definir(modalidade ? {
+      nome: modalidade.nome,
+      categoria: modalidade.categoria || 'Outras modalidades',
+      limite: modalidade.max_inscritos ?? '',
+      maxEscolhas: modalidade.maxEscolhas ?? 1,
+      formatos: modalidade.submodalidades.map(opcao => ({
+        nome: opcao.nome, genero: opcao.genero || 'X', limite: opcao.max_inscritos ?? ''
+      }))
+    } : vazio());
+    setArquivos({ capa: [], banner: [], edital: [] });
+    setRetorno(null);
+    if (modalidade) {
+      formRef.current.scrollIntoView({ block: 'start' });
+      primeiroCampo.current.focus({ preventScroll: true });
+    }
+  }
 
-    // === PREENCHE O FORMULÁRIO PARA EDIÇÃO ===
-    const handleEdit = (mod) => {
-        setEditingId(mod._id); setEdital(null); setStatusEdital('');
-        setNome(mod.nome);
-        setMaxInscritos(mod.max_inscritos ?? '');
-        setTipo(mod.isAvulsoSimples ? 'individual' : 'coletivo');
-        
-        // Transforma o array de subs em string separada por vírgula
-        const subsString = mod.submodalidades 
-            ? mod.submodalidades.map(s => s.nome).join(', ') 
-            : '';
-        setSubcategorias(subsString);
+  async function executar(acao) {
+    ocupar(true);
+    setRetorno(null);
+    try {
+      const mensagem = await acao();
+      setRetorno({ sucesso: mensagem });
+      await carregar();
+    } catch (erro) {
+      setRetorno({ erro: erro.response?.data?.message || 'Não foi possível concluir a alteração.' });
+    } finally { ocupar(false); }
+  }
 
-        // Rola a tela para o topo (formulário)
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+  function salvar(evento) {
+    evento.preventDefault();
+    if (ocupado) return;
+    executar(async () => {
+      const dados = new FormData();
+      dados.set('nome', campos.nome);
+      dados.set('categoria', campos.categoria);
+      dados.set('max_inscritos', campos.limite);
+      dados.set('maxEscolhas', campos.maxEscolhas);
+      dados.set('formatos', JSON.stringify(campos.formatos));
+      if (arquivos.capa[0]) dados.set('imgCarrossel', arquivos.capa[0]);
+      if (arquivos.banner[0]) dados.set('imgDetalhe', arquivos.banner[0]);
+      if (edicao) {
+        const { data } = await api.put('/admin/modalidades/' + edicao._id, dados);
+        selecionarEdicao(data.data);
+        return 'Modalidade atualizada.';
+      }
+      await api.post('/admin/modalidades', dados);
+      selecionarEdicao(null);
+      return 'Modalidade criada.';
+    });
+  }
 
-    const cancelEdit = () => {
-        setEditingId(null);
-        resetForm();
-    };
+  function publicarEdital(evento) {
+    evento.preventDefault();
+    if (ocupado || !arquivos.edital[0]) return;
+    executar(async () => {
+      const dados = new FormData();
+      dados.set('modId', edicao._id);
+      dados.set('edital', arquivos.edital[0]);
+      await api.post('/admin/edital-modalidade', dados);
+      selecionar('edital')([]);
+      return 'Edital publicado.';
+    });
+  }
 
-    const resetForm = () => {
-        setNome(''); setMaxInscritos('20'); setSubcategorias('');
-        setFileCarrossel(null); setFileDetalhe(null);
-        setTipo('coletivo');
-        document.getElementById('inputCarrossel').value = "";
-        document.getElementById('inputDetalhe').value = "";
-    };
+  function excluir(modalidade) {
+    if (ocupado || !window.confirm(`Excluir a modalidade ${modalidade.nome}?`)) return;
+    executar(async () => {
+      await api.delete('/admin/modalidades/' + modalidade._id);
+      if (edicao?._id === modalidade._id) selecionarEdicao(null);
+      return 'Modalidade excluída.';
+    });
+  }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Validação (Na edição, as fotos são opcionais, pois mantém as antigas)
-        if (!nome) return alert("Preencha o nome!");
-        if (!editingId && (!fileCarrossel || !fileDetalhe)) {
-            return alert("Na criação, as duas imagens são obrigatórias!");
-        }
+  const porCategoria = categoria => modalidades.filter(mod => (mod.categoria || 'Outras modalidades') === categoria);
+  const grupos = filtro ? [filtro] : categorias;
 
-        setLoading(true);
-        const formData = new FormData();
-        
-        formData.append('nome', nome);
-        formData.append('max_inscritos', maxInscritos ?? '');
-        formData.append('tipo', tipo);
-        
-        const subsArray = subcategorias.split(',').map(s => s.trim()).filter(s => s !== '');
-        formData.append('subcategorias', JSON.stringify(subsArray));
+  return <>
+    <header className="admin-header-bar"><h2>Modalidades</h2></header>
+    <section className="admin-card modalidade-editor" ref={formRef}>
+      <div className="painel-linha painel-linha-entre">
+        <h3>{edicao ? `Editar ${edicao.nome}` : 'Nova modalidade'}</h3>
+        {edicao && <button type="button" className="painel-secundario" disabled={ocupado}
+          onClick={() => selecionarEdicao(null)}>Nova modalidade</button>}
+      </div>
+      <form onSubmit={salvar} className="form-grid">
+        <label className="campo-painel">Nome
+          <input ref={primeiroCampo} value={campos.nome} required onChange={e => atualizar('nome', e.target.value)}/>
+        </label>
+        <label className="campo-painel">Categoria do edital
+          <select value={campos.categoria} required onChange={e => atualizar('categoria', e.target.value)}>
+            <option value="">Selecione</option>
+            {categorias.map(categoria => <option key={categoria}>{categoria}</option>)}
+          </select>
+        </label>
+        <label className="campo-painel">Vagas gerais por sala
+          <input type="number" min="1" placeholder="Livre quando vazio" value={campos.limite}
+            onChange={e => atualizar('limite', e.target.value)}/>
+        </label>
+        {campos.formatos.length > 1 && <label className="campo-painel">Máximo de formatos por aluno
+          <input type="number" min="1" max={campos.formatos.length} required value={campos.maxEscolhas}
+            onChange={e => atualizar('maxEscolhas', e.target.value)}/>
+        </label>}
+        <fieldset className="full-width modalidade-formatos">
+          <legend>Formatos de participação</legend>
+          {campos.formatos.map((opcao, indice) => <div className="modalidade-formato" key={indice}>
+            <label className="campo-painel">Formato {indice + 1}
+              <input value={opcao.nome} required placeholder="Ex. Dupla" onChange={e => alterarFormato(indice, 'nome', e.target.value)}/>
+            </label>
+            <label className="campo-painel">Participação
+              <select value={opcao.genero} onChange={e => alterarFormato(indice, 'genero', e.target.value)}>
+                {Object.entries(generos).map(([codigo, rotulo]) => <option key={codigo} value={codigo}>{rotulo}</option>)}
+              </select>
+            </label>
+            <label className="campo-painel">Vagas do formato
+              <input type="number" min="1" value={opcao.limite} placeholder="Usa o limite geral"
+                onChange={e => alterarFormato(indice, 'limite', e.target.value)}/>
+            </label>
+            {indice === campos.formatos.length - 1 && <button type="button" className="painel-secundario"
+              onClick={() => definir(atual => ({ ...atual, formatos: atual.formatos.slice(0, -1),
+                maxEscolhas: Math.min(atual.maxEscolhas || 1, Math.max(1, indice)) }))}>
+              Remover formato {indice + 1}
+            </button>}
+          </div>)}
+          <button type="button" className="painel-secundario"
+            onClick={() => atualizar('formatos', [...campos.formatos, formatoVazio])}>
+            <FaPlus aria-hidden="true"/> Adicionar formato
+          </button>
+        </fieldset>
+        <ArquivoCampo titulo="Capa" tipo="imagem" arquivos={arquivos.capa} selecionar={selecionar('capa')} required={!edicao} disabled={ocupado}/>
+        <ArquivoCampo titulo="Banner" tipo="imagem" arquivos={arquivos.banner} selecionar={selecionar('banner')} required={!edicao} disabled={ocupado}/>
+        <button className="painel-primario" disabled={ocupado}>{ocupado ? 'Salvando…' : edicao ? 'Salvar modalidade' : 'Criar modalidade'}</button>
+      </form>
+      {retorno && <p className={'painel-retorno' + (retorno.erro ? ' erro' : '')}
+        role={retorno.erro ? 'alert' : 'status'}>{retorno.erro || retorno.sucesso}</p>}
+    </section>
 
-        if (fileCarrossel) formData.append('imgCarrossel', fileCarrossel);
-        if (fileDetalhe) formData.append('imgDetalhe', fileDetalhe);
+    {edicao && <section className="admin-card">
+      <h3>Edital de {edicao.nome}</h3>
+      <form className="form-grid" onSubmit={publicarEdital}>
+        <ArquivoCampo titulo="PDF do edital" tipo="pdf" arquivos={arquivos.edital} selecionar={selecionar('edital')} required disabled={ocupado}/>
+        <button className="painel-primario" disabled={ocupado || !arquivos.edital.length}>Publicar edital</button>
+      </form>
+    </section>}
 
-        try {
-            if (editingId) {
-                // MODO EDIÇÃO (PUT)
-                await api.put(`/admin/modalidades/${editingId}`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                alert('Modalidade Atualizada!');
-            } else {
-                // MODO CRIAÇÃO (POST)
-                await api.post('/admin/modalidades', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                alert('Modalidade Criada!');
-            }
-            
-            resetForm();
-            setEditingId(null);
-            fetchModalidades();
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao salvar.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm("Tem certeza? Isso apagará a modalidade.")) {
-            try {
-                await api.delete(`/admin/modalidades/${id}`);
-                fetchModalidades();
-            } catch (error) {
-                alert("Erro ao deletar.");
-            }
-        }
-    };
-
-    return (
-        <div className="admin-content-inner">
-            <div className="admin-header-bar">
-                <h2><FaGamepad /> Gestão de Modalidades</h2>
-            </div>
-
-            {/* === FORMULÁRIO === */}
-            <div className="admin-card" style={editingId ? {borderColor: 'var(--golden-yellow)'} : {}}>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                    <h3>{editingId ? `Editando: ${nome}` : 'Nova Modalidade'}</h3>
-                    {editingId && (
-                        <button onClick={cancelEdit} className="btn-cancel-edit">
-                            <FaTimes /> Cancelar Edição
-                        </button>
-                    )}
-                </div>
-
-                <form onSubmit={handleSubmit} className="form-grid-modalidade">
-                    
-                    <div className="input-group">
-                        <label>Nome da Modalidade</label>
-                        <input value={nome} onChange={e=>setNome(e.target.value)} required className="admin-input" placeholder="Ex: Handebol"/>
-                    </div>
-
-                    <div className="input-group">
-                        <label>Limite de Inscritos (Geral)</label>
-                        <input type="number" value={maxInscritos} onChange={e=>setMaxInscritos(e.target.value)} className="admin-input"/>
-                    </div>
-
-                    <div className="input-group">
-                        <label>Tipo de Modalidade</label>
-                        <select 
-                            value={tipo} 
-                            onChange={e => setTipo(e.target.value)} 
-                            className="admin-input"
-                            style={{backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff'}}
-                        >
-                            <option value="coletivo">Padrão (Com Subs/Principal)</option>
-                            <option value="individual">Simples (Avulso/Sem Principal)</option>
-                        </select>
-                    </div>
-
-                    <div className="input-group full-width">
-                        <label>Subcategorias (Separadas por vírgula)</label>
-                        <input 
-                            value={subcategorias} 
-                            onChange={e=>setSubcategorias(e.target.value)} 
-                            className="admin-input" 
-                            placeholder="Ex: Masculino, Feminino, Misto, X1"
-                        />
-                    </div>
-
-                    {/* UPLOADS */}
-                    <div className="input-group">
-                        <label><FaImage/> Capa {editingId ? '(Opcional)' : '(Obrigatório)'}</label>
-                        <input 
-                            id="inputCarrossel" 
-                            type="file" 
-                            onChange={e=>setFileCarrossel(e.target.files[0])} 
-                            accept="image/*" 
-                            className="file-input"
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label><FaImage/> Banner {editingId ? '(Opcional)' : '(Obrigatório)'}</label>
-                        <input 
-                            id="inputDetalhe" 
-                            type="file" 
-                            onChange={e=>setFileDetalhe(e.target.files[0])} 
-                            accept="image/*" 
-                            className="file-input"
-                        />
-                    </div>
-
-                    <button disabled={loading} className={`upload-btn-submit full-width ${editingId ? 'btn-update' : ''}`}>
-                        {loading ? "Salvando..." : (editingId ? "Salvar Alterações" : <><FaPlus/> Criar Modalidade</>)}
-                    </button>
-                </form>
-            </div>
-
-            {editingId && <form className="admin-card" onSubmit={async e => {
-                e.preventDefault();
-                const form = new FormData(); form.append('modId', editingId); form.append('edital', edital);
-                setLoading(true); setStatusEdital('');
-                try { await api.post('/admin/edital-modalidade', form); setStatusEdital('Edital publicado.'); await fetchModalidades(); }
-                catch (err) { setStatusEdital(err.response?.data?.message || 'Falha ao enviar o edital.'); }
-                finally { setLoading(false); }
-            }}><label>Edital de {nome} (PDF até 10 MB) <input key={editingId} type="file" accept="application/pdf" onChange={e => setEdital(e.target.files[0])}/></label>
-            <button disabled={loading || !edital}>Publicar edital</button><p role="status">{statusEdital}</p></form>}
-            {/* === LISTA === */}
-            <div className="modalidades-list-admin">
-                {modalidades.map(mod => (
-                    <div key={mod._id} className="mod-admin-card">
-                        <div className="mod-admin-imgs">
-                            <div className="img-box">
-                                <span>Capa</span>
-                                <img src={assetURL(mod.imgCarrossel || mod.imageUrl)} alt="Capa" onError={(e)=>{e.target.src='/images/armoriar.png'}}/>
-                            </div>
-                            <div className="img-box">
-                                <span>Banner</span>
-                                <img src={assetURL(mod.imgDetalhe || mod.imageUrl)} alt="Banner" onError={(e)=>{e.target.src='/images/armoriar.png'}}/>
-                            </div>
-                        </div>
-                        
-                        <div className="mod-admin-info">
-                            <h4>{mod.nome}</h4>
-                            <p>Subs: {mod.submodalidades?.length || 0}</p>
-                            <p>{mod.max_inscritos ? "Limite geral de " + mod.max_inscritos : "Vagas por opção"}</p>
-                        </div>
-
-                        {/* BOTÕES DE AÇÃO */}
-                        <div className="mod-actions">
-                            <button aria-label={"Editar " + mod.nome} onClick={() => handleEdit(mod)} className="btn-icon btn-edit">
-                                <FaEdit />
-                            </button>
-                            <button aria-label={"Excluir " + mod.nome} onClick={() => handleDelete(mod._id)} className="btn-icon btn-delete">
-                                <FaTrash />
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-export default AdminModalidades;
+    <section className="modalidades-catalogo">
+      <div className="painel-linha painel-linha-entre">
+        <h3>Catálogo · {modalidades.length} modalidades</h3>
+        <label className="campo-painel">Filtrar catálogo
+          <select value={filtro} onChange={e => filtrar(e.target.value)}>
+            <option value="">Todas as categorias</option>
+            {categorias.map(categoria => <option key={categoria}>{categoria}</option>)}
+          </select>
+        </label>
+      </div>
+      {buscando && <p role="status">Carregando modalidades…</p>}
+      {!buscando && !modalidades.length && <button className="painel-secundario" type="button" onClick={carregar}>Recarregar catálogo</button>}
+      {grupos.map(categoria => {
+        const lista = porCategoria(categoria);
+        if (!lista.length) return filtro ? <p key={categoria}>Nenhuma modalidade nesta categoria.</p> : null;
+        return <section key={categoria}>
+          <h4>{categoria}</h4>
+          <div className="painel-grade">
+            {lista.map(modalidade => <article className="admin-card modalidade-card" key={modalidade._id}>
+              <div className="modalidade-artes">
+                <figure><img src={assetURL(modalidade.imgCarrossel || modalidade.imageUrl)} alt="" loading="lazy"/><figcaption>Capa</figcaption></figure>
+                <figure><img src={assetURL(modalidade.imgDetalhe || modalidade.imageUrl)} alt="" loading="lazy"/><figcaption>Banner</figcaption></figure>
+              </div>
+              <h5>{modalidade.nome}</h5>
+              <p>{modalidade.submodalidades.length ? modalidade.submodalidades.map(op =>
+                op.nome + ' · ' + ((op.max_inscritos ?? modalidade.max_inscritos) ?? 'livre')).join(' / ')
+                : modalidade.max_inscritos == null ? 'Inscrição livre' : `${modalidade.max_inscritos} vagas por sala`}</p>
+              <div className="painel-linha">
+                <button type="button" className="painel-secundario" aria-label={`Editar ${modalidade.nome}`}
+                  disabled={ocupado} onClick={() => selecionarEdicao(modalidade)}><FaEdit aria-hidden="true"/> Editar</button>
+                <button type="button" className="painel-secundario" aria-label={`Excluir ${modalidade.nome}`}
+                  disabled={ocupado} onClick={() => excluir(modalidade)}><FaTrash aria-hidden="true"/> Excluir</button>
+              </div>
+            </article>)}
+          </div>
+        </section>;
+      })}
+    </section>
+  </>;
+}

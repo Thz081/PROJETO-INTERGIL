@@ -55,6 +55,23 @@ router.route('/salas/:id')
 router.put('/pontos', updatePontos);
 router.get('/logs', getLogs);
 router.get('/inscricoes', getAllInscricoes);
+router.get('/alunos', async (_req, res) => {
+  const Aluno = require('../models/aluno.model');
+  const Inscricao = require('../models/inscricao.model');
+  const alunos = await Aluno.aggregate([
+    { $match: { ativo: { $ne: false } } },
+    { $project: { nome: 1, n_inscricao: 1, turma: 1 } },
+    { $lookup: {
+      from: Inscricao.collection.name, localField: '_id', foreignField: 'aluno', as: 'registros',
+      pipeline: [{ $project: { modalidades: 1, pontuacaoTotal: 1, data_inscricao: 1 } }]
+    } },
+    { $set: { inscricao: { $first: '$registros' } } },
+    { $unset: 'registros' },
+    { $sort: { turma: 1, nome: 1 } }
+  ]);
+  res.json(alunos);
+});
+
 
 // === ROTA DO EDITAL GERAL ===
 router.post(
@@ -82,6 +99,8 @@ router.put(
     uploadLogo.single('logo'), 
     updateLogo
 );
+
+router.get('/modalidades/categorias', gestaoController.categorias);
 
 router.post(
     '/modalidades', 

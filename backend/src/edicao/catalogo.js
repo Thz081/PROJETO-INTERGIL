@@ -17,7 +17,7 @@ const digitais = 'Jogos digitais';
 function modalidade(_id, nome, slug, categoria, submodalidades, maxEscolhas = 1) {
   const imagem = '/images/gravuras/' + slug + '.webp';
   return { _id, nome, slug, categoria, submodalidades, maxEscolhas, max_inscritos: null,
-    imgCarrossel: imagem, imgDetalhe: imagem };
+    imgCarrossel: imagem, imgDetalhe: `/images/gravuras/banners/${slug}.webp` };
 }
 const modalidades = [
   modalidade(101, 'Futsal', 'futsal', quadra, porSexo(8)),
@@ -49,4 +49,5 @@ const modalidades = [
   modalidade(126, 'FIFA', 'fifa', digitais, [opcao('X1', 2), opcao('X2', 2)], 2),
   modalidade(127, 'RPG', 'rpg', 'Jogos de imaginação', ['RPG de mesa', 'Card Game', 'Cosplay', 'PVP'].map(n => opcao(n)), 4)
 ];
-module.exports = { modalidades, salas };
+const categoriasModalidades = [...new Set(modalidades.map(modalidade => modalidade.categoria)), 'Outras modalidades'];
+module.exports = { modalidades, salas, categoriasModalidades };

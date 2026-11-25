@@ -4,7 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaEdit, FaPlus, FaMinus, FaInstagram } from 'react-icons/fa';
 import { useAudio } from '../../context/AudioContext';
-import api from '../../api';
+import api, { assetURL } from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
 import './style.css';
 import ImportarAlunos from './ImportarAlunos';
 
@@ -20,6 +21,8 @@ const AdminSalas = () => {
   const [editando, setEditando] = useState(null);
   const [arquivoLogo, setArquivoLogo] = useState(null);
   const [pontosInput, setPontosInput] = useState({});
+  const [salvando, setSalvando] = useState(false);
+  const [retorno, setRetorno] = useState('');
 
   const fetchSalas = async () => {
     try {
@@ -70,6 +73,8 @@ const AdminSalas = () => {
       setError('Nome e Turma são obrigatórios para criar uma sala.');
       return;
     }
+    if (salvando) return;
+    setSalvando(true); setRetorno('');
     try {
       setError(null);
       const { data } = await api.request({ method: editando ? 'put' : 'post', url: '/admin/salas' + (editando ? '/' + editando : ''), data: {
@@ -89,9 +94,10 @@ const AdminSalas = () => {
       setTurmaSala('');
       setLogoSala('');
       setInstagramSala('');
+      setRetorno('Sala salva.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao criar sala');
-    }
+      setError(err.response?.data?.message || 'Não foi possível salvar a sala.');
+    } finally { setSalvando(false); }
   };
 
   const handleDeleteSala = async (salaId, salaNome) => {
@@ -125,58 +131,61 @@ const AdminSalas = () => {
 
   return (
     <div className="admin-salas-container">
+      <header className="admin-header-bar"><h2>Salas e alunos</h2></header>
       <div className="admin-section">
         <h2>{editando ? 'Editar sala' : 'Adicionar nova sala'}</h2>
         <form onSubmit={handleCreateSala} className="admin-form-inline">
           <div className="input-group">
-            <label>Nome da Sala</label>
+            <label htmlFor="sala-nome">Nome da sala</label>
             <input 
               type="text" 
-              placeholder="Ex: Spartta" 
+              id="sala-nome" required placeholder="Ex. Spartta"
               value={nomeSala}
               onChange={(e) => setNomeSala(e.target.value)}
             />
           </div>
           <div className="input-group">
-            <label>Série/Turma</label> {/* O label pode ser "Série/Turma" */}
+            <label htmlFor="sala-turma">Série e turma</label>
             <input 
               type="text" 
-              placeholder="Ex: 1° A ADM" // <-- USA O '°' (grau)
+              id="sala-turma" required placeholder="Ex. 1° A ADM"
               value={turmaSala}
               onChange={(e) => setTurmaSala(e.target.value)}
             />
           </div>
           <div className="input-group">
-            <label>Enviar logo <input key={editando || 'nova'} type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setArquivoLogo(e.target.files[0])}/></label>
-            <label>Caminho da logo</label>
+            <ArquivoCampo titulo="Brasão da turma" tipo="imagem" arquivos={arquivoLogo ? [arquivoLogo] : []}
+              selecionar={arquivos => setArquivoLogo(arquivos[0] || null)} disabled={salvando}/>
+            <label htmlFor="sala-logo-url">Caminho do brasão</label>
             <input 
               type="text" 
-              placeholder="/images/turmas/wardens.png" // <-- SEM A BARRA NO COMEÇO
+              id="sala-logo-url" placeholder="/images/turmas/wardens.png"
               value={logoSala}
               onChange={(e) => setLogoSala(e.target.value)}
             />
           </div>
           <div className="input-group">
-            <label>Instagram (Opcional)</label>
+            <label htmlFor="sala-insta">Instagram (opcional)</label>
             <input 
               type="text" 
-              placeholder="Link do perfil"
+              id="sala-insta" placeholder="Link do perfil"
               value={instagramSala}
               onChange={(e) => setInstagramSala(e.target.value)}
             />
           </div>
-          <button type="submit" className="admin-btn-submit">
+          <button type="submit" className="admin-btn-submit" disabled={salvando}>
             <FaPlus /> {editando ? 'Salvar' : 'Adicionar'}
           </button>
         </form>
-        {error && <div className="admin-error">{error}</div>}
+        {error && <p role="alert" className="painel-retorno erro">{error}</p>}
+        {retorno && <p role="status" className="painel-retorno">{retorno}</p>}
       </div>
 
       <ImportarAlunos salas={salas}/>
       <div className="admin-section">
         <h2>Salas Cadastradas ({salas.length})</h2>
         {loading && <p>Carregando...</p>}
-        <div className="admin-tabela-container">
+        <div className="admin-tabela-container" role="region" aria-label="Salas cadastradas" tabIndex={0}>
           <table className="admin-tabela">
             <thead>
               <tr>
@@ -196,7 +205,7 @@ const AdminSalas = () => {
                     <td>
                       {/* AQUI A GENTE CHAMA A LOGO COM A FUNÇÃO DE SEGURANÇA */}
                       <img 
-                        src={sala.logo_url.startsWith('/') ? sala.logo_url : `/${sala.logo_url}`} 
+                        src={assetURL(sala.logo_url)}
                         alt={sala.nome} 
                         className="tabela-logo" 
                       />
@@ -218,7 +227,7 @@ const AdminSalas = () => {
                         <input 
                           type="text"
                           className="admin-pontos-input"
-                          placeholder="Pts"
+                          placeholder="Pts" aria-label={`Pontos de ${sala.nome}`}
                           value={pontosAtuais}
                           onChange={(e) => handlePontosInputChange(sala._id, e.target.value)}
                         />

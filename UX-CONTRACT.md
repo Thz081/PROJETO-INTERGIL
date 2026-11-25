@@ -26,3 +26,10 @@
 - Campo obrigatório, data inválida e formato inválido mostram mensagem em texto e apontam o foco para o campo. Falha de autenticação preserva as entradas. A senha começa oculta. O usuário pode alternar a exibição, colar e usar preenchimento automático.
 - O portal do aluno continua usando matrícula e data de nascimento para o primeiro acesso. Os portais da Gestão e Monitoria continuam com seus próprios modos de autenticação e redirecionamento. Os endpoints e permissões pertencem à frente de backend.
 - O carrossel avança a cada cinco segundos enquanto está visível e permite pausar. O toque, o cursor sobre o carrossel e o foco pelo teclado suspendem o avanço. Preferência por movimento reduzido desliga o avanço por padrão e faz os botões rolarem sem animação. A página comporta menus e formulários em telas estreitas.
+
+## Painéis da equipe
+
+- `PainelEquipe` define navegação, menu móvel, foco ao fechar com Escape e saída. `ArquivoCampo` concentra seleção e remoção de anexo, formato, limite e erro. Formulários mostram a resposta do servidor junto à ação.
+- Gestão lista alunos ativos por turma e situação de inscrição. O Excel sempre representa a lista completa em três abas, independentemente dos filtros da tela.
+- Monitoria carrega até três modalidades atribuídas ao perfil. Horários, editais e chaveamentos seguem o mesmo escopo na interface e na API. O monitor pode publicar PDF ou link por modalidade ou por formato. Cada publicação mostra o link gravado.
+- Gestão edita categoria e formatos de participação do catálogo. IDs e posições de opções já usadas sustentam as inscrições. O servidor rejeita exclusões e mudanças de formato que invalidariam fichas gravadas.

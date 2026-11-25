@@ -68,3 +68,31 @@ Envie o pacote da aplicação e o domínio que deverá apontar para a VPS. Gere 
 As artes padrão e os brasões ficam em `frontend/public/images`. A gestão pode alterar o título, a logo da capa e do cabeçalho, os brasões e as imagens das modalidades. A imagem enviada recebe um nome ASCII com identificador único e o banco passa a apontar para ela. O volume `arquivos` recebe uploads, inclusive os editais em PDF e as mídias da galeria. Em uma instalação nova os arquivos padrão já acompanham o frontend. Para mover fotos, vídeos, PDFs ou logos publicados posteriormente, transfira esse volume junto com o banco.
 
 A galeria aceita fotos JPEG, PNG, WebP ou GIF e vídeos MP4 ou WebM até 100 MB. O proxy externo precisa aceitar o tamanho do envio e permitir o upgrade de WebSocket. Caddy permite ambos por padrão. Em um Nginx externo, ajuste `client_max_body_size 105m` e encaminhe os cabeçalhos de upgrade.
+
+## Atribuir modalidades aos monitores
+
+Cadastre a matrícula e, depois, atribua até três modalidades pelo slug. O primeiro comando cria um acesso e retorna a senha gerada ao operador. O segundo substitui a lista de modalidades atribuídas. O monitor só vê e altera horários, editais e chaveamentos dessas modalidades.
+
+```sh
+docker compose exec api node src/edicao/criar-acesso.js monitor MATRICULA "Nome do monitor"
+docker compose exec api node src/edicao/atribuir-monitor.js MATRICULA mobile-legends uno
+```
+
+Quando já houver uma senha definida para uma nova conta, o comando aceita a senha por entrada padrão. Este exemplo usa Bash e mantém a senha fora dos argumentos e do histórico de comandos.
+
+```bash
+read -rs -p 'Senha da nova conta de Gestão: ' senha_intergil
+printf '\n'
+printf '%s\n' "$senha_intergil" | docker compose exec -T api node src/edicao/criar-acesso.js gestao USUARIO --senha-stdin
+unset senha_intergil
+```
+
+## Aceite para a equipe
+
+- Em **Gestão → Inscrições**, confira os alunos por turma e o Excel. As abas são **Todos os alunos**, **Inscritos** e **Pendentes**. Os relatórios incluem matrícula e situação da inscrição.
+- Em **Gestão → Visão geral**, confira o nome publicado, o cartaz, a marca horizontal e o PDF geral. Em **Modalidades**, confira as categorias, os formatos e os 27 banners. Alatares deve aparecer uma vez em 2025.
+- Na **Monitoria**, confira as modalidades atribuídas e o local de um jogo. Em **Editais e chaveamentos**, confira que os dois tipos de arquivo abrem no detalhe público.
+- Pelo domínio final, confira HTTPS, acesso móvel e a conexão de vagas ao vivo. Use uma instalação isolada para criar inscrições e mídias de teste.
+- Registre o commit publicado e os backups. Para voltar ao código anterior em caso de regressão, reconstrua o último commit aceito na mesma instalação, com o mesmo projeto Compose e volumes. Aplique restauração de dados separadamente se houver motivo para recuperar o último backup.
+
+[Docker Compose up](https://docs.docker.com/reference/cli/docker/compose/up/) · [Volumes do Compose](https://docs.docker.com/reference/compose-file/volumes/) · [Proxy WebSocket do Nginx](https://nginx.org/en/docs/http/websocket.html)

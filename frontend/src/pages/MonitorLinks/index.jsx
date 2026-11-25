@@ -1,171 +1,128 @@
-// Arquivo: intergil-client/src/pages/MonitorLinks/index.js
-// VERSÃO 2.1 - FIX DA BOCHA (APARECE SEMPRE)
+import React, { useEffect, useState } from 'react';
+import api, { assetURL } from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
 
-import React, { useState, useEffect } from 'react';
-import { useAudio } from '../../context/AudioContext';
-import { FaLink, } from 'react-icons/fa';
-import api from '../../api';
-import './style.css'; 
-
-const MonitorLinks = () => {
-  const { playClick } = useAudio();
-
-  // Estados
-  const [subsFlat, setSubsFlat] = useState([]); 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-
-  // Estados do Formulário
-  const [selectedSub, setSelectedSub] = useState(''); 
-  const [arquivoEdital, setArquivoEdital] = useState(null); 
-  const [linkChaveamento, setLinkChaveamento] = useState(''); 
-
-  const fetchModalidadesParaLinks = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await api.get('/monitor/modalidades-para-links');
-      
-      // === AQUI ESTAVA O PROBLEMA DA BOCHA ===
-      // Antes: Se submodalidades fosse [], o .map não retornava nada.
-      // Agora: Se estiver vazio, forçamos uma entrada "Geral".
-      
-      const flatList = response.data.flatMap(mod => [
-        { value: mod._id + '|Geral', label: mod.nome + ' · Geral' },
-        ...mod.submodalidades.map(s => ({ value: mod._id + '|' + s.nome, label: mod.nome + ' · ' + s.nome }))
-      ]);
-      setSubsFlat(flatList);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao buscar modalidades');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchModalidadesParaLinks();
-  }, []);
-
-  const handleFileChange = (e) => {
-    setArquivoEdital(e.target.files[0]); 
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    playClick();
-    setError(null);
-    setSuccess(null);
-
-    if (!selectedSub) {
-      setError("Você precisa selecionar uma Modalidade/Sub primeiro.");
-      return;
-    }
-    
-    const [modId, subNome] = selectedSub.split('|');
-    let acaoRealizada = false;
-
-    // 1. UPLOAD DE EDITAL
-    if (arquivoEdital) {
-      try {
-        const formData = new FormData();
-        formData.append('modId', modId);
-        formData.append('subNome', subNome);
-        formData.append('edital', arquivoEdital); 
-
-        setLoading(true);
-        await api.post('/monitor/upload-edital', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        setSuccess('Arquivo de Edital enviado com sucesso!');
-        setArquivoEdital(null); 
-        acaoRealizada = true;
-      } catch (err) {
-        setError(err.response?.data?.message || 'Erro ao enviar o arquivo PDF.');
-        setLoading(false);
-        return; 
-      }
-    }
-
-    // 2. SALVAR LINK
-    if (linkChaveamento) {
-      try {
-        setLoading(true);
-        await api.post('/monitor/links', {
-          modId,
-          subNome,
-          tipoLink: 'chaveamento',
-          url: linkChaveamento
-        });
-
-        setSuccess('Link de Chaveamento salvo com sucesso!');
-        setLinkChaveamento(''); 
-        acaoRealizada = true;
-      } catch (err) {
-        setError(err.response?.data?.message || 'Erro ao salvar o link.');
-      }
-    }
-    
-    setLoading(false);
-    if (!acaoRealizada) {
-      setError("Nenhuma ação para salvar. Anexe um arquivo ou insira um link.");
-    }
-  };
-
-  return (
-    <div className="monitor-horarios-container"> 
-      
-      <div className="admin-section">
-        <h2><FaLink /> Enviar Links e Editais</h2>
-        
-        <form onSubmit={handleSubmit} className="admin-form-inline">
-          
-          {/* Dropdown "Achatado" com Bocha corrigida */}
-          <div className="input-group" style={{minWidth: '300px', flex: '2'}}>
-            <label>Modalidade/Sub</label>
-            <select value={selectedSub} onChange={(e) => setSelectedSub(e.target.value)}>
-              <option value="">-- Selecione a Categoria --</option>
-              {subsFlat.map((sub, idx) => (
-                <option key={`${sub.value}-${idx}`} value={sub.value}>{sub.label}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="input-group">
-            <label>Arquivo do Edital (.pdf)</label>
-            <input 
-              type="file" 
-              className="admin-file-input" 
-              accept="application/pdf"
-              onChange={handleFileChange}
-              key={arquivoEdital ? 'file-loaded' : 'file-empty'}
-            />
-          </div>
-
-          <div className="input-group" style={{minWidth: '300px', flex: '2'}}>
-            <label>Link do Chaveamento (Google Docs)</label>
-            <input 
-              type="text" 
-              placeholder="https://docs.google.com/..."
-              value={linkChaveamento}
-              onChange={(e) => setLinkChaveamento(e.target.value)}
-            />
-          </div>
-          
-          <button type="submit" className="admin-btn-submit" disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar'}
-          </button>
-        </form>
-        
-        {loading && <p style={{color: 'var(--neon-cyan)', marginTop: '15px'}}>Enviando dados...</p>}
-        {error && <div className="admin-error">{error}</div>}
-        {success && <div style={{color: '#55FF55', marginTop: '15px', fontWeight: 'bold'}}>{success}</div>}
-      </div>
-
-    </div>
-  );
+const documentos = {
+  edital: { nome: 'Edital', campo: 'linkEdital' },
+  chaveamento: { nome: 'Chaveamento', campo: 'linkChaveamento' }
 };
 
-export default MonitorLinks;
+function PublicarDocumento({ tipo, modalidade, formato, publicado, atualizar }) {
+  const [arquivos, selecionar] = useState([]);
+  const [link, definirLink] = useState('');
+  const [ocupado, ocupar] = useState(false);
+  const [progresso, setProgresso] = useState(null);
+  const [retorno, responder] = useState(null);
+  const rotulo = documentos[tipo].nome;
+
+  async function salvar(evento) {
+    evento.preventDefault();
+    if (ocupado || (!arquivos.length && !link.trim())) return;
+    ocupar(true);
+    responder(null);
+    try {
+      let resposta;
+      if (arquivos.length) {
+        const dados = new FormData();
+        dados.set('modId', modalidade);
+        dados.set('subNome', formato);
+        dados.set(tipo, arquivos[0]);
+        setProgresso(0);
+        resposta = await api.post('/monitor/upload-' + tipo, dados, {
+          onUploadProgress: e => { if (e.total) setProgresso(Math.round(e.loaded * 100 / e.total)); }
+        });
+      } else {
+        resposta = await api.post('/monitor/links', { modId: modalidade, subNome: formato, tipoLink: tipo, url: link.trim() });
+      }
+      const atualizada = resposta.data.modalidade;
+      const url = formato === 'Geral' ? atualizada[documentos[tipo].campo]
+        : atualizada.submodalidades.find(opcao => opcao.nome === formato)?.[tipo];
+      atualizar(modalidade, formato, tipo, url);
+      selecionar([]);
+      definirLink('');
+      responder({ mensagem: rotulo + ' publicado.' });
+    } catch (falha) {
+      responder({ erro: true, mensagem: falha.response?.data?.message || 'Não foi possível publicar. Tente novamente.' });
+    } finally {
+      ocupar(false);
+      setProgresso(null);
+    }
+  }
+
+  return <form className="admin-card" onSubmit={salvar}>
+    <h3>{rotulo}</h3>
+    {publicado && publicado !== '#' && <p>
+      <a className="painel-link" href={assetURL(publicado)} target="_blank" rel="noreferrer">Abrir {rotulo.toLowerCase()} publicado</a>
+    </p>}
+    <div className="painel-campos">
+      <ArquivoCampo titulo={`PDF do ${rotulo.toLowerCase()}`} tipo="pdf" arquivos={arquivos} selecionar={selecionar} disabled={ocupado}/>
+      <label className="campo-painel">Link externo do {rotulo.toLowerCase()}
+        <input type="url" value={link} disabled={ocupado || arquivos.length > 0}
+          placeholder="https://" onChange={evento => definirLink(evento.target.value)}/>
+      </label>
+      <button type="submit" className="painel-primario" disabled={ocupado || (!arquivos.length && !link.trim())}>
+        {ocupado ? 'Publicando…' : `Publicar ${rotulo.toLowerCase()}`}
+      </button>
+    </div>
+    {progresso !== null && <progress value={progresso} max={100} aria-label={`Envio de ${rotulo.toLowerCase()}`}/>}
+    {retorno && <p className={'painel-retorno' + (retorno.erro ? ' erro' : '')}
+      role={retorno.erro ? 'alert' : 'status'}>{retorno.mensagem}</p>}
+  </form>;
+}
+
+export default function MonitorLinks() {
+  const [modalidades, setModalidades] = useState([]);
+  const [modId, setModId] = useState('');
+  const [formato, setFormato] = useState('Geral');
+  const [carregando, carregar] = useState(true);
+  const [erro, setErro] = useState('');
+
+  async function buscar() {
+    carregar(true);
+    setErro('');
+    try { setModalidades((await api.get('/monitor/modalidades-para-links')).data); }
+    catch (falha) { setErro(falha.response?.data?.message || 'Não foi possível buscar suas modalidades.'); }
+    finally { carregar(false); }
+  }
+  useEffect(() => { buscar(); }, []);
+
+  const modalidade = modalidades.find(item => String(item._id) === modId);
+  const alvo = formato === 'Geral' ? modalidade : modalidade?.submodalidades.find(item => item.nome === formato);
+  function atualizar(id, destino, tipo, url) {
+    setModalidades(lista => lista.map(item => {
+      if (String(item._id) !== id) return item;
+      if (destino === 'Geral') return { ...item, [documentos[tipo].campo]: url };
+      return { ...item, submodalidades: item.submodalidades.map(opcao =>
+        opcao.nome === destino ? { ...opcao, [tipo]: url } : opcao) };
+    }));
+  }
+
+  return <>
+    <header className="admin-header-bar"><h2>Editais e chaveamentos</h2></header>
+    {carregando && <p role="status">Carregando suas modalidades…</p>}
+    {erro && <p role="alert" className="painel-retorno erro">{erro} <button type="button" className="painel-secundario" onClick={buscar}>Tentar novamente</button></p>}
+    {!erro && !carregando && !modalidades.length && <p>Nenhuma modalidade foi atribuída à sua monitoria.</p>}
+    {!!modalidades.length && <section className="admin-card">
+      <h3>Onde publicar</h3>
+      <div className="form-grid">
+        <label className="campo-painel">Modalidade
+          <select value={modId} onChange={e => { setModId(e.target.value); setFormato('Geral'); }}>
+            <option value="">Selecione sua modalidade</option>
+            {modalidades.map(item => <option key={item._id} value={item._id}>{item.nome}</option>)}
+          </select>
+        </label>
+        <label className="campo-painel">Formato de participação
+          <select value={formato} disabled={!modalidade} onChange={e => setFormato(e.target.value)}>
+            <option value="Geral">Geral · toda a modalidade</option>
+            {modalidade?.submodalidades.map(opcao => <option key={opcao.nome}>{opcao.nome}</option>)}
+          </select>
+        </label>
+      </div>
+    </section>}
+    {alvo && <div className="painel-grade painel-documentos">
+      {Object.entries(documentos).map(([tipo, config]) => <PublicarDocumento key={modId + '/' + formato + '/' + tipo}
+        tipo={tipo} modalidade={modId} formato={formato} atualizar={atualizar}
+        publicado={alvo[formato === 'Geral' ? config.campo : tipo]}/>)}
+    </div>}
+  </>;
+}

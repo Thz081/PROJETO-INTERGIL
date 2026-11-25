@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FaTrash, FaPlus, FaVideo, FaUpload, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaTrash, FaPlus, FaVideo } from 'react-icons/fa';
 import api, { assetURL } from '../../api';
+import ArquivoCampo from '../../components/ArquivoCampo';
 import { useAudio } from '../../context/AudioContext';
 // Reusa o CSS do AdminSalas para manter o padrão
 import '../AdminSalas/style.css'; 
@@ -15,7 +16,6 @@ const AdminMomentos = () => {
   const [titulo, setTitulo] = useState('');
   const [arquivo, setArquivo] = useState(null); // <-- NOVO: Guarda o arquivo
   const [preview, setPreview] = useState(null); // <-- NOVO: Preview da imagem
-  const input = useRef(null);
   const [progresso, setProgresso] = useState(null);
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
   const [ordem, setOrdem] = useState(99);
@@ -38,17 +38,10 @@ const AdminMomentos = () => {
   }, []);
 
   // --- 2. LIDA COM A SELEÇÃO DO ARQUIVO ---
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setArquivo(file);
-      // Cria um preview se for imagem
-      if (file.type.startsWith('image/')) {
-        setPreview(URL.createObjectURL(file));
-      } else {
-        setPreview(null);
-      }
-    }
+  const handleFileChange = arquivos => {
+    const arquivo = arquivos[0] || null;
+    setArquivo(arquivo);
+    setPreview(arquivo?.type.startsWith('image/') ? URL.createObjectURL(arquivo) : null);
   };
 
   // --- 3. CRIAR NOVO MOMENTO (COM UPLOAD) ---
@@ -78,7 +71,6 @@ const AdminMomentos = () => {
       setTitulo('');
       setArquivo(null);
       setPreview(null);
-      input.current.value = '';
       setOrdem(99);
       
       // Atualiza a lista
@@ -117,50 +109,26 @@ const AdminMomentos = () => {
           <form onSubmit={handleCreateMomento} className="admin-form-inline">
             
             <div className="input-group" style={{ flex: 2 }}>
-              <label>Título (Legenda)</label>
+              <label htmlFor="momento-titulo">Título da publicação</label>
               <input 
                 type="text" 
-                placeholder="Ex: Abertura 2026" 
+                id="momento-titulo" required placeholder="Ex. Abertura 2026"
                 value={titulo} 
                 onChange={(e) => setTitulo(e.target.value)} 
               />
             </div>
 
             <div className="input-group" style={{ width: '80px' }}>
-              <label>Ordem</label>
+              <label htmlFor="momento-ordem">Ordem</label>
               <input 
-                type="number" 
+                id="momento-ordem" type="number"
                 value={ordem} 
                 onChange={(e) => setOrdem(e.target.value)} 
               />
             </div>
 
-            {/* INPUT DE ARQUIVO (CUSTOMIZADO) */}
-            <div className="input-group" style={{ flex: 2 }}>
-              <label>Foto ou vídeo MP4/WebM · até 100 MB</label>
-              <div className="file-upload-wrapper">
-                <label htmlFor="momento-upload" className="custom-file-upload">
-                  <FaUpload /> {arquivo ? arquivo.name : "Escolher Arquivo"}
-                </label>
-                <input 
-                  id="momento-upload" 
-                  type="file" 
-                  ref={input} accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }} // Esconde o input feio original
-                />
-                {/* Botão de limpar arquivo */}
-                {arquivo && (
-                  <button 
-                    type="button" 
-                    className="clear-file-btn"
-                    onClick={() => { setArquivo(null); setPreview(null); input.current.value = ''; }}
-                  >
-                    <FaTimes />
-                  </button>
-                )}
-              </div>
-            </div>
+            <ArquivoCampo titulo="Foto ou vídeo" tipo="midia" arquivos={arquivo ? [arquivo] : []}
+              selecionar={handleFileChange} disabled={progresso !== null} required/>
 
             <button type="submit" disabled={progresso !== null} className="admin-btn-submit">
               <FaPlus /> {progresso === null ? "Adicionar" : "Enviando " + progresso + "%"}
@@ -179,7 +147,7 @@ const AdminMomentos = () => {
             </div>
           )}
 
-          {error && <div className="admin-error">{error}</div>}
+          {error && <div role="alert" className="admin-error">{error}</div>}
         </div>
 
         {/* --- Tabela de Momentos Cadastrados --- */}
@@ -187,7 +155,7 @@ const AdminMomentos = () => {
           <h2>Momentos Cadastrados ({momentos.length})</h2>
           {loading && <p>Carregando...</p>}
           
-          <div className="admin-tabela-container">
+          <div className="admin-tabela-container" role="region" aria-label="Momentos publicados" tabIndex={0}>
             <table className="admin-tabela" style={{ minWidth: '800px' }}>
               <thead>
                 <tr>

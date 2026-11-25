@@ -43,6 +43,22 @@ async function iniciar() {
     await Controle.create([{ _id: 'gravuras-2026' }], { session });
   });
   await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'banners-2026' }).session(session)) return;
+    for (const mod of modalidades) {
+      await Modalidade.updateOne({ _id: mod._id, slug: mod.slug, imgDetalhe: { $in: [null, '', mod.imgCarrossel] } },
+        { $set: { imgDetalhe: mod.imgDetalhe } }, { session });
+    }
+    await Controle.create([{ _id: 'banners-2026' }], { session });
+  });
+  await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'hall-alatares-2025' }).session(session)) return;
+    await Hall.updateOne({ ano: 2025 }, { $setOnInsert: {
+      ano: 2025, turma: 'ALATARES', logo_path: '/images/historia/alatares.webp',
+      instagram: 'https://www.instagram.com/3bds.2023/'
+    } }, { upsert: true, session });
+    await Controle.create([{ _id: 'hall-alatares-2025' }], { session });
+  });
+  await mongoose.connection.transaction(async session => {
     if (await Controle.exists({ _id: 'historico' }).session(session)) return;
     for (const entrada of historico) {
       await Hall.updateOne({ ano: entrada.ano }, { $setOnInsert: entrada }, { upsert: true, session });

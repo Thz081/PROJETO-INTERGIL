@@ -6,6 +6,18 @@ const LogAcao = require('../models/logAcao.model');
 const Inscricao = require('../models/inscricao.model');
 const Aluno = require('../models/aluno.model');
 const Momento = require('../models/momento.model');
+const { chaveTurma } = require('../edicao/regras');
+
+async function turmaOcupada(turma, id) {
+  const codigo = chaveTurma(turma);
+  const salas = await Sala.find({ _id: { $ne: id } }).select('turma').lean();
+  return salas.some(sala => chaveTurma(sala.turma) === codigo);
+}
+
+async function temAlunos(turma) {
+  const turmas = await Aluno.distinct('turma', { ativo: { $ne: false } });
+  return turmas.some(ativa => chaveTurma(ativa) === chaveTurma(turma));
+}
 
 const getAutorLog = (req) => {
   const nomeAutor = req.user.nome || 'Usuário Desconhecido';
@@ -31,6 +43,7 @@ const createSala = async (req, res) => {
     if (!nome || !turma) {
       return res.status(400).json({ message: 'Nome e Turma são obrigatórios.' });
     }
+    if (await turmaOcupada(turma)) return res.status(409).json({ message: 'Já existe uma sala para essa turma.' });
     const novaSala = new Sala({
       nome,
       logo_url: logo_url || '/images/armoriar.png',
@@ -56,6 +69,10 @@ const updateSala = async (req, res) => {
     const { nome, logo_url, turma, instagram } = req.body;
     const sala = await Sala.findById(id);
     if (!sala) return res.status(404).json({ message: 'Sala não encontrada.' });
+    if (turma && turma !== sala.turma) {
+      if (await turmaOcupada(turma, id)) return res.status(409).json({ message: 'Já existe uma sala para essa turma.' });
+      if (await temAlunos(sala.turma)) return res.status(409).json({ message: 'Mova os alunos pela importação antes de trocar o código da turma.' });
+    }
     
     sala.nome = nome || sala.nome;
     sala.logo_url = logo_url || sala.logo_url;
@@ -79,6 +96,7 @@ const deleteSala = async (req, res) => {
     const { id } = req.params;
     const sala = await Sala.findById(id);
     if (!sala) return res.status(404).json({ message: 'Sala não encontrada.' });
+    if (await temAlunos(sala.turma)) return res.status(409).json({ message: 'Esta sala ainda tem alunos ativos.' });
     const nomeSalaApagada = sala.nome;
     await sala.deleteOne();
     await LogAcao.create({
@@ -95,13 +113,11 @@ const deleteSala = async (req, res) => {
 const updatePontos = async (req, res) => {
   try {
     const { salaId, pontos } = req.body;
-    const sala = await Sala.findById(salaId);
-    if (!sala) return res.status(404).json({ message: 'Sala não encontrada.' });
+    if (!Number.isSafeInteger(pontos) || pontos === 0) return res.status(400).json({ message: 'Informe um número inteiro de pontos.' });
+    const salaAtualizada = await Sala.findByIdAndUpdate(salaId, { $inc: { pontos } }, { new: true });
+    if (!salaAtualizada) return res.status(404).json({ message: 'Sala não encontrada.' });
     
-    sala.pontos = (sala.pontos || 0) + pontos;
-    const salaAtualizada = await sala.save();
-    
-    const acaoLog = `${pontos > 0 ? 'Adicionou' : 'Removeu'} ${Math.abs(pontos)} pontos da sala ${sala.nome}.`;
+    const acaoLog = `${pontos > 0 ? 'Adicionou' : 'Removeu'} ${Math.abs(pontos)} pontos da sala ${salaAtualizada.nome}.`;
     await LogAcao.create({
       autor: getAutorLog(req),
       acao: acaoLog

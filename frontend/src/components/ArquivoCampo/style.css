@@ -1,0 +1,29 @@
+.arquivo-campo { min-width: 0; display: grid; gap: 4px; }
+.arquivo-campo .arquivo-titulo { display: block; }
+.arquivo-campo small, .arquivo-campo li { color: var(--text-secondary); font-size: .75rem; overflow-wrap: anywhere; }
+.arquivo-campo ul { margin: 0; padding-left: 17px; }
+.arquivo-controles { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.painel-equipe .arquivo-campo input[type=file] {
+  flex: 1 1 190px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid var(--painel-borda);
+  background: var(--painel-campo);
+  color: var(--text-primary);
+  padding: 4px;
+  font: .74rem var(--font-text);
+}
+.arquivo-campo input::file-selector-button, .arquivo-campo button {
+  min-height: 35px;
+  padding: 5px 8px;
+  border: 1px solid #8a6b55;
+  border-radius: 4px;
+  background: #3b2934;
+  color: #ffcfab;
+  font: 600 .71rem var(--font-text);
+  cursor: pointer;
+}
+.arquivo-campo input::file-selector-button { margin-right: 7px; }
+.arquivo-campo p[role=alert] { color: #ffb4a7; }

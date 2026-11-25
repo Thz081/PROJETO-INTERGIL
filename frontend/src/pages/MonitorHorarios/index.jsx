@@ -1,243 +1,139 @@
-import React, { useState, useEffect } from 'react';
-import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
-import { useAudio } from '../../context/AudioContext';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../../api';
-import './style.css';
 
-const MonitorHorarios = () => {
-  const { playClick } = useAudio();
+const vazio = { modId: '', categoria: 'Geral', data: '', horario: '', local: '' };
 
-  // Estados
+export default function MonitorHorarios() {
   const [modalidades, setModalidades] = useState([]);
-  const [horariosAgrupados, setHorariosAgrupados] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Agora vai ser usado!
+  const [ficha, preencher] = useState(vazio);
+  const [edicao, editar] = useState(null);
+  const [filtro, filtrar] = useState('');
+  const [buscando, buscar] = useState(true);
+  const [ocupado, ocupar] = useState(false);
+  const [retorno, responder] = useState(null);
+  const form = useRef(null);
+  const campoData = useRef(null);
 
-  // Estados do Dropdown Cascata
-  const [modId, setModId] = useState('');
-  const [availableSubs, setAvailableSubs] = useState([]);
-  const [categoria, setCategoria] = useState('');
-  
-  // Estados do Formulário
-  const [editando, setEditando] = useState(null);
-  const [data, setData] = useState('');
-  const [horario, setHorario] = useState('');
-  const [local, setLocal] = useState('');
+  async function carregar() {
+    buscar(true);
+    try { setModalidades((await api.get('/monitor/horarios')).data); }
+    catch (falha) { responder({ erro: true, texto: falha.response?.data?.message || 'Não foi possível buscar os horários.' }); }
+    finally { buscar(false); }
+  }
+  useEffect(() => { carregar(); }, []);
+  const atualizar = (campo, valor) => preencher(anterior => ({ ...anterior, [campo]: valor }));
 
-  // === BUSCAR DADOS ===
-  const fetchHorarios = async () => {
+  function cancelar() {
+    editar(null);
+    preencher(vazio);
+  }
+
+  async function executar(acao, texto) {
+    if (ocupado) return;
+    ocupar(true);
+    responder(null);
     try {
-      setLoading(true);
-      const response = await api.get('/monitor/horarios');
-      
-      // Garante que modalidades válidas venham
-      const modsValidas = response.data.filter(m => m && m.nome);
-      setModalidades(modsValidas);
-      
-      let agrupados = {};
-      modsValidas.forEach(mod => {
-        if (mod.horarios && mod.horarios.length > 0) {
-          agrupados[mod.nome] = mod.horarios.map(h => ({
-            ...h,
-            modId: mod._id
-          }));
-        }
-      });
-      setHorariosAgrupados(agrupados);
-      
-    } catch (err) {
-      console.error(err);
-      setError('Erro ao buscar horários');
-    } finally {
-      setLoading(false);
-    }
-  };
+      await acao();
+      responder({ texto });
+      await carregar();
+    } catch (falha) {
+      responder({ erro: true, texto: falha.response?.data?.message || 'Não foi possível alterar o horário.' });
+    } finally { ocupar(false); }
+  }
 
-  useEffect(() => {
-    fetchHorarios();
-  }, []);
+  function salvar(evento) {
+    evento.preventDefault();
+    executar(async () => {
+      if (edicao) await api.put(`/monitor/horarios/${ficha.modId}/${edicao}`, ficha);
+      else await api.post('/monitor/horarios', ficha);
+      cancelar();
+    }, edicao ? 'Horário atualizado.' : 'Horário adicionado.');
+  }
 
-  // === ATUALIZAR DROPDOWN ===
-  const handleModalidadeChange = (novoModId) => {
-    setModId(novoModId);
-    setCategoria('');
-    setAvailableSubs([]); // Reseta
+  function carregarHorario(modalidade, horario) {
+    const { categoria, data, horario: hora, local } = horario;
+    preencher({ modId: String(modalidade._id), categoria, data, horario: hora, local });
+    editar(horario._id);
+    form.current.scrollIntoView({ block: 'start' });
+    campoData.current.focus({ preventScroll: true });
+  }
 
-    if (novoModId) {
-      const modSelecionada = modalidades.find(m => String(m._id) === String(novoModId));
-      
-      if (modSelecionada) {
-        if (modSelecionada.submodalidades && modSelecionada.submodalidades.length > 0) {
-             setAvailableSubs(modSelecionada.submodalidades);
-        }
-      }
-    }
-  };
+  const modalidadeAtiva = modalidades.find(mod => String(mod._id) === ficha.modId);
+  const formatos = [...new Set(['Geral', ...modalidadeAtiva?.submodalidades.map(opcao => opcao.nome) || [],
+    edicao ? ficha.categoria : 'Geral'])];
+  const listadas = filtro ? modalidades.filter(mod => String(mod._id) === filtro) : modalidades;
+  const total = listadas.reduce((soma, mod) => soma + mod.horarios.length, 0);
 
-  // === ADICIONAR HORÁRIO ===
-  const handleAddHorario = async (e) => {
-    e.preventDefault();
-    playClick();
-    setError(null); // Limpa erro anterior
-
-    const needsCategory = availableSubs.length > 0;
-
-    if (!modId || !data || !horario || !local) {
-      setError("Preencha Modalidade, Data, Horário e Local.");
-      return;
-    }
-
-    if (needsCategory && !categoria) {
-        setError("Para esta modalidade, selecione uma Categoria.");
-        return;
-    }
-
-    const categoriaFinal = categoria || (needsCategory ? categoria : "Geral");
-
-    try {
-      await api.request({ method: editando ? 'put' : 'post', url: editando ? '/monitor/horarios/' + modId + '/' + editando : '/monitor/horarios', data: {
-        modId, 
-        categoria: categoriaFinal, 
-        data, 
-        horario, 
-        local
-      }});
-      setEditando(null);
-      fetchHorarios();
-      setData(''); setHorario(''); setLocal('');
-      // Sucesso não precisa de estado, só atualiza a lista
-    } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao adicionar.');
-    }
-  };
-
-  const handleDeleteHorario = async (modId, horarioId) => {
-    if (!window.confirm(`Apagar este horário?`)) return;
-    try {
-      setError(null);
-      await api.delete(`/monitor/horarios/${modId}/${horarioId}`);
-      fetchHorarios(); 
-    } catch (err) {
-      setError('Erro ao apagar.');
-    }
-  };
-  
-  const handleEditHorario = jogo => {
-    const mod = modalidades.find(m => String(m._id) === String(jogo.modId));
-    const opcoes = mod?.submodalidades || [];
-    setAvailableSubs(opcoes.some(s => s.nome === jogo.categoria) ? opcoes : [...opcoes, {nome: jogo.categoria}]);
-    setModId(String(jogo.modId)); setCategoria(jogo.categoria); setData(jogo.data);
-    setHorario(jogo.horario); setLocal(jogo.local); setEditando(jogo._id);
-    window.scrollTo({top:0,behavior:'smooth'});
-  };
-  
-  return (
-    <div className="monitor-horarios-container">
-      
-      <div className="admin-section">
-        <h2><FaPlus /> {editando ? 'Editar horário' : 'Adicionar horário'}</h2>
-        
-        <form onSubmit={handleAddHorario} className="admin-form-inline">
-          {editando && <button type="button" onClick={() => {setEditando(null); handleModalidadeChange(''); setData(''); setLocal(''); setHorario('');}}>Cancelar edição</button>}
-          <div className="input-group">
-            <label>Modalidade</label>
-            <select disabled={Boolean(editando)} value={modId} onChange={(e) => handleModalidadeChange(e.target.value)}>
-              <option value="">-- Selecione --</option>
-              {modalidades.map(mod => (
-                <option key={mod._id} value={mod._id}>{mod.nome}</option>
-              ))}
+  return <>
+    <header className="admin-header-bar"><h2>Horários dos jogos</h2></header>
+    {buscando && <p role="status">Buscando horários…</p>}
+    {!buscando && !modalidades.length && <p>Nenhuma modalidade foi atribuída à sua monitoria.</p>}
+    {retorno?.erro && !modalidades.length && <p role="alert" className="painel-retorno erro">{retorno.texto}
+      {' '}<button type="button" className="painel-secundario" onClick={carregar}>Tentar novamente</button></p>}
+    {!!modalidades.length && <>
+      <section className="admin-card modalidade-editor" ref={form}>
+        <div className="painel-linha painel-linha-entre">
+          <h3>{edicao ? 'Editar horário' : 'Adicionar horário'}</h3>
+          {edicao && <button type="button" className="painel-secundario" onClick={cancelar}>Cancelar edição</button>}
+        </div>
+        <form onSubmit={salvar} className="form-grid">
+          <label className="campo-painel">Modalidade
+            <select value={ficha.modId} required disabled={Boolean(edicao)} onChange={e => preencher({
+              ...ficha, modId: e.target.value, categoria: 'Geral'
+            })}>
+              <option value="">Selecione</option>
+              {modalidades.map(mod => <option key={mod._id} value={mod._id}>{mod.nome}</option>)}
             </select>
-          </div>
-          
-          {/* SEÇÃO CATEGORIA */}
-          <div className="input-group">
-            <label>
-                Categoria 
-                {availableSubs.length === 0 ? <small> (Nenhuma)</small> : <small> (Obrigatório)</small>}
-            </label>
-            <select 
-              value={categoria} 
-              onChange={(e) => setCategoria(e.target.value)}
-              disabled={!modId || availableSubs.length === 0}
-              style={{ 
-                  opacity: (!modId || availableSubs.length === 0) ? 0.5 : 1,
-                  cursor: (!modId || availableSubs.length === 0) ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <option value="">
-                 {availableSubs.length === 0 ? "Sem subcategorias" : "-- Selecione --"}
-              </option>
-              {availableSubs.map((sub, index) => {
-                const nomeSub = typeof sub === 'string' ? sub : sub.nome;
-                return (
-                    <option key={index} value={nomeSub}>
-                        {nomeSub}
-                    </option>
-                );
-              })}
+          </label>
+          <label className="campo-painel">Formato de participação
+            <select value={ficha.categoria} disabled={!ficha.modId} onChange={e => atualizar('categoria', e.target.value)}>
+              {formatos.map(nome => <option key={nome}>{nome}</option>)}
             </select>
-          </div>
-          
-          <div className="input-group" style={{minWidth: '100px', flex: '0.5'}}>
-            <label>Data</label>
-            <input type="text" placeholder="Ex: 25/03" value={data} onChange={(e) => setData(e.target.value)}/>
-          </div>
-          <div className="input-group" style={{minWidth: '100px', flex: '0.5'}}>
-            <label>Horário</label>
-            <input type="text" placeholder="Ex: 14:00" value={horario} onChange={(e) => setHorario(e.target.value)}/>
-          </div>
-          <div className="input-group">
-            <label>Local</label>
-            <input type="text" placeholder="Ex: Quadra 1" value={local} onChange={(e) => setLocal(e.target.value)}/>
-          </div>
-          
-          <button type="submit" className="admin-btn-submit"><FaPlus /> Salvar</button>
+          </label>
+          <label className="campo-painel">Data
+            <input ref={campoData} value={ficha.data} required placeholder="Ex. 02/12/2026" onChange={e => atualizar('data', e.target.value)}/>
+          </label>
+          <label className="campo-painel">Horário
+            <input value={ficha.horario} required placeholder="Ex. 14h" onChange={e => atualizar('horario', e.target.value)}/>
+          </label>
+          <label className="campo-painel">Local
+            <input value={ficha.local} required placeholder="Ex. Quadra 1" onChange={e => atualizar('local', e.target.value)}/>
+          </label>
+          <button className="painel-primario" disabled={ocupado}>{ocupado ? 'Salvando…' : 'Salvar horário'}</button>
         </form>
-        
-        {/* Exibe o erro aqui se houver */}
-        {error && <p className="error-msg" style={{color: '#ff5555', marginTop: '10px'}}>{error}</p>}
-      </div>
-
-      {/* LISTA */}
-      <div className="admin-section">
-        <h2>Horários Cadastrados ({Object.values(horariosAgrupados).flat().length})</h2>
-        {loading && <p>Carregando...</p>}
-        
-        {Object.keys(horariosAgrupados).map(nomeModalidade => (
-          <div key={nomeModalidade} className="admin-tabela-container" style={{marginBottom: '20px'}}>
-            <h3 style={{color: 'var(--neon-cyan)'}}>{nomeModalidade}</h3>
+        {retorno && <p role={retorno.erro ? 'alert' : 'status'} className={'painel-retorno' + (retorno.erro ? ' erro' : '')}>{retorno.texto}</p>}
+      </section>
+      <section className="admin-card">
+        <div className="painel-linha painel-linha-entre">
+          <h3>Agenda cadastrada · {total}</h3>
+          <label className="campo-painel">Filtrar agenda
+            <select value={filtro} onChange={e => filtrar(e.target.value)}>
+              <option value="">Todas as minhas modalidades</option>
+              {modalidades.map(mod => <option key={mod._id} value={mod._id}>{mod.nome}</option>)}
+            </select>
+          </label>
+        </div>
+        {!total && !buscando && <p>Nenhum horário cadastrado neste filtro.</p>}
+        {listadas.filter(mod => mod.horarios.length).map(mod => <section className="painel-agenda" key={mod._id}>
+          <h4>{mod.nome}</h4>
+          <div className="painel-tabela-scroll" role="region" tabIndex={0} aria-label={`Horários de ${mod.nome}`}>
             <table className="admin-tabela">
-              <thead>
-                <tr>
-                  <th>Categoria</th>
-                  <th>Data</th>
-                  <th>Horário</th>
-                  <th>Local</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {horariosAgrupados[nomeModalidade].map(jogo => (
-                  <tr key={jogo._id}>
-                    <td>{jogo.categoria}</td>
-                    <td>{jogo.data}</td>
-                    <td>{jogo.horario}</td>
-                    <td>{jogo.local}</td>
-                    <td>
-                      <div className="tabela-acoes">
-                        <button aria-label="Editar horário" onClick={() => handleEditHorario(jogo)} className="admin-btn-tabela edit"><FaEdit /></button>
-                        <button aria-label="Excluir horário" onClick={() => handleDeleteHorario(jogo.modId, jogo._id)} className="admin-btn-tabela delete"><FaTrash /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr><th>Formato</th><th>Data</th><th>Horário</th><th>Local</th><th>Ações</th></tr></thead>
+              <tbody>{mod.horarios.map(h => <tr key={h._id}>
+                <td>{h.categoria}</td><td>{h.data}</td><td>{h.horario}</td><td>{h.local}</td>
+                <td><div className="painel-linha">
+                  <button type="button" className="painel-secundario" disabled={ocupado}
+                    onClick={() => carregarHorario(mod, h)}>Editar</button>
+                  <button type="button" className="painel-secundario" disabled={ocupado} onClick={() => {
+                    if (window.confirm(`Excluir o horário de ${mod.nome} em ${h.data}?`))
+                      executar(() => api.delete(`/monitor/horarios/${mod._id}/${h._id}`), 'Horário excluído.');
+                  }}>Excluir</button>
+                </div></td>
+              </tr>)}</tbody>
             </table>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default MonitorHorarios;
+        </section>)}
+      </section>
+    </>}
+  </>;
+}

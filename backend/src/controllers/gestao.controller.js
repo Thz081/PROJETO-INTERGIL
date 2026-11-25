@@ -1,127 +1,160 @@
-
-// === GERENCIAMENTO DE MODALIDADES ===
+const mongoose = require('mongoose');
+const { unlink } = require('node:fs/promises');
 const Modalidade = require('../models/modalidade.model');
-const Hall = require('../models/hall.model');
-const Sala = require('../models/sala.model');
-const fs = require('fs');
-const path = require('path');
+const Inscricao = require('../models/inscricao.model');
+const { Controle } = require('../edicao/iniciar');
+const { categoriasModalidades } = require('../edicao/catalogo');
 
-// === GERENCIAMENTO DE MODALIDADES ===
+function erro(status, message) {
+  throw Object.assign(new Error(message), { status });
+}
 
-exports.createModalidade = async (req, res) => {
-    try {
-        const { nome, tipo, max_inscritos, subcategorias } = req.body;
-        
-        const slug = nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+function inteiro(valor, rotulo, livre = false) {
+  if (livre && (valor == null || valor === '')) return null;
+  const numero = Number(valor);
+  if (!Number.isSafeInteger(numero) || numero < 1) erro(400, rotulo + ' deve ser um inteiro positivo.');
+  return numero;
+}
 
-        // --- LÓGICA DE UPLOAD DUPLO ---
-        // O Multer joga os arquivos em req.files['nomeDoCampo']
-        const files = req.files || {};
-        
-        // Pega os caminhos ou define um padrão
-        const imgCarrossel = files['imgCarrossel'] ? `/arquivos/${files['imgCarrossel'][0].filename}` : '/images/armoriar.png';
-        const imgDetalhe = files['imgDetalhe'] ? `/arquivos/${files['imgDetalhe'][0].filename}` : '/images/armoriar.png';
+function campos(body, atual) {
+  const dados = {};
+  if (!atual || body.nome !== undefined) {
+    dados.nome = typeof body.nome === 'string' ? body.nome.trim() : '';
+    if (!dados.nome) erro(400, 'Informe o nome da modalidade.');
+  }
+  if (body.categoria !== undefined) {
+    if (!categoriasModalidades.includes(body.categoria)) erro(400, 'Selecione uma categoria válida.');
+    dados.categoria = body.categoria;
+  } else if (!atual) {
+    dados.categoria = 'Outras modalidades';
+  }
+  if (body.max_inscritos !== undefined || !atual) {
+    dados.max_inscritos = inteiro(body.max_inscritos, 'O limite geral', true);
+  }
+  if (!atual && body.tipo !== undefined) dados.isAvulsoSimples = body.tipo === 'individual';
 
-        // Tratamento de Subcategorias (Mantém sua lógica)
-        let submodalidadesFormatadas = [];
-        if (subcategorias) {
-            let listaBruta = [];
-            try {
-                if (typeof subcategorias === 'string') {
-                    if (subcategorias.trim().startsWith('[')) {
-                        listaBruta = JSON.parse(subcategorias);
-                    } else {
-                        listaBruta = subcategorias.split(',');
-                    }
-                } else if (Array.isArray(subcategorias)) {
-                    listaBruta = subcategorias;
-                }
-            } catch (e) {
-                console.log("Erro ao parsear subcategorias.");
-            }
+  if (body.formatos !== undefined) {
+    let formatos;
+    try { formatos = JSON.parse(body.formatos); }
+    catch { erro(400, 'Confira os formatos de participação.'); }
+    if (!Array.isArray(formatos)) erro(400, 'Confira os formatos de participação.');
 
-            submodalidadesFormatadas = listaBruta.map(item => {
-                const nomeSub = typeof item === 'string' ? item.trim() : item.nome;
-                if (!nomeSub) return null;
-                return {
-                    nome: nomeSub,
-                    isPrincipal: true,
-                    inscricao: true,
-                    genero: 'X'
-                };
-            }).filter(Boolean);
-        }
+    const nomes = new Set();
+    dados.submodalidades = formatos.map((opcao, indice) => {
+      const nome = typeof opcao?.nome === 'string' ? opcao.nome.trim() : '';
+      const chave = nome.toLocaleLowerCase('pt-BR');
+      if (!nome || chave === 'geral' || nomes.has(chave) || !['X', 'M', 'F'].includes(opcao.genero))
+        erro(400, 'Use nomes distintos e uma categoria válida em cada formato.');
+      nomes.add(chave);
+      return {
+        ...atual?.submodalidades[indice],
+        nome, genero: opcao.genero, max_inscritos: inteiro(opcao.limite, 'As vagas do formato', true)
+      };
+    });
+  } else if (!atual && body.subcategorias) {
+    // Compatibilidade com o formulário anterior na criação.
+    const valor = String(body.subcategorias);
+    let nomes;
+    try { nomes = valor.startsWith('[') ? JSON.parse(valor) : valor.split(','); }
+    catch { erro(400, 'Confira os formatos de participação.'); }
+    if (!Array.isArray(nomes)) erro(400, 'Confira os formatos de participação.');
+    dados.submodalidades = nomes.filter(nome => typeof nome === 'string' && nome.trim())
+      .map(nome => ({ nome: nome.trim(), genero: 'X', inscricao: true }));
+  }
 
-        // Tenta achar o maior ID numérico atual para gerar o próximo (auto-increment manual)
-        const lastMod = await Modalidade.findOne().sort({ _id: -1 });
-        const newId = lastMod && typeof lastMod._id === 'number' ? lastMod._id + 1 : 1;
+  if (body.maxEscolhas !== undefined) {
+    const maximo = inteiro(body.maxEscolhas, 'O máximo de formatos');
+    if (maximo > Math.max(1, (dados.submodalidades || atual?.submodalidades || []).length))
+      erro(400, 'O máximo de formatos não pode exceder os cadastrados.');
+    dados.maxEscolhas = maximo;
+  }
 
-        const novaModalidade = await Modalidade.create({
-            _id: newId, // Garante ID numérico
-            nome,
-            slug,
-            imgCarrossel, // Novo
-            imgDetalhe,   // Novo
-            imageUrl: imgCarrossel, // Retrocompatibilidade
-            isAvulsoSimples: tipo === 'individual',
-            max_inscritos: Number(max_inscritos) || 20, 
-            submodalidades: submodalidadesFormatadas,
-        });
+  return dados;
+}
 
-        res.status(201).json(novaModalidade);
+function imagens(files) {
+  const dados = {};
+  if (files?.imgCarrossel) dados.imgCarrossel = dados.imageUrl = '/arquivos/' + files.imgCarrossel[0].filename;
+  if (files?.imgDetalhe) dados.imgDetalhe = '/arquivos/' + files.imgDetalhe[0].filename;
+  return dados;
+}
 
-    } catch (error) {
-        console.error("Erro createModalidade:", error);
-        res.status(500).json({ message: "Erro ao criar modalidade", error: error.message });
+async function alterarCatalogo(fn) {
+  return mongoose.connection.transaction(async session => {
+    // Usa a mesma escrita que serializa inscrições para evitar remover uma opção em uso.
+    await Controle.updateOne({ _id: 'vagas' }, { $inc: { versao: 1 } }, { session });
+    return fn(session);
+  });
+}
+
+function rota(fn) {
+  return async (req, res) => {
+    try { await fn(req, res); }
+    catch (err) {
+      await Promise.allSettled(Object.values(req.files || {}).flat().map(file => unlink(file.path)));
+      const status = err.status || (err.code === 11000 ? 409 : 500);
+      if (status === 500) console.error('Falha no catálogo:', err.message);
+      res.status(status).json({ message: err.status ? err.message :
+        status === 409 ? 'Já existe uma modalidade com esse nome.' : 'Não foi possível salvar a modalidade.' });
     }
-};
+  };
+}
 
-// === NOVA FUNÇÃO: ATUALIZAR MODALIDADE (COM FOTOS) ===
-exports.updateModalidade = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { nome, max_inscritos } = req.body;
-        
-        const modalidade = await Modalidade.findById(id);
-        if (!modalidade) return res.status(404).json({ message: "Modalidade não encontrada" });
+function idDaModalidade(valor) {
+  return inteiro(valor, 'Identificador da modalidade');
+}
 
-        const files = req.files || {};
-        
-        // Se enviou nova foto, atualiza. Se não, mantém a antiga.
-        if (files['imgCarrossel']) {
-            modalidade.imgCarrossel = `/arquivos/${files['imgCarrossel'][0].filename}`;
-            modalidade.imageUrl = modalidade.imgCarrossel; // Mantém sync
-        }
-        
-        if (files['imgDetalhe']) {
-            modalidade.imgDetalhe = `/arquivos/${files['imgDetalhe'][0].filename}`;
-        }
+exports.categorias = (_req, res) => res.json(categoriasModalidades);
 
-        if (nome) {
-            modalidade.nome = nome;
-            // Atualiza slug se mudar o nome? Melhor evitar para não quebrar links, mas ok.
-        }
-        
-        if (max_inscritos !== undefined) {
-            const limite = max_inscritos === '' ? null : Number(max_inscritos);
-            if (limite !== null && (!Number.isInteger(limite) || limite < 1)) return res.status(400).json({ message: 'Limite inválido.' });
-            modalidade.max_inscritos = limite;
-        }
+exports.createModalidade = rota(async (req, res) => {
+  const dados = campos(req.body);
+  const slug = dados.nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!slug) erro(400, 'Informe um nome com letras ou números.');
+  const novo = await alterarCatalogo(async session => {
+    const ultimo = await Modalidade.findOne().sort({ _id: -1 }).select('_id').session(session).lean();
+    await Controle.updateOne({ _id: 'ids-modalidades' }, { $max: { versao: ultimo?._id || 0 } }, { upsert: true, session });
+    const contador = await Controle.findByIdAndUpdate('ids-modalidades', { $inc: { versao: 1 } }, { new: true, session });
+    const [criado] = await Modalidade.create([{
+      _id: contador.versao, slug,
+      imgCarrossel: '/images/armoriar.png', imgDetalhe: '/images/armoriar.png',
+      ...dados, ...imagens(req.files)
+    }], { session });
+    return criado;
+  });
+  res.status(201).json(novo);
+});
 
-        await modalidade.save();
-        res.json({ message: "Atualizado com sucesso!", data: modalidade });
-
-    } catch (error) {
-        console.error("Erro updateModalidade:", error);
-        res.status(500).json({ message: "Erro ao atualizar" });
+exports.updateModalidade = rota(async (req, res) => {
+  const id = idDaModalidade(req.params.id);
+  const atualizado = await alterarCatalogo(async session => {
+    const atual = await Modalidade.findById(id).session(session).lean();
+    if (!atual) erro(404, 'Modalidade não encontrada.');
+    const dados = campos(req.body, atual);
+    if (dados.submodalidades) {
+      const removidos = atual.submodalidades.slice(dados.submodalidades.length)
+        .map((_, indice) => `${id}-${dados.submodalidades.length + indice}`);
+      if (!atual.submodalidades.length && dados.submodalidades.length) removidos.push(String(id));
+      atual.submodalidades.slice(0, dados.submodalidades.length).forEach((opcao, indice) => {
+        const novo = dados.submodalidades[indice];
+        if (opcao.genero !== novo.genero || opcao.nome !== novo.nome) removidos.push(`${id}-${indice}`);
+      });
+      if (removidos.length && await Inscricao.exists({ modalidades: { $in: removidos } }).session(session))
+        erro(409, 'Há inscrições que usam os formatos alterados. Mantenha o formato e a categoria de participação.');
     }
-};
+    return Modalidade.findByIdAndUpdate(id, { $set: { ...dados, ...imagens(req.files) } },
+      { new: true, runValidators: true, session });
+  });
+  res.json({ message: 'Modalidade atualizada.', data: atualizado });
+});
 
-exports.deleteModalidade = async (req, res) => {
-    try {
-        await Modalidade.findByIdAndDelete(req.params.id);
-        res.json({ message: "Modalidade removida com sucesso" });
-    } catch (error) {
-        res.status(500).json({ message: "Erro ao deletar modalidade" });
-    }
-};
+exports.deleteModalidade = rota(async (req, res) => {
+  const id = idDaModalidade(req.params.id);
+  await alterarCatalogo(async session => {
+    if (await Inscricao.exists({ modalidades: new RegExp(`^${id}(?:-|$)`) }).session(session))
+      erro(409, 'Esta modalidade tem inscrições e não pode ser excluída.');
+    const resultado = await Modalidade.deleteOne({ _id: id }, { session });
+    if (!resultado.deletedCount) erro(404, 'Modalidade não encontrada.');
+  });
+  res.json({ message: 'Modalidade removida.' });
+});

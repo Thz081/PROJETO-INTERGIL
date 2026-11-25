@@ -1,13 +1,12 @@
 # Planejamento de Tacyo e Erick · Intergil 2026
 
-**Os painéis, as regras e o pacote de VPS avançaram com Tacyo nesta rodada. Erick pode revisar ou assumir tarefas futuras quando necessário.** As duas frentes podem trabalhar em paralelo a partir da versão atual de `develop`. O contexto de produto está em [context.md](context.md).
+**Os painéis e as regras passaram no aceite local e estão na `develop`.** A aplicação testada a partir do pacote corresponde ao commit `fe2f0a0`. Tacyo e Erick podem revisar a mesma versão e coordenar os passos ainda pendentes na VPS. O contexto de produto está em [context.md](context.md).
 
 ## 1. Branches e fronteiras
 
 1. Partir da [develop](https://github.com/Thz081/PROJETO-INTERGIL/tree/develop). O snapshot de código foi publicado em `4910884`.
-2. Tacyo abre `feat/armoriar-visual`. Erick abre `feat/regras-gestao-2026`. Cada PR tem `develop` como base.
-3. Tacyo conduz a rodada atual e valida os dois painéis. Uma revisão de Erick pode partir da versão integrada quando for necessária. A rodada de Tacyo já integra as mudanças de interface de inscrição e perfil e a retirada da representação entre turmas. Qualquer ajuste posterior nesses arquivos parte da versão integrada em `develop`.
-4. Integrar o PR de regras e painéis em `develop` e validar o conjunto com a entrega visual já integrada. Só então Tacyo e Erick decidem o merge posterior na `main`. Fazer o aceite e preparar a VPS a partir do mesmo SHA testado.
+2. A `develop` já inclui a rodada visual, a inscrição, o perfil, a retirada da representação entre turmas, as regras e a atualização dos dois painéis. Revisões posteriores partem dessa versão, com PR para `develop`.
+3. Tacyo e Erick decidem o merge posterior na `main` após o aceite. Implantar a partir do pacote correspondente ao SHA aprovado.
 
 ## 2. Frente de Tacyo · visual, imagens e navegação pública
 
@@ -25,7 +24,7 @@
 - **Três portais.** Tacyo é dono de `frontend/src/pages/Login/`, `LoginAdmin/` e `LoginMonitor/`. Compartilhar layout e campo de senha entre os três. Preservar primeiro acesso, endpoints, rotas de sucesso e permissões. Testar mostrar senha, erros, foco, envio, teclado virtual e links para os outros portais.
 - **Páginas públicas.** Tacyo é dono de `Horarios/`, `Historia/`, `Momentos/` e, se houver ajuste visual, `Ranking/` e `MeuPerfil/`. Preservar agenda, download da planilha, histórico, ranking e reprodução em tela cheia. Usar CSS escopado na navegação e nos portais. Estilos exclusivos dos painéis ficam em `PainelEquipe` e nas páginas de operação.
 - **Inscrição e perfil.** A inscrição recebeu agrupamento de categorias, cartões, resumo e botão de confirmação. O perfil ganhou estados de carregamento, erro, vazio e confirmado, além de cancelamento sem recarregar. O Instagram do Hall ganhou espaço próprio no card. A inscrição entre turmas saiu do formulário, da API, do WebSocket e da exportação.
-- **Acabamento pendente.** Avaliar os 26 banners compostos em comparação com os de 2025, escolher a legenda definitiva, obter autorização e versão web da fonte Armorial e definir trilha autorizada. Conferir Gestão e Monitoria no aparelho ou acesso do Tacyo e registrar eventuais problemas com capturas.
+- **Acabamento editorial.** Os 27 banners passaram na verificação de presença, proporção e abertura. Eventuais trocas de arte e de legenda dependem da revisão visual. O pedido de autorização para a fonte web foi enviado em 24 de novembro. A trilha nova fica para depois da escolha da organização. Tacyo tem acesso pelo Wi-Fi para o aceite dos painéis no aparelho.
 - **Referência de design.** Tacyo mantém a documentação do visual e das interações públicas em `DESIGN.md` e `UX-CONTRACT.md`. Pode usar as habilidades de design para validar contraste, foco, tipografia e movimento. Os estandartes de apresentações são opcionais após o aceite prioritário.
 
 ## 3. Gestão, Monitoria e infraestrutura
@@ -36,9 +35,9 @@
 - **Acessos.** Aluno, Gestão e Monitoria têm portais próprios. As senhas locais e os dados pessoais ficam fora dos arquivos de publicação.
 - **VPS.** O pacote acompanha `compose.yaml`, os Dockerfiles, a configuração do Nginx e [VPS.md](VPS.md). A versão pública depende de domínio, acesso à VPS e aceite no endereço final.
 
-## 5. Aceite conjunto e publicação
+## 4. Aceite conjunto e publicação
 
-### Aceite local
+### Cobertura do aceite local
 
 - **Visual.** Conferir a home, o carrossel, o detalhe e os três portais a 360, 390, 860 e 1280 px. Em celular real, navegar com swipe, abrir menu e editar campos com teclado na tela. No desktop, completar o percurso só com teclado. Verificar contraste, foco e movimento reduzido.
 - **Inscrições.** Em base isolada, completar primeiro acesso de 1º e 3º ano, validar os limites e conferir permissões. Testar FIFA X1 e X2 juntos como uma modalidade, duas vagas em X2, última vaga do FIFA X1 e do Free Fire X1, UNO, cancelamento e reconexão. Conferir RPG completo, Basquete, Corrida, Kata, isolamento das vagas por turma e exportação sem linhas duplicadas.

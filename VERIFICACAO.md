@@ -45,3 +45,9 @@ Os testes de tela estreita usaram navegador desktop redimensionado. O domínio p
 - A API recusou excluir modalidade com inscrição gravada. O banco novo trouxe os banners e Alatares 2025. Foto e MP4 foram enviados e exibidos em tela cheia na galeria isolada.
 - As planilhas ADM e DS foram comparadas à base local sem confirmar importação. As 503 matrículas já estavam nas 12 turmas de destino, sem conflitos nem transferências. O Excel local retornou uma linha por aluno nas três abas.
 - Dois PDFs publicados simultaneamente pela Monitoria abriram em links distintos. O backup do Mongo de homologação foi restaurado em outro banco e as contagens das 11 coleções coincidiram. O backup dos uploads foi extraído e continha PDFs e vídeo MP4.
+
+## Aceite do pacote de implantação em 25 de novembro
+
+- O pacote do commit `fe2f0a0` foi extraído em outro diretório e construído pelo Compose com volumes novos. A prévia por HTTP respondeu e o projeto de testes permaneceu separado da base da escola.
+- Pela API, FIFA aceitou duas vagas por formato e contou X1 e X2 juntos. Free Fire aceitou um X1 por turma e contou 4×4 e X1 juntos. Foram conferidas a recusa com vagas esgotadas, a separação entre turmas, o cancelamento e a reinscrição.
+- Após parar e subir os contêineres, as inscrições sintéticas e suas contagens foram preservadas. O domínio público, o HTTPS e o WebSocket pelo proxy da VPS aguardam a instalação.

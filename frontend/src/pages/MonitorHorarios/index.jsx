@@ -59,8 +59,11 @@ export default function MonitorHorarios() {
   }
 
   const modalidadeAtiva = modalidades.find(mod => String(mod._id) === ficha.modId);
-  const formatos = [...new Set(['Geral', ...modalidadeAtiva?.submodalidades.map(opcao => opcao.nome) || [],
-    edicao ? ficha.categoria : 'Geral'])];
+  const formatos = [...new Set([
+    ...(modalidadeAtiva?.permiteGeral === false ? [] : ['Geral']),
+    ...(modalidadeAtiva?.submodalidades.map(opcao => opcao.nome) || []),
+    ...(edicao ? [ficha.categoria] : [])
+  ])];
   const listadas = filtro ? modalidades.filter(mod => String(mod._id) === filtro) : modalidades;
   const total = listadas.reduce((soma, mod) => soma + mod.horarios.length, 0);
 
@@ -78,15 +81,17 @@ export default function MonitorHorarios() {
         </div>
         <form onSubmit={salvar} className="form-grid">
           <label className="campo-painel">Modalidade
-            <select value={ficha.modId} required disabled={Boolean(edicao)} onChange={e => preencher({
-              ...ficha, modId: e.target.value, categoria: 'Geral'
-            })}>
+            <select value={ficha.modId} required disabled={Boolean(edicao)} onChange={e => {
+              const modId = e.target.value;
+              const mod = modalidades.find(item => String(item._id) === modId);
+              preencher({ ...ficha, modId, categoria: mod?.permiteGeral === false ? mod.submodalidades[0]?.nome || '' : 'Geral' });
+            }}>
               <option value="">Selecione</option>
               {modalidades.map(mod => <option key={mod._id} value={mod._id}>{mod.nome}</option>)}
             </select>
           </label>
           <label className="campo-painel">Formato de participação
-            <select value={ficha.categoria} disabled={!ficha.modId} onChange={e => atualizar('categoria', e.target.value)}>
+            <select value={ficha.categoria} required disabled={!ficha.modId} onChange={e => atualizar('categoria', e.target.value)}>
               {formatos.map(nome => <option key={nome}>{nome}</option>)}
             </select>
           </label>

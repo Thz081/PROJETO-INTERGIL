@@ -106,14 +106,19 @@ export default function MonitorLinks() {
       <h3>Onde publicar</h3>
       <div className="form-grid">
         <label className="campo-painel">Modalidade
-          <select value={modId} onChange={e => { setModId(e.target.value); setFormato('Geral'); }}>
+          <select value={modId} onChange={e => {
+            const id = e.target.value;
+            const mod = modalidades.find(item => String(item._id) === id);
+            setModId(id);
+            setFormato(mod?.permiteGeral === false ? mod.submodalidades[0]?.nome || '' : 'Geral');
+          }}>
             <option value="">Selecione sua modalidade</option>
             {modalidades.map(item => <option key={item._id} value={item._id}>{item.nome}</option>)}
           </select>
         </label>
         <label className="campo-painel">Formato de participação
           <select value={formato} disabled={!modalidade} onChange={e => setFormato(e.target.value)}>
-            <option value="Geral">Geral · toda a modalidade</option>
+            {modalidade?.permiteGeral !== false && <option value="Geral">Geral · toda a modalidade</option>}
             {modalidade?.submodalidades.map(opcao => <option key={opcao.nome}>{opcao.nome}</option>)}
           </select>
         </label>

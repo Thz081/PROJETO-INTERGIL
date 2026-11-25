@@ -93,6 +93,7 @@ export function PortalEquipe({ monitor = false }) {
           aria-describedby={erro?.campo === chave ? id + '-erro' : undefined}/>
       </div>
       <CampoSenha erro={erro?.campo === 'senha' ? id + '-erro' : undefined}/>
+      {monitor && <p>Se você é aluno, use a mesma senha do portal do aluno. Cadastre a senha pelo Primeiro acesso.</p>}
       <ErroAcesso erro={erro} id={id + '-erro'}/>
       <EnviarAcesso ocupado={ocupado}>Entrar</EnviarAcesso>
     </form>

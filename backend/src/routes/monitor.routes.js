@@ -29,7 +29,7 @@ router.post('/links', updateLink);
 router.post(
   '/upload-edital', 
  uploadGeral.single('edital'), verificarPDF,// 'upload' agora é a função certa
-  uploadEdital, uploadChaveamento, escopoMonitor
+  uploadEdital
 );
   
 router.post('/upload-chaveamento', uploadGeral.single('chaveamento'), verificarPDF, uploadChaveamento);

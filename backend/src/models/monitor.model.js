@@ -13,8 +13,9 @@ const monitorSchema = new mongoose.Schema(
         },
         senha: {
             type: String,
-            required: true,
+            required() { return !this.alunoId; },
         },
+        alunoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Aluno' },
         modalidadeId: {
             type: String,
         },
@@ -27,6 +28,11 @@ const monitorSchema = new mongoose.Schema(
                 message: 'Atribua até três modalidades distintas.'
             }
         },
+        restricoesFormato: [{
+            _id: false,
+            modalidadeId: { type: Number, required: true },
+            formatos: { type: [String], required: true }
+        }],
         role: {
             type: String,
             default: 'monitor',

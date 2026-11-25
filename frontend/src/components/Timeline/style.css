@@ -152,20 +152,28 @@
   word-break: break-word;
 }
 
-/* ÍCONE DO INSTAGRAM (DESKTOP) */
-.timeline-insta-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 1.4rem;
-  color: #e1306c;
-  opacity: 0; /* Invisível no desktop até o hover */
-  transition: all 0.3s ease;
+.campeao-info-mobile {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: clamp(10px, 2vw, 18px);
 }
-/* No Desktop, cards da esquerda têm ícone na esquerda */
-.timeline-item.left .timeline-insta-icon { right: auto; left: 10px; }
 
-.timeline-content-wrapper.clickable:hover .timeline-insta-icon { opacity: 1; }
+.timeline-insta-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border: 1px solid #69738e;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.timeline-content-wrapper:hover .timeline-insta-icon,
+.timeline-content-wrapper:focus-visible .timeline-insta-icon {
+  border-color: currentColor;
+}
 
 /* PANDEMIA */
 .item-pandemia .timeline-content { border-color: #666; justify-content: center; }
@@ -223,20 +231,4 @@
       align-items: flex-start;
   }
   
-  .campeao-info-mobile {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      width: 100%;
-  }
-
-  /* === A CORREÇÃO DO ÍCONE INSTAGRAM NO MOBILE === */
-  /* Forçamos ele a ficar na DIREITA SUPERIOR, ignorando se o card é left ou right */
-  .timeline-insta-icon {
-      opacity: 1 !important; /* Sempre visível no mobile */
-      top: 10px !important;
-      right: 10px !important; /* Gruda na direita */
-      left: auto !important;  /* Anula qualquer regra de esquerda */
-      font-size: 1.2rem;
-  }
 }

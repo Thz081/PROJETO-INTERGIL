@@ -16,7 +16,7 @@ const Timeline = ({ items }) => {
       </span>
 
       {/* WRAPPER FLEXÍVEL (Para alinhar Logo e Texto) */}
-      <div className="campeao-info-mobile" style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
+      <div className="campeao-info-mobile">
           
           {/* LOGO */}
           {item.logo && item.campeao !== 'PANDEMIA' && (
@@ -38,14 +38,11 @@ const Timeline = ({ items }) => {
               <h3 className="timeline-campeao">{item.campeao}</h3>
             )}
           </div>
-      </div>
 
-      {/* ÍCONE INSTA */}
-      {item.instaUrl && item.instaUrl !== '#' && (
-        <div className="timeline-insta-icon">
-            <FaInstagram />
-        </div>
-      )}
+          {item.instaUrl && item.instaUrl !== '#' && (
+            <span className="timeline-insta-icon" aria-hidden="true"><FaInstagram /></span>
+          )}
+      </div>
     </>
   );
 
@@ -66,6 +63,7 @@ const Timeline = ({ items }) => {
                 href={hasLink ? item.instaUrl : undefined}
                 target={hasLink ? "_blank" : undefined}
                 rel={hasLink ? "noopener noreferrer" : undefined}
+                aria-label={hasLink ? `Instagram de ${item.campeao}, ${item.ano}` : undefined}
                 className={`timeline-content-wrapper ${hasLink ? 'clickable' : ''}`}
               >
                 <div className="timeline-content">

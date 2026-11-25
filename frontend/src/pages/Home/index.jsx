@@ -26,8 +26,8 @@ export default function Home() {
     <section className="capa-armoriar">
       <div className="capa-armoriar-texto">
         <p className="arm-sobrelinha">X Intergil · Movimento Armorial</p>
-        <h1>Armoriar</h1>
-        <p className="capa-armoriar-escola">Jogos interclasse da ETE Advogado José David Gil Rodrigues</p>
+        <h1><img src="/images/marca/armoriar-logotipo.webp" alt="Armoriar" width="384" height="81"/></h1>
+        <p className="capa-armoriar-edicao">INTERGIL 2026</p>
         <div className="capa-armoriar-acoes">
           <Link className="arm-botao" to={encerrada ? '/meu-perfil' : '/inscricao'}>
             {encerrada ? 'Ver minha inscrição' : 'Fazer inscrição'} <FaArrowRight aria-hidden="true"/>

@@ -1,150 +1,58 @@
-import { assetURL } from '../../api';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { FaVolumeMute, FaVolumeUp, FaBars, FaTimes, FaRegUser } from 'react-icons/fa';
+import { assetURL } from '../../api';
+import { useAudio } from '../../context/AudioContext';
+import { useAuth } from '../../context/AuthProvider';
+import { useConfig } from '../../context/ConfigContext';
 import './style.css';
-// Importa a logo padrão como fallback
-const LogoPadrao = '/images/armoriar.png'; 
-import { FaVolumeMute, FaVolumeUp, FaBars, FaTimes, FaUserAstronaut, FaUserTie, FaUserSecret } from 'react-icons/fa'; 
-import { useAudio } from '../../context/AudioContext'; 
-import { useAuth } from '../../context/AuthProvider'; 
-import { useConfig } from '../../context/ConfigContext'; 
 
-const Header = () => {
+const links = [['/', 'Início'], ['/horarios', 'Horários'], ['/momentos', 'Momentos'], ['/historia', 'História']];
+const destinos = { aluno: '/meu-perfil', gestao: '/admin-dashboard', monitor: '/monitor-dashboard' };
+const marcaPadrao = '/images/marca/armoriar-logotipo.webp';
+
+export default function Header() {
   const { isMuted, toggleMute, playClick } = useAudio();
-  const { user } = useAuth(); 
-  const { config } = useConfig(); 
+  const { user } = useAuth();
+  const { config } = useConfig();
+  const [aberto, abrir] = useState(false);
+  const menu = useRef(null);
+  const siteName = config?.siteName || 'Intergil 2026';
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleNavClick = () => {
-    playClick();
-    setIsMobileMenuOpen(false);
-  }
-  
-  const handleToggleMobileMenu = () => {
-    playClick();
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  }
-
-  const handleToggleMute = () => {
-    toggleMute();
-  }
-
-  const logoSrc = assetURL(config?.logoUrl);
-  const siteName = config?.siteName || "INTERGIL 2026";
-
-  // === RENDERIZAÇÃO DOS BOTÕES (Igual ao seu) ===
-  const renderAuthButton = (isMobile = false) => {
-    const baseClass = "nav-link"; 
-    const activeClass = "active";
-
-    if (!user) {
-      return (
-        <NavLink 
-            to="/login" 
-            className={({isActive}) => isActive ? `${baseClass} login-btn ${activeClass}` : `${baseClass} login-btn`} 
-            onClick={handleNavClick}
-        >
-          Login
-        </NavLink>
-      );
+  useEffect(() => {
+    if (!aberto) return;
+    function escapar(evento) {
+      if (evento.key !== 'Escape') return;
+      abrir(false);
+      menu.current.focus();
     }
+    window.addEventListener('keydown', escapar);
+    return () => window.removeEventListener('keydown', escapar);
+  }, [aberto]);
 
-    let linkDestino = "/meu-perfil";
-    let Icone = FaUserAstronaut;
+  function navegar() {
+    playClick();
+    abrir(false);
+  }
 
-    if (user.role === 'gestao') {
-        linkDestino = "/admin-dashboard"; 
-        Icone = FaUserTie;
-    } else if (user.role === 'monitor') {
-        linkDestino = "/monitor-dashboard"; 
-        Icone = FaUserSecret;
-    }
-
-    const primeiroNome = user.nome.split(' ')[0];
-
-    return (
-        <NavLink 
-            to={linkDestino} 
-            className={({isActive}) => isActive ? `${baseClass} profile-btn ${activeClass}` : `${baseClass} profile-btn`} 
-            onClick={handleNavClick}
-        >
-            <Icone style={{ marginRight: '8px' }} />
-            {primeiroNome}
-        </NavLink>
-    );
-  };
-
-  return (
-    <header className="main-header">
-      
-      <Link to="/" className="logo-container" onClick={handleNavClick}>
-        {/* LOGO DINÂMICA COM TRATAMENTO DE ERRO */}
-        <img 
-            src={logoSrc} 
-            alt="Logo Site" 
-            className="header-logo gameon-logo"
-            onError={(e) => {
-                // Se der erro ao carregar (ex: 404), volta para a logo padrão
-                e.target.onerror = null; 
-                e.target.src = LogoPadrao;
-            }} 
-        />
-        <span className="header-title">{siteName}</span>
+  return <header className="main-header arm-header">
+    <div className="arm-header-interno">
+      <Link to="/" className="arm-marca" onClick={navegar} aria-label={siteName + ' · início'}>
+        <img src={config?.headerLogoUrl ? assetURL(config.headerLogoUrl) : marcaPadrao} alt="" width="192" height="40"
+          onError={e => { if (!e.currentTarget.src.endsWith(marcaPadrao)) e.currentTarget.src = marcaPadrao; }}/>
+        <span>{siteName}</span>
       </Link>
-      
-      <nav className="main-nav desktop-nav">
-        <NavLink to="/" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-          Início
-        </NavLink>
-        <NavLink to="/horarios" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-          Horários
-        </NavLink>
-        <NavLink to="/momentos" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-          Momentos
-        </NavLink>
-        <NavLink to="/historia" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-          História
-        </NavLink>
-        
-        <button aria-label={isMuted ? "Ativar som" : "Silenciar"} onClick={handleToggleMute} className="nav-link mute-btn">
-          {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+      <button className="arm-menu" aria-label={aberto ? 'Fechar menu' : 'Abrir menu'} aria-expanded={aberto} aria-controls="arm-navigation"
+        ref={menu} type="button" onClick={() => { playClick(); abrir(!aberto); }}>{aberto ? <FaTimes aria-hidden="true"/> : <FaBars aria-hidden="true"/>}</button>
+      <nav id="arm-navigation" className={aberto ? 'arm-nav aberta' : 'arm-nav'} aria-label="Navegação principal">
+        {links.map(([url, texto]) => <NavLink key={url} to={url} end={url === '/'} onClick={navegar}>{texto}</NavLink>)}
+        <button className="arm-som" type="button" onClick={toggleMute} aria-label={isMuted ? 'Ativar som' : 'Silenciar'}>
+          {isMuted ? <FaVolumeMute aria-hidden="true"/> : <FaVolumeUp aria-hidden="true"/>}
         </button>
-
-        {renderAuthButton(false)}
+        <NavLink className="arm-conta" to={user ? destinos[user.role] || '/meu-perfil' : '/login'} onClick={navegar}>
+          <FaRegUser aria-hidden="true"/>{user?.nome?.split(' ')[0] || 'Entrar'}
+        </NavLink>
       </nav>
-
-      <button aria-label="Menu principal" aria-expanded={isMobileMenuOpen} className="hamburger-btn" onClick={handleToggleMobileMenu}>
-        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
-      </button>
-
-      {isMobileMenuOpen && (
-        <nav className="mobile-nav">
-          <NavLink to="/" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-            Início
-          </NavLink>
-          <NavLink to="/horarios" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-            Horários
-          </NavLink>
-          <NavLink to="/momentos" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-            Momentos
-          </NavLink>
-          <NavLink to="/historia" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} onClick={handleNavClick}>
-            História
-          </NavLink>
-          
-          {renderAuthButton(true)}
-
-          <button aria-label={isMuted ? "Ativar som" : "Silenciar"} onClick={handleToggleMute} className="nav-link mute-btn">
-            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-            <span style={{marginLeft: '10px'}}>
-              {isMuted ? 'Ativar Som' : 'Mutar Som'}
-            </span>
-          </button>
-        </nav>
-      )}
-    </header>
-  );
-};
-
-export default Header;
+    </div>
+  </header>;
+}

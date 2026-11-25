@@ -2,38 +2,50 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaCalendarAlt } from 'react-icons/fa';
 import Leaderboard from '../../components/Leaderboard';
+import ModalidadesCarousel from '../../components/ModalidadesCarousel';
 import api, { assetURL } from '../../api';
 import { useConfig } from '../../context/ConfigContext';
 import './style.css';
 
 export default function Home() {
-  const [mods, setMods] = useState([]);
-  const [falha, setFalha] = useState(false);
+  const [modalidades, definirModalidades] = useState([]);
+  const [estado, definirEstado] = useState('carregando');
+  const [tentativa, tentar] = useState(0);
   const { config } = useConfig();
-  useEffect(() => { api.get('/modalidades').then(r => setMods(r.data)).catch(() => setFalha(true)); }, []);
-  const categorias = [...new Set(mods.map(m => m.categoria || 'Outras modalidades'))];
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get('/modalidades', { signal: controller.signal }).then(({ data }) => {
+      definirModalidades(data);
+      definirEstado('pronto');
+    }).catch(() => { if (!controller.signal.aborted) definirEstado('erro'); });
+    return () => controller.abort();
+  }, [tentativa]);
+
   const encerrada = Date.now() >= Date.parse('2026-12-02T00:00:00-03:00');
   return <div className="edicao-home">
-    <section className="capa">
-      <div className="capa-texto">
-        <p className="kicker">X edição · Movimento Armorial</p>
+    <section className="capa-armoriar">
+      <div className="capa-armoriar-texto">
+        <p className="arm-sobrelinha">X Intergil · Movimento Armorial</p>
         <h1>Armoriar</h1>
-        <p className="capa-sub">{config.siteName || "Intergil 2026"}</p>
-        <p className="capa-escola">Jogos interclasse da ETE Advogado José David Gil Rodrigues<br/>Jaboatão dos Guararapes · Pernambuco</p>
-        <div className="capa-acoes"><Link className="acao" to={encerrada ? '/meu-perfil' : '/inscricao'}>{encerrada ? 'Ver minha inscrição' : 'Fazer inscrição'} <FaArrowRight/></Link>
-        <Link className="acao secundaria" to="/horarios"><FaCalendarAlt/> Horários dos jogos</Link></div>
-        <p className="prazo">{encerrada ? 'Inscrições encerradas' : 'Inscrições até 1º de dezembro'}</p>
-        {config.editalDisponivel && <a href={api.defaults.baseURL + '/edital-geral'}>Baixar edital geral</a>}
+        <p className="capa-armoriar-escola">Jogos interclasse da ETE Advogado José David Gil Rodrigues</p>
+        <div className="capa-armoriar-acoes">
+          <Link className="arm-botao" to={encerrada ? '/meu-perfil' : '/inscricao'}>
+            {encerrada ? 'Ver minha inscrição' : 'Fazer inscrição'} <FaArrowRight aria-hidden="true"/>
+          </Link>
+          <Link className="arm-botao arm-botao-contorno" to="/horarios"><FaCalendarAlt aria-hidden="true"/> Horários dos jogos</Link>
+        </div>
+        <div className="capa-armoriar-info">
+          <span>{encerrada ? 'Inscrições encerradas' : 'Inscrições até 1º de dezembro'}</span>
+          {config.editalDisponivel && <a href={api.defaults.baseURL + '/edital-geral'}>Baixar edital geral</a>}
+        </div>
       </div>
-      <figure><img src={assetURL(config.logoUrl)} alt="Cartaz oficial do X Intergil"/></figure>
+      <img className="capa-armoriar-cartaz" src={assetURL(config.logoUrl)}
+        width="834" height="997" alt="Cartaz oficial do X Intergil com cavalo alado, sol e mandacaru" fetchPriority="high"/>
     </section>
-    <div className="faixa-gravura" aria-hidden="true"/>
-    <section className="indice-modalidades"><p className="kicker">Guia dos jogos</p><h2>Modalidades</h2>
-      {falha && <p>Não foi possível carregar as modalidades.</p>}
-      <div className="indice-grade">{categorias.map(cat => <details key={cat}><summary><img src={assetURL(mods.find(m => (m.categoria || 'Outras modalidades') === cat)?.imgCarrossel || '/images/gravuras/tocha.webp')} alt="" loading="lazy"/><span>{cat}</span></summary><ul>
-        {mods.filter(m => (m.categoria || 'Outras modalidades') === cat).map(m => <li key={m._id}><Link to={'/modalidade/' + m.slug}>{m.nome} ↗</Link></li>)}
-      </ul></details>)}</div>
-    </section>
+    <ModalidadesCarousel modalidades={modalidades} estado={estado} recarregar={() => {
+      definirEstado('carregando');
+      tentar(n => n + 1);
+    }}/>
     <Leaderboard/>
   </div>;
 }

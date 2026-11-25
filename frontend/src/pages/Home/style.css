@@ -1,31 +1,27 @@
-.edicao-home { background: #f7eedb; color: #201b20; padding-bottom: 32px; }
-.capa { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(28px,5vw,90px); align-items:center; max-width:1240px; padding:clamp(34px,5vw,78px) 6%; margin:auto; }
-.capa figure { margin:0 auto; width:min(100%,365px); }
-.capa figure img { width:100%; display:block; }
-.kicker { text-transform:uppercase; letter-spacing:.17em; font-size:.76rem; font-weight:800; }
-.capa h1 { margin:.15em 0 0; line-height:.98; letter-spacing:-.065em; font-weight:900; font-size:clamp(4.2rem,8.5vw,8rem); color:#201b20; }
-.capa-sub { font:italic 600 clamp(1.8rem,3.4vw,3rem) var(--font-title); color:#a33c1a; }
-.capa-escola { border-left:3px solid #ba5a24; padding-left:14px; margin:1.6rem 0; line-height:1.6; max-width:31rem; }
-.capa-acoes { display:flex; flex-wrap:wrap; gap:10px; }
-.acao { display:inline-flex; align-items:center; justify-content:center; gap:12px; border:2px solid #201b20; padding:13px 18px; background:#a43517; color:white; text-decoration:none; font:700 1rem var(--font-text); cursor:pointer; box-shadow:3px 3px #201b20; }
-.acao:hover { background:#822c14; color:white; }
-.acao.secundaria { background:transparent; color:#201b20; }
-.acao:disabled { opacity:.55; cursor:default; }
-.prazo { font-size:.87rem; margin:1rem 0; }
-.faixa-gravura { height:14px; border-block:3px solid #221b20; background:repeating-linear-gradient(52deg,#a33c1a 0 10px,#f3d7a6 10px 15px,#221b20 15px 21px,#f3d7a6 21px 26px); }
-.indice-modalidades { max-width:1240px; padding:42px 6% 12px; margin:auto; }
-.indice-modalidades h2,.form-edicao h1 { font: bold clamp(2.4rem,5vw,4rem) var(--font-title); letter-spacing:-.04em; color:#211b20; }
-.indice-grade { display:grid; grid-template-columns:repeat(3,1fr); gap:0 2rem; margin-top:20px; align-items:start; }
-.indice-grade details { border-top:1px solid #ad9377; padding:14px 0; }
-.indice-grade summary,.form-edicao summary { cursor:pointer; font-weight:700; }
-.indice-grade ul { list-style:none; padding-left:1rem; }
-.indice-grade a { color:#793218; display:inline-block; padding:5px 0; }
-.edicao-home .leaderboard-container { background:#2c2324; color:#fff7e4; }
-@media(max-width:760px){.indice-grade{grid-template-columns:repeat(2,1fr)}.capa{grid-template-columns:1fr .72fr;gap:15px}}
-@media(max-width:580px){.capa{grid-template-columns:1fr; padding:28px 6%}.capa figure{width:min(60vw,230px)}.capa h1{font-size:clamp(4.2rem,18vw,6rem)}.capa-escola{margin:1rem 0}.indice-grade{grid-template-columns:1fr}}
-.indice-grade summary {display:flex;align-items:center;gap:14px;list-style:none;}
-.indice-grade summary::-webkit-details-marker {display:none;}
-.indice-grade summary:after {content:'+';margin-left:auto;color:#963c19;font-size:1.3rem;}
-.indice-grade details[open] summary:after {content:'−';}
-.indice-grade summary img {width:62px;height:62px;object-fit:cover;border:1px solid #bc986e;}
-.indice-grade ul {padding:8px 0 4px 2px;}
+.edicao-home {background:var(--arm-tinta);color:var(--arm-papel);font-family:var(--arm-text);padding-bottom:20px;}
+.capa-armoriar {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.62fr);align-items:center;gap:clamp(16px,6vw,86px);max-width:1280px;margin:auto;padding:clamp(36px,5vw,64px) var(--arm-margem);background:linear-gradient(90deg,#161b2df0 0%,#161b2d9c 48%,#161b2d00 100%),url('/images/marca/moldura-armorial.webp') center/100% 100% no-repeat;}
+.arm-sobrelinha {font:700 .76rem/1.55 var(--arm-text);letter-spacing:.12em;text-transform:uppercase;color:var(--arm-laranja);}
+.edicao-home .capa-armoriar h1 {color:var(--arm-papel);font:400 clamp(4rem,9.7vw,9rem)/1 var(--arm-display);letter-spacing:-.045em;margin:9px 0 13px;}
+.capa-armoriar-escola {max-width:30rem;font-size:clamp(.92rem,1.4vw,1.14rem);line-height:1.65;}
+.capa-armoriar-acoes {display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+.arm-botao {display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--arm-laranja);color:#181a2a;border:1px solid var(--arm-laranja);border-radius:4px;padding:11px 15px;min-height:46px;cursor:pointer;text-decoration:none;font:700 .85rem/1.25 var(--arm-text);}
+.arm-botao:hover {background:#ffab6d;border-color:#ffab6d;}
+.arm-botao:disabled {opacity:.6;cursor:default;}
+.arm-botao-contorno {background:#171c31;color:var(--arm-papel);border-color:#a39f98;}
+.arm-botao-contorno:hover {background:#29334e;border-color:var(--arm-turquesa);}
+.capa-armoriar-info {display:flex;gap:8px 16px;flex-wrap:wrap;margin-top:14px;font-size:.78rem;color:#ddd2bd;}
+.capa-armoriar-info a {color:var(--arm-turquesa);text-underline-offset:3px;}
+.capa-armoriar-cartaz {display:block;width:min(100%,270px);height:auto;aspect-ratio:834/997;object-fit:contain;justify-self:center;filter:drop-shadow(7px 12px 0 #090c21a6);}
+.edicao-home .leaderboard-container {background:#20263d;border-color:#806f65;color:var(--arm-papel);margin-top:12px;}
+.edicao-home .leaderboard-container h2 {font-family:var(--arm-display);color:var(--arm-papel);}
+@media(max-width:640px){
+  .capa-armoriar{grid-template-columns:minmax(0,1fr) minmax(0,115px);gap:14px;padding-block:38px;background-size:auto,cover;}
+  .capa-armoriar-texto{display:contents;}
+  .capa-armoriar .arm-sobrelinha,.edicao-home .capa-armoriar h1{grid-column:1/-1;}
+  .edicao-home .capa-armoriar h1{margin:0;font-size:clamp(3.4rem,13vw,5.7rem);}
+  .capa-armoriar-escola{grid-column:1;grid-row:3;line-height:1.5;}
+  .capa-armoriar-acoes{grid-column:1;grid-row:4;margin-top:0;gap:7px;}
+  .capa-armoriar-info{grid-column:1/-1;margin-top:0;}
+  .capa-armoriar-cartaz{grid-column:2;grid-row:3/5;align-self:center;}
+}
+@media(max-width:390px){.capa-armoriar{grid-template-columns:minmax(0,1fr) minmax(0,97px)}.capa-armoriar-acoes .arm-botao{padding-inline:9px;}}

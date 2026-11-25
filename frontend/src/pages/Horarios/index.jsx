@@ -19,7 +19,7 @@ const Horarios = () => {
             try {
                 setLoading(true);
                 const response = await api.get('/modalidades');
-                
+
                 // Filtra apenas as que têm horários cadastrados
                 const modalidadesFiltradas = response.data.filter(
                     (mod) => mod.horarios && mod.horarios.length > 0
@@ -52,7 +52,7 @@ const Horarios = () => {
         if (modalidadesComHorarios.length === 0) {
             return <p className="horarios-status-text">Nenhum horário disponível no momento.</p>;
         }
-        
+
         return (
             <div className="horarios-acordeao">
                 {modalidadesComHorarios.map((mod) => {
@@ -65,16 +65,19 @@ const Horarios = () => {
                                 className={`acordeao-header-horario ${idAberto === mod._id ? 'aberta' : ''}`}
                                 onClick={() => toggleAccordion(mod._id)}
                             >
-                                <img 
-                                    src={imgSrc} 
-                                    alt={mod.nome} 
-                                    className="header-img-horario" 
-                                    onError={(e)=>{e.target.src="/images/armoriar.png"}}
+                                <img
+                                    src={imgSrc}
+                                    alt=""
+                                    className="header-img-horario"
+                                    width="50" height="50" loading="lazy"
+                                    onError={e => {
+                                        if (!e.currentTarget.src.endsWith('/armoriar.png')) e.currentTarget.src = '/images/armoriar.png';
+                                    }}
                                 />
                                 <span className="header-titulo-horario">{mod.nome}</span>
-                                <FaChevronDown />
+                                <FaChevronDown aria-hidden="true"/>
                             </button>
-                            
+
                             {idAberto === mod._id && (
                                 <div className="acordeao-conteudo-horario">
                                     <table className="horarios-tabela">
@@ -113,10 +116,10 @@ const Horarios = () => {
                 <p className="horarios-subtitulo">
                     Sexta-feira na quadra: esportes com os professores das 10h30 às 12h e premiação às 13h.
                 </p>
-                
+
                 <p className="programacao-link"><a href="/programacao/intergil-2026.xlsx" download>Baixar a programação completa com os confrontos</a></p>
                 {renderConteudo()}
-                
+
             </div>
         </div>
     );

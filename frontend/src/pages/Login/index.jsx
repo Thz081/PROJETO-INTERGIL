@@ -1,52 +1,82 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMaskInput } from 'react-imask';
 import { useAuth } from '../../context/AuthProvider';
+import { CampoSenha, EnviarAcesso, ErroAcesso, PortalAcesso, validarCampos } from '../../components/PortalAcesso';
 import api from '../../api';
-import './style.css';
+
+const fases = {
+  entrar: ['Entrar', 'Entrar'],
+  verificar: ['Primeiro acesso', 'Verificar matrícula'],
+  ativar: ['Criar sua senha', 'Concluir primeiro acesso']
+};
 
 export default function Login() {
   const { iniciarSessaoAluno } = useAuth();
   const navigate = useNavigate();
-  const [modo, setModo] = useState('entrar'), [ocupado, setOcupado] = useState(false);
-  const [erro, setErro] = useState(''), [data, setData] = useState(''), [ticket, setTicket] = useState('');
-  const [mostrar, setMostrar] = useState(false);
-  function mudar(m) { setErro(''); setData(''); setTicket(''); setMostrar(false); setModo(m); }
-  async function enviar(e) {
-    e.preventDefault();
-    const campos = Object.fromEntries(new FormData(e.currentTarget));
-    setErro(''); setOcupado(true);
-    try {
-      if (modo === 'verificar') {
-        const r = await api.post('/auth/primeiro-acesso/verificar', { n_inscricao: campos.matricula, data_nascimento: data });
-        setTicket(r.data.comprovante); setModo('ativar'); return;
-      }
-      const r = modo === 'ativar' ? await api.post('/auth/primeiro-acesso/ativar', { ...campos, comprovante: ticket }) :
-        await api.post('/auth/login', campos);
-      iniciarSessaoAluno(r.data); navigate('/inscricao', { replace: true });
-    } catch (err) { setErro(err.response?.data?.message || 'Falha na conexão. Tente novamente.'); }
-    finally { setOcupado(false); }
+  const id = useId();
+  const [fase, definirFase] = useState('entrar');
+  const [ocupado, enviar] = useState(false);
+  const [erro, definirErro] = useState(null);
+  const [data, definirData] = useState('');
+  const [comprovante, definirComprovante] = useState('');
+
+  function trocarFase(novaFase) {
+    definirErro(null);
+    definirData('');
+    definirComprovante('');
+    definirFase(novaFase);
   }
-  return <div className="login-page-wrapper"><div className="login-container acesso-aluno">
-    <p className="kicker">Portal do aluno</p>
-    <h1>{modo === 'entrar' ? 'Entrar' : modo === 'verificar' ? 'Primeiro acesso' : 'Criar sua senha'}</h1>
-    <form key={modo} className="login-form" onSubmit={enviar}>
-      {modo === 'verificar' ? <>
-        <label>Matrícula<input name="matricula" inputMode="numeric" pattern="[0-9]+" required autoComplete="username"/></label>
-        <label>Data de nascimento<IMaskInput mask="00/00/0000" inputMode="numeric" value={data} onAccept={valor => setData(valor)} required placeholder="DD/MM/AAAA"/></label>
-      </> : <>
-        {modo === 'entrar' ? <label>E-mail ou matrícula<input name="login" autoComplete="username" required/></label> :
-          <label>Seu e-mail<input type="email" name="email" autoComplete="email" required/></label>}
-        <label>{modo === 'ativar' ? 'Crie uma senha de pelo menos 6 caracteres' : 'Senha'}
-          <input type={mostrar ? 'text' : 'password'} name="senha" autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} minLength={modo === 'ativar' ? 6 : undefined} required/></label>
-        <label className="revelar"><input type="checkbox" checked={mostrar} onChange={e => setMostrar(e.target.checked)}/> Mostrar senha</label>
-      </>}
-      {erro && <p role="alert">{erro}</p>}
-      <button className="acao" disabled={ocupado}>{ocupado ? 'Aguarde…' : modo === 'entrar' ? 'Entrar' : modo === 'verificar' ? 'Verificar matrícula' : 'Concluir primeiro acesso'}</button>
-    </form>
-    <button disabled={ocupado} className="alternar-acesso" onClick={() => mudar(modo === 'entrar' ? 'verificar' : 'entrar')}>
-      {modo === 'entrar' ? 'Primeiro acesso · cadastrar senha' : 'Voltar para entrar'}
+
+  async function autenticar(evento) {
+    evento.preventDefault();
+    if (ocupado) return;
+    const formulario = evento.currentTarget;
+    const invalido = validarCampos(formulario);
+    definirErro(invalido);
+    if (invalido) return;
+    const campos = Object.fromEntries(new FormData(formulario));
+    enviar(true);
+    try {
+      if (fase === 'verificar') {
+        const resposta = await api.post('/auth/primeiro-acesso/verificar', { n_inscricao: campos.matricula, data_nascimento: data });
+        definirComprovante(resposta.data.comprovante);
+        definirFase('ativar');
+        return;
+      }
+      const resposta = fase === 'ativar' ? await api.post('/auth/primeiro-acesso/ativar', { ...campos, comprovante }) :
+        await api.post('/auth/login', campos);
+      iniciarSessaoAluno(resposta.data);
+      navigate('/inscricao', { replace: true });
+    } catch (falha) { definirErro(falha.response?.data?.message || 'Falha na conexão. Tente novamente.'); }
+    finally { enviar(false); }
+  }
+
+  const campos = fase === 'verificar' ? [['matricula', 'Matrícula', 'text', 'numeric', 'username', '[0-9]+'],
+    ['nascimento', 'Data de nascimento']] : fase === 'ativar' ?
+    [['email', 'Seu e-mail', 'email', undefined, 'email']] :
+    [['login', 'E-mail ou matrícula', 'text', undefined, 'username']];
+  return <PortalAcesso perfil="Aluno" titulo={fases[fase][0]} rodape={<>
+    <button disabled={ocupado} className="portal-trocar" type="button" onClick={() => trocarFase(fase === 'entrar' ? 'verificar' : 'entrar')}>
+      {fase === 'entrar' ? 'Primeiro acesso · cadastrar senha' : 'Voltar para entrar'}
     </button>
-    <nav className="admin-links-container"><Link to="/login-monitor">Monitoria</Link><Link to="/login-admin">Gestão</Link></nav>
-  </div></div>;
+    <nav className="portal-perfis" aria-label="Portais da equipe"><Link to="/login-monitor">Monitoria</Link><Link to="/login-admin">Gestão</Link></nav>
+  </>}>
+    <form key={fase} className="portal-form" noValidate onSubmit={autenticar}>
+      {campos.map(([nome, rotulo, tipo, inputMode, autoComplete, pattern]) => {
+        const atributos = { id: id + '-' + nome, name: nome, required: true,
+          'aria-invalid': erro?.campo === nome,
+          'aria-describedby': erro?.campo === nome ? id + '-erro' : undefined };
+        return <div key={nome} className="portal-campo">
+          <label htmlFor={atributos.id}>{rotulo}</label>
+          {nome === 'nascimento' ? <IMaskInput {...atributos} mask="00/00/0000" pattern={String.raw`[0-9]{2}\/[0-9]{2}\/[0-9]{4}`}
+            inputMode="numeric" autoComplete="bday" value={data} onAccept={valor => definirData(valor)} placeholder="DD/MM/AAAA"/> :
+            <input {...atributos} type={tipo} inputMode={inputMode} autoComplete={autoComplete} pattern={pattern}/>}
+        </div>;
+      })}
+      {fase !== 'verificar' && <CampoSenha nova={fase === 'ativar'} erro={erro?.campo === 'senha' ? id + '-erro' : undefined}/>}
+      <ErroAcesso erro={erro} id={id + '-erro'}/>
+      <EnviarAcesso ocupado={ocupado}>{fases[fase][1]}</EnviarAcesso>
+    </form>
+  </PortalAcesso>;
 }

@@ -1,15 +1,8 @@
-import { assetOrigin } from '../../api';
+import api, { assetURL } from '../../api';
 import React, { useState, useEffect } from 'react';
 import './style.css'; 
 import Timeline from '../../components/Timeline'; 
 import { FaInstagram, FaEnvelope } from 'react-icons/fa';
-import api from '../../api'; 
-
-// === CONFIGURAÇÃO CRÍTICA PARA O CELULAR ===
-// Se você mudar de Wi-Fi, lembre de atualizar esse IP!
-
-const BASE_URL = assetOrigin;
-
 const profEli = {
   nome: 'Profª ELI BATISTA',
   instagram: 'https://www.instagram.com/elibatista5/',
@@ -29,19 +22,10 @@ const Historia = () => {
         const res = await api.get('/hall'); 
         
         const formattedData = res.data.map(item => {
-            let logoFinal = '/images/armoriar.png'; // Fallback
-
-            if (item.logo_path) {
-                // Se o caminho vier do banco tipo "/uploads/foto.png", a gente junta com o IP
-                // O replace garante que não fique barra duplicada
-                const pathLimpo = item.logo_path.startsWith('/') ? item.logo_path : `/${item.logo_path}`;
-                logoFinal = `${BASE_URL}${pathLimpo}`;
-            }
-
             return {
                 ano: item.ano.toString(),
                 campeao: item.turma,
-                logo: logoFinal, // URL completa (http://192...) para o celular entender
+                logo: assetURL(item.logo_path),
                 instaUrl: (item.instagram && item.instagram.length > 5) ? item.instagram : null 
             };
         });
@@ -60,7 +44,7 @@ const Historia = () => {
   return (
     <div className="historia-container">
       <div className="historia-origem">
-        <h1 className="historia-titulo-pagina">A ORIGEM</h1>
+        <h1 className="historia-titulo-pagina">A origem do Intergil</h1>
         {textoHistoria.split('\n\n').map((paragrafo, index) => (
           <p key={index} className="historia-paragrafo">{paragrafo}</p>
         ))}

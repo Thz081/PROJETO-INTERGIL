@@ -3,31 +3,55 @@
   --text-primary:#2d2223;--text-secondary:#61534a;--neon-cyan:#6f321b;--neon-purple:#a98760;--golden-yellow:#853919;--background-dark:#fff7e8;
   background:#f7eedb;color:var(--text-primary);
 }
-.App .galeria-edicao {max-width:none;padding-inline:max(6vw,calc((100vw - 1050px)/2));}
-.App :is(.horarios-container,.perfil-container,.detalhe-container,.historia-origem,.ranking-page-container .leaderboard-container) {
-  background:#fff8e8;border:0;border-top:6px double #a5693c;border-radius:0;box-shadow:none;padding:clamp(16px,4vw,42px);
+/* Páginas públicas de leitura usam papel sobre o fundo de tinta. */
+.main-content :is(.horarios-wrapper,.ranking-page-container,.perfil-wrapper,.historia-container,.galeria-edicao) {
+  --font-title:var(--arm-display);
+  --font-text:var(--arm-text);
+  font-family:var(--arm-text);
+  background:var(--arm-tinta);
+  color:var(--arm-papel);
 }
+.App :is(.horarios-container,.perfil-container,.historia-origem,.ranking-page-container .leaderboard-container) {
+  --text-primary:#191e30;
+  --text-secondary:#504b56;
+  --neon-cyan:#713329;
+  --golden-yellow:var(--arm-vinho);
+  background:#fff3da;
+  color:var(--text-primary);
+  border:0;
+  border-top:5px solid var(--arm-laranja);
+  border-radius:6px;
+  box-shadow:none;
+  padding:clamp(16px,4vw,42px);
+}
+.App .galeria-edicao {max-width:none;padding-inline:max(var(--arm-margem),calc((100vw - 1050px)/2));}
 .App .historia-container {display:flow-root;}
-.App .historia-paragrafo {color:#35282a;text-align:left;font:1.08rem/1.75 var(--font-text);}
-.App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.detalhe-titulo,.ranking-page-container h2,.galeria-edicao h1){
-  font:700 clamp(2.15rem,4.5vw,3.8rem)/1.08 var(--font-title);letter-spacing:-.045em;color:#302124;
+.App .historia-paragrafo {color:#252539;text-align:left;font:1rem/1.8 var(--arm-text);}
+.App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.ranking-page-container h2,.galeria-edicao h1) {
+  font:400 clamp(2rem,4.4vw,3.55rem)/1.16 var(--arm-display);
+  letter-spacing:-.035em;color:var(--arm-tinta);
 }
-.App .historia-contato {background:#352729;border:0;border-top:5px double #c69665;border-radius:0;box-shadow:none;}
+.App :is(.timeline-titulo,.galeria-edicao h1) {color:var(--arm-papel);}
+.App .historia-contato {background:#222941;border:1px solid #69738e;border-top:4px solid var(--arm-laranja);border-radius:6px;box-shadow:none;}
 .App .historia-contato::before {display:none;}
-.App .timeline-content {background:#352729;border-radius:2px;}
+.App .timeline-content {background:#222941;border-color:#69738e;border-radius:5px;}
+.App .timeline-container .timeline-campeao {color:var(--arm-papel);}
+.App .timeline-container .timeline-insta-icon {opacity:1;color:var(--arm-turquesa);}
+.App .timeline-container .timeline-campeao-pandemia {color:#d1c8b8;}
 .App .horarios-acordeao {gap:0;}
-.App .acordeao-item-horario {border:0;border-bottom:1px solid #bfa68a;border-radius:0;}
-.App .acordeao-header-horario {border:0;background:transparent;padding:12px 4px;}
+.App .acordeao-item-horario {border:0;border-bottom:1px solid #c9ae8d;border-radius:0;}
+.App .acordeao-header-horario {border:0;background:transparent;padding:11px 4px;gap:12px;}
+.App .header-titulo-horario {font:600 clamp(.9rem,2vw,1.12rem) var(--arm-text);}
 .App .acordeao-header-horario.aberta,.App .acordeao-header-horario:hover {background:#ecdcc3;}
-.App .header-img-horario {border:1px solid #a78358;border-radius:2px;}
+.App .header-img-horario {border:1px solid #a78358;border-radius:4px;margin:0;}
+.App .acordeao-conteudo-horario {background:#f8e8cb;}
 .App .horarios-subtitulo {margin:10px 0 16px;}
-.App .programacao-link a {color:#763719;}
+.App .programacao-link a {color:#763719;text-underline-offset:4px;}
 .App .perfil-icone-gigante {font-size:44px;}
-.App .perfil-card {background:#f7ecd8;border-color:#c9ae8d;border-radius:0;}
+.App .perfil-card {background:#f7ecd8;border-color:#c9ae8d;border-radius:4px;}
 .App .perfil-container .btn-cancelar-inscricao,.App .perfil-logout-btn {color:#87351e!important;border-color:#a26b4b!important;}
-.App .detalhe-imagem[src*="/gravuras/"] {border-radius:0;}
-.App .submodalidade-item {background:#f3e7d1;border-bottom:1px solid #bda688;}
 .App .galeria-edicao .visor-momento h2 {color:#f9edda;}
+.App .grade-momentos button {border-radius:5px;overflow:hidden;}
 .App .admin-menu-link.active {color:#241c1a;}
 @media(max-width:600px){
  .App .historia-origem {margin:20px auto;}
@@ -41,3 +65,9 @@
   .admin-card :is(.form-grid,.form-grid-modalidade)>*{min-width:0;max-width:100%;grid-column:1;}
   .admin-card .admin-input {width:100%;min-width:0;}
 }
+.form-edicao .acao { display:inline-flex; align-items:center; justify-content:center; gap:12px; border:2px solid #201b20; padding:13px 18px; background:#a43517; color:white; text-decoration:none; font:700 1rem var(--font-text); cursor:pointer; box-shadow:3px 3px #201b20; }
+.form-edicao .acao:hover { background:#822c14; color:white; }
+.form-edicao .acao:disabled { opacity:.55; cursor:default; }
+.form-edicao h1 { font: bold clamp(2.4rem,5vw,4rem) var(--font-title); letter-spacing:-.04em; color:#211b20; }
+.form-edicao .kicker {text-transform:uppercase;letter-spacing:.17em;font-size:.76rem;font-weight:800;}
+.form-edicao summary {cursor:pointer;font-weight:700;}

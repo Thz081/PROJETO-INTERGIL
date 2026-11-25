@@ -1,0 +1,24 @@
+.portal-armoriar {background:var(--arm-tinta);color:var(--arm-papel);font-family:var(--arm-text);min-height:65vh;padding:clamp(25px,5vw,64px) var(--arm-margem);}
+.portal-moldura {display:grid;grid-template-columns:minmax(0,.74fr) minmax(0,1fr);max-width:960px;margin:auto;border:1px solid #726e83;border-radius:8px;overflow:hidden;background:#20253c;}
+.portal-cartaz {display:grid;place-items:center;padding:32px 24px;background:linear-gradient(#161b2d30,#161b2d10),url('/images/marca/moldura-armorial.webp') center/cover;}
+.portal-cartaz img {display:block;width:min(100%,260px);height:auto;filter:drop-shadow(5px 9px 0 #090c21b0);}
+.portal-conteudo {padding:clamp(22px,5vw,52px);}
+.portal-conteudo h1 {font:400 clamp(2.05rem,4.3vw,3.2rem)/1.13 var(--arm-display);color:var(--arm-papel);letter-spacing:-.035em;margin:5px 0 21px;overflow-wrap:anywhere;}
+.portal-form {display:grid;gap:15px;}
+.portal-campo {display:grid;gap:5px;min-width:0;}
+.portal-campo label {font-weight:600;font-size:.89rem;}
+.portal-campo small {font-size:.76rem;color:#e2d7c4;}
+.portal-campo input {padding:10px 12px;min-height:46px;width:100%;min-width:0;border:1px solid #a6a0ae;background:#14192c;color:#fff9ec;border-radius:4px;font:400 1rem var(--arm-text);color-scheme:dark;}
+.portal-campo input[aria-invalid="true"] {border-color:#ffad9a;}
+.portal-campo input::placeholder{color:#cbc6ce;}
+.portal-senha {display:grid;grid-template-columns:minmax(0,1fr) 45px;gap:6px;}
+.portal-senha button {display:grid;place-items:center;background:#262e49;color:var(--arm-papel);border:1px solid #a6a0ae;border-radius:4px;cursor:pointer;font-size:1rem;}
+.portal-senha button:hover {background:#354562;}
+.portal-enviar {justify-content:space-between;margin-top:2px;}
+.portal-erro {border-left:3px solid #ffa195;background:#3c293e;color:#ffe6da;padding:8px 10px;font-size:.85rem;}
+.portal-rodape {display:grid;gap:14px;margin-top:18px;padding-top:15px;border-top:1px solid #686b81;font-size:.85rem;}
+.portal-rodape a,.portal-trocar {color:var(--arm-turquesa);text-decoration:underline;text-underline-offset:4px;}
+.portal-trocar {background:none;border:0;padding:0;text-align:start;justify-self:start;font:600 .85rem var(--arm-text);cursor:pointer;}
+.portal-perfis {display:flex;flex-wrap:wrap;gap:6px 16px;}
+.portal-perfis a {display:inline-flex;align-items:center;min-height:40px;}
+@media(max-width:640px){.portal-moldura{display:block;}.portal-cartaz{display:none;}.portal-conteudo{padding:22px;}}

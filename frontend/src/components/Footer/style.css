@@ -37,4 +37,7 @@
   transform: scale(1.2); /* Efeito de "saltar" */
   text-shadow: none;
 }
-         
+         .App .main-footer {margin-top:0;background:#101526;border-top:1px solid #57617e;box-shadow:none;}
+.main-footer .footer-content p {font-family:var(--arm-text);color:#f1e2c6;}
+.main-footer .footer-content .copyright {color:#beaeb0;}
+.main-footer .social-link {color:var(--arm-turquesa);display:inline-grid;place-items:center;min-height:44px;min-width:44px;}

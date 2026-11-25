@@ -72,23 +72,19 @@ const AdminListaInscricoes = () => {
   // === FUNÇÃO DE EXPORTAR EXCEL ===
   const exportarExcel = async () => {
     const XLSX = await import('xlsx');
-    const dadosFormatados = inscricoes.flatMap(inscricao => {
+    const dadosFormatados = inscricoes.map(inscricao => {
       const modalidadesNomes = inscricao.modalidades
         .map(cod => traduzirEscolha(cod))
         .join(', '); 
 
-      const linha = {
+      return {
         "Turma": inscricao.aluno?.turma || "N/A",
-        "Sala representada": inscricao.visitante?.turma || "",
-        "Modalidade por outra sala": (inscricao.visitante?.codigos || []).map(traduzirEscolha).join(", "),
         "Aluno": inscricao.aluno?.nome || "Deletado",
         "Matrícula": inscricao.aluno?.n_inscricao || "N/A",
         "Inscrições": modalidadesNomes,
         "Pontos": inscricao.pontuacaoTotal,
         "Data": new Date(inscricao.data_inscricao).toLocaleDateString('pt-BR')
       };
-      const externa = salas.find(s => s.turma.replace(/[^1-3ABDSM]/gi, '') === inscricao.visitante?.turma);
-      return externa ? [linha, { ...linha, Turma: externa.turma, Inscrições: linha['Modalidade por outra sala'] }] : [linha];
     });
 
     dadosFormatados.sort((a, b) => {
@@ -143,11 +139,6 @@ const AdminListaInscricoes = () => {
         grupos[turma] = [];
       }
       grupos[turma].push(inscricao);
-      const destino = salas.find(s => s.turma.replace(/[^1-3ABDSM]/gi, '') === inscricao.visitante?.turma);
-      if (destino) {
-        const nome = normalizeTurma(destino.turma);
-        (grupos[nome] ||= []).push({ ...inscricao, modalidades: inscricao.visitante.codigos });
-      }
     });
     const turmasOrdenadas = Object.keys(grupos).sort();
     const resultadoOrdenado = {};
@@ -155,7 +146,7 @@ const AdminListaInscricoes = () => {
       resultadoOrdenado[turma] = grupos[turma];
     });
     return resultadoOrdenado;
-  }, [inscricoes, salas]);
+  }, [inscricoes]);
 
   
   if (loading) {
@@ -227,7 +218,7 @@ const AdminListaInscricoes = () => {
                         </div>
                         <div className="aluno-inscricoes">
                           {inscricao.modalidades.map((codigo, idx) => (
-                            <li key={idx}>{traduzirEscolha(codigo)} {inscricao.visitante?.codigos?.includes(codigo) && " · por " + inscricao.visitante.turma}</li>
+                            <li key={idx}>{traduzirEscolha(codigo)}</li>
                           ))}
                         </div>
                         <div className="aluno-pontos">

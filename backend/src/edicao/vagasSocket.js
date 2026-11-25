@@ -12,12 +12,12 @@ function conectarVagas(server) {
     socket.once('close', () => clearTimeout(prazo));
     socket.once('message', async raw => {
       try {
-        const { token, destino } = JSON.parse(raw);
+        const { token } = JSON.parse(raw);
         const user = jwt.verify(token, process.env.JWT_SECRET);
         if (user.role !== 'aluno' || user.versaoAcesso == null) throw new Error();
         const aluno = await Aluno.findOne({ _id: user.id, ativo: { $ne: false }, versaoAcesso: user.versaoAcesso }).select('turma');
-        if (!aluno || socket.readyState !== WebSocket.OPEN) throw new Error();
-        socket.turmas = new Set([chaveTurma(aluno.turma), chaveTurma(destino)]);
+        if (!aluno?.turma || socket.readyState !== WebSocket.OPEN) throw new Error();
+        socket.turma = chaveTurma(aluno.turma);
         clearTimeout(prazo);
         socket.send('atualizar');
       } catch { socket.close(1008, 'Sessão inválida'); }
@@ -26,9 +26,9 @@ function conectarVagas(server) {
   // O change stream só publica transações confirmadas e funciona com mais de uma API.
   const stream = Controle.watch([{ $match: { 'documentKey._id': 'vagas', operationType: 'update' } }]);
   stream.on('change', evento => {
-    const turmas = evento.updateDescription.updatedFields.aviso?.split('|').slice(1) || [];
+    const turma = evento.updateDescription.updatedFields.aviso?.split('|')[1];
     for (const socket of wss.clients) {
-      if (socket.readyState === WebSocket.OPEN && socket.turmas && turmas.some(t => socket.turmas.has(t)))
+      if (socket.readyState === WebSocket.OPEN && socket.turma && socket.turma === turma)
         socket.send('atualizar');
     }
   });

@@ -9,7 +9,6 @@ const inscricaoSchema = new mongoose.Schema({
     },
     modalidades: [String],
     turmaOrigem: String,
-    visitante: { turma: String, slug: String, codigos: [String] }, 
     pontuacaoTotal: {
         type: Number,
         default: 0
@@ -19,5 +18,6 @@ const inscricaoSchema = new mongoose.Schema({
         default: Date.now
     }
 }, { collection: 'inscricoes' });
+inscricaoSchema.index({ turmaOrigem: 1 });
 
 module.exports = mongoose.model('Inscricao', inscricaoSchema);

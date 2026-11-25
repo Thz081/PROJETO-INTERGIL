@@ -1,11 +1,192 @@
-.form-edicao { max-width:850px; margin:32px auto; padding:clamp(18px,4vw,48px); background:#fbf2df; color:#292024; border-top:8px double #9d401c; }
-.form-edicao h1 { margin:.2em 0; }.form-edicao h2 { color:#813819; margin:1.25em 0 .4em; font-size:1.6rem;letter-spacing:0; }
-.form-edicao details {border-bottom:1px solid #c7b393;}
-.form-edicao summary { padding:12px 0; }
-.form-edicao details p {padding:4px 16px 9px;}
-.escolha {display:flex;gap:12px;align-items:center;min-height:46px;border-bottom:1px dotted #bdac92;cursor:pointer;}
-.escolha small {margin-left:auto;}.escolha:has(input:disabled){color:#726454;}
-.form-edicao input[type=checkbox]{width:18px;height:18px;accent-color:#913f21;}
-.placar-form { position:sticky;top:70px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#312323;color:#fff4d8;padding:12px 16px;margin:18px 0; }
-.representacao {display:grid;gap:12px;margin:14px 0}.representacao select {margin-left:8px;max-width:100%;}
-.form-edicao .acao {margin-top:24px;}.form-edicao [role=alert]{color:#852915;font-weight:bold;margin:12px 0;}
+.inscricao-armoriar {
+  width: min(1230px, 100%);
+  margin: auto;
+  padding: clamp(26px, 5vw, 65px) var(--arm-margem);
+  color: var(--arm-papel);
+  font-family: var(--arm-text);
+}
+
+.inscricao-topo {
+  padding: 0 0 22px;
+  border-bottom: 1px solid #57617e;
+  margin-bottom: 22px;
+}
+
+.inscricao-topo > a, .inscricao-estado a {
+  color: var(--arm-turquesa);
+  font-size: .84rem;
+  text-underline-offset: 4px;
+}
+
+.inscricao-armoriar h1 {
+  color: var(--arm-papel);
+  font: 400 clamp(2.35rem, 5.2vw, 4.5rem)/1.06 var(--arm-display);
+  letter-spacing: -.04em;
+  margin: 10px 0 12px;
+}
+
+.inscricao-topo > p { color: #e8dfcb; font-size: .93rem; }
+.inscricao-turma {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 14px;
+}
+.inscricao-turma > span:first-child {
+  padding: 3px 9px;
+  border: 1px solid #67718c;
+  border-radius: 4px;
+  color: var(--arm-papel);
+  font-weight: 600;
+}
+.inscricao-conexao { display: inline-flex; align-items: center; gap: 7px; font-size: .78rem; }
+.inscricao-conexao::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--arm-laranja); }
+.inscricao-conexao.conectada::before { background: var(--arm-turquesa); }
+
+.inscricao-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(235px, 275px);
+  align-items: start;
+  gap: clamp(16px, 3vw, 38px);
+}
+.inscricao-catalogo { grid-area: 1 / 1; min-width: 0; }
+.inscricao-resumo {
+  grid-area: 1 / 2;
+  position: sticky;
+  top: 86px;
+  max-height: calc(100dvh - 102px);
+  overflow: auto;
+  border: 1px solid #64708d;
+  border-top: 4px solid var(--arm-laranja);
+  background: #212841;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.inscricao-resumo h2, .inscricao-categoria h2 {
+  font: 400 1.28rem/1.2 var(--arm-display);
+  color: var(--arm-papel);
+  letter-spacing: -.02em;
+}
+.inscricao-resumo-contagem p { margin-top: 6px; font-size: .78rem; }
+.inscricao-resumo-contagem strong { color: var(--arm-laranja); font-size: 1.28rem; }
+.inscricao-resumo meter { width: 100%; height: 10px; display: block; margin: 5px 0 10px; accent-color: var(--arm-laranja); }
+.inscricao-resumo meter::-webkit-meter-bar { background: #13182b; border-color: #64708d; }
+.inscricao-resumo meter::-webkit-meter-optimum-value { background: var(--arm-laranja); }
+.inscricao-creditos { margin-block: 10px; color: #f1cc96; font-size: .76rem; }
+.inscricao-marcadas { list-style: none; max-height: min(34vh, 220px); overflow: auto; border-top: 1px solid #57617e; }
+.inscricao-marcadas li { display: flex; gap: 7px; padding: 7px 0; font-size: .78rem; }
+.inscricao-marcadas svg { flex: none; margin-top: .25em; color: var(--arm-turquesa); }
+.inscricao-marcadas small { display: block; color: #e0d6bf; }
+.inscricao-confirmacao p { font-size: .75rem; margin: 8px 0; }
+.inscricao-confirmacao .inscricao-erro { color: #ffbaa7; }
+.inscricao-confirmacao button, .inscricao-estado button {
+  border: 1px solid var(--arm-laranja);
+  border-radius: 4px;
+  min-height: 44px;
+  padding: 7px 10px;
+  background: var(--arm-laranja);
+  color: var(--arm-tinta);
+  font: 700 .79rem/1.2 var(--arm-text);
+  cursor: pointer;
+}
+.inscricao-confirmacao button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 6px; }
+.inscricao-confirmacao button:disabled { background: #30374d; color: #d9d4c8; border-color: #64708d; cursor: default; }
+.inscricao-confirmacao button:hover:enabled, .inscricao-estado button:hover { background: #ffb080; }
+.inscricao-estado button, .inscricao-estado a { margin-top: 10px; }
+
+.inscricao-categorias { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+.inscricao-categorias a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1px solid #57617e;
+  color: var(--arm-papel);
+  font-size: .72rem;
+  text-decoration: none;
+}
+.inscricao-categorias a:hover { border-color: var(--arm-laranja); color: var(--arm-laranja); }
+.inscricao-atalho { display: none; }
+.inscricao-categoria { scroll-margin-top: 88px; margin-bottom: 25px; }
+.inscricao-categoria h2 { font-size: clamp(1.28rem, 2.3vw, 1.75rem); margin-bottom: 9px; }
+.inscricao-opcoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; }
+
+.inscricao-opcao, .inscricao-modalidade summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.inscricao-opcao-avulsa, .inscricao-modalidade {
+  background: #f5e7c7;
+  border: 1px solid #bdab8a;
+  border-radius: 5px;
+  color: #181e31;
+}
+.inscricao-opcao input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex: none;
+  accent-color: #8c3029;
+}
+.inscricao-opcao-texto { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.inscricao-opcao-texto strong { display: block; font-size: .85rem; line-height: 1.25; }
+.inscricao-opcao-texto small { display: block; color: #5a4a43; font-size: .72rem; margin-top: 2px; }
+.inscricao-vaga {
+  max-width: 40%;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #e6d5ad;
+  color: #302616;
+  font-size: .69rem;
+  line-height: 1.25;
+  text-align: center;
+}
+.inscricao-vaga.lotada { background: #eed0c6; color: #742323; }
+.inscricao-opcao:has(input:checked) { background: #e4eee2; box-shadow: inset 3px 0 #3b7566; }
+.inscricao-opcao:has(input:disabled:not(:checked)) { cursor: default; background: #eae0ca; }
+.inscricao-opcao:hover:has(input:enabled), .inscricao-modalidade summary:hover { background: #ffefd1; }
+.inscricao-opcao:focus-within, .inscricao-modalidade summary:focus-visible { outline: 2px solid #a34b24; outline-offset: -2px; }
+.inscricao-modalidade summary::-webkit-details-marker { display: none; }
+.inscricao-modalidade[open] summary > svg { transform: rotate(180deg); }
+.inscricao-formatos { padding: 0 6px 6px; }
+.inscricao-formatos p { border-top: 1px solid #bdab8a; padding: 7px 4px; font-size: .74rem; }
+.inscricao-formatos .inscricao-opcao { border-radius: 3px; min-height: 44px; }
+.inscricao-formatos .inscricao-opcao + .inscricao-opcao { border-top: 1px solid #bdab8a; }
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  .inscricao-opcoes { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .inscricao-layout { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+  .inscricao-resumo { top: 69px; padding: 8px 10px; z-index: 2; }
+  .inscricao-resumo-contagem { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .inscricao-resumo h2 { font-size: 1rem; }
+  .inscricao-resumo-contagem p { margin: 0; }
+  .inscricao-resumo meter, .inscricao-marcadas { display: none; }
+  .inscricao-confirmacao p { margin: 2px 0 4px; }
+  .inscricao-categoria { scroll-margin-top: 192px; }
+  .inscricao-categorias { margin-bottom: 18px; }
+  .inscricao-categorias a { display: none; }
+  .inscricao-atalho { display: grid; gap: 4px; width: 100%; font-size: .77rem; }
+  .inscricao-atalho select {
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 10px;
+    border: 1px solid #64708d;
+    border-radius: 4px;
+    color: var(--arm-papel);
+    background: #212841;
+    color-scheme: dark;
+    font: 500 .85rem var(--arm-text);
+  }
+}
+@media (max-width: 480px) {
+  .inscricao-opcoes { grid-template-columns: minmax(0, 1fr); }
+}

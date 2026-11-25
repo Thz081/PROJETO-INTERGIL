@@ -14,6 +14,11 @@ async function iniciar() {
   await Promise.all([Controle.init(), Modalidade.init(), Inscricao.init(), Sala.init(), Hall.init(), Aluno.init()]);
   await Controle.updateOne({ _id: 'vagas' }, { $setOnInsert: { versao: 0 } }, { upsert: true });
   await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'inscricao-turma-2026' }).session(session)) return;
+    await Inscricao.collection.updateMany({ visitante: { $exists: true } }, { $unset: { visitante: 1 } }, { session });
+    await Controle.create([{ _id: 'inscricao-turma-2026' }], { session });
+  });
+  await mongoose.connection.transaction(async session => {
     if (await Controle.exists({ _id: 'catalogo-2026' }).session(session)) return;
     for (const m of modalidades) {
       await Modalidade.create([{ ...m, horarios: horarios[m.slug] || [] }], { session });

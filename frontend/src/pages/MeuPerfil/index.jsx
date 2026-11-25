@@ -1,173 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FaArrowRight, FaCalendarCheck, FaRightFromBracket, FaUser } from 'react-icons/fa6';
 import { useAudio } from '../../context/AudioContext';
-import { useAuth } from '../../context/AuthProvider'; 
-import api from '../../api'; 
-import './style.css'; 
-import { FaUserCircle, FaSignOutAlt, FaThList, FaTrash } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthProvider';
+import api from '../../api';
+import './style.css';
 
-const MeuPerfil = () => {
+const formatoData = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Recife'
+});
+
+function agruparEscolhas(codigos, modalidades) {
+  const grupos = new Map();
+  for (const codigo of codigos) {
+    const [id, indice] = String(codigo).split('-');
+    const modalidade = modalidades.find(item => item && String(item._id) === id);
+    if (!grupos.has(id)) grupos.set(id, {
+      id, nome: modalidade?.nome || `Modalidade ${id}`, formatos: []
+    });
+    const formato = modalidade?.submodalidades?.[indice]?.nome;
+    if (formato && formato !== 'Individual' && formato !== modalidade.nome) grupos.get(id).formatos.push(formato);
+  }
+  return [...grupos.values()];
+}
+
+export default function MeuPerfil() {
   const { playClick } = useAudio();
-  const { user, logout } = useAuth(); 
-  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [dados, setDados] = useState({ status: 'carregando' });
+  const [tentativa, repetir] = useState(0);
+  const [cancelando, setCancelando] = useState(false);
+  const [erro, setErro] = useState('');
+  const [mensagem, setMensagem] = useState('');
+  const dialogo = useRef(null);
+  const tituloInscricao = useRef(null);
 
-  const [inscricao, setInscricao] = useState(null);
-  const [todasModalidades, setTodasModalidades] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // === 1. BUSCAR DADOS ===
   useEffect(() => {
-    if (!user) { navigate('/login'); return; }
-
-    const carregarDados = async () => {
+    const consulta = new AbortController();
+    async function carregar() {
       try {
-        // Busca Inscrição
-        const reqInscricao = await api.get('/inscricoes/me');
-        setInscricao(reqInscricao.data);
-      } catch (error) {
-        console.log("Aluno sem inscrição ainda (404 esperado).");
-      }
-
-      try {
-        // Busca Dicionário de Modalidades
-        const reqMods = await api.get('/modalidades');
-        // Filtra nulos para evitar crash
-        setTodasModalidades(reqMods.data.filter(m => m));
-      } catch (error) {
-        console.error("Erro ao carregar modalidades:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    carregarDados();
-  }, [user, navigate]);
-
-  // === 2. FUNÇÃO DE CANCELAR ===
-  const handleCancelarInscricao = async () => {
-    playClick();
-    const confirmacao = window.confirm(
-      "⚠️ TEM CERTEZA?\n\nIsso vai apagar TODAS as suas escolhas e você perderá sua vaga atual.\nVocê terá que se inscrever do zero novamente."
-    );
-
-    if (confirmacao) {
-      try {
-        await api.delete('/inscricoes/me');
-        alert("Sua inscrição foi cancelada com sucesso.");
-        window.location.reload();
-      } catch (err) {
-        alert(err.response?.data?.message || "Erro ao cancelar. Tente novamente.");
-        console.error(err);
+        const { status, data } = await api.get('/inscricoes/me', {
+          signal: consulta.signal, validateStatus: valor => valor === 200 || valor === 404
+        });
+        if (consulta.signal.aborted) return;
+        if (status === 404) { setDados({ status: 'vazio' }); return; }
+        const { data: modalidades } = await api.get('/modalidades', { signal: consulta.signal });
+        if (!consulta.signal.aborted) setDados({
+          status: 'inscrito', inscricao: data, escolhas: agruparEscolhas(data.modalidades, modalidades)
+        });
+      } catch {
+        if (!consulta.signal.aborted) setDados({ status: 'erro' });
       }
     }
-  };
+    carregar();
+    return () => consulta.abort();
+  }, [user, tentativa]);
 
-  // === 3. O "TRADUTOR" BLINDADO (ID Numérico/String) ===
-  const traduzirEscolha = (codigoString) => {
-    // codigoString pode ser "12" ou "12-1"
-    const codigoStr = String(codigoString); // Garante que é string
-    const partes = codigoStr.split('-');
-    
-    const modId = partes[0]; // ID da modalidade (ex: "12")
-    const subIndex = partes.length > 1 ? parseInt(partes[1]) : null; // Índice (ex: 1)
-
-    // Busca convertendo ambos para String para garantir match
-    const modalidade = todasModalidades.find(m => String(m._id) === modId);
-
-    if (!modalidade) return `Modalidade não encontrada (ID: ${modId})`;
-
-    // Se tem sub-índice, busca o nome da sub
-    if (subIndex !== null) {
-        if (modalidade.submodalidades && modalidade.submodalidades[subIndex]) {
-            return `${modalidade.nome} - ${modalidade.submodalidades[subIndex].nome}`;
-        }
-        return `${modalidade.nome} (Sub indefinida)`;
+  async function cancelar() {
+    if (cancelando) return;
+    setCancelando(true);
+    setErro('');
+    try {
+      await api.delete('/inscricoes/me');
+      dialogo.current.close();
+      setDados({ status: 'vazio' });
+      setMensagem('Inscrição cancelada.');
+      tituloInscricao.current.focus();
+    } catch (err) {
+      setErro(err.response?.data?.message || 'Não foi possível cancelar. Tente novamente.');
+    } finally {
+      setCancelando(false);
     }
-    
-    // Se é modalidade pura
-    return modalidade.nome;
-  };
-
-  // === RENDERIZAÇÃO ===
-  if (loading) {
-    return (
-      <div className="perfil-wrapper">
-        <h1 className="perfil-loading">Carregando Perfil...</h1>
-      </div>
-    );
   }
 
-  if (!user) return null;
-
-  return (
-    <div className="perfil-wrapper">
-      <div className="perfil-container">
-        <FaUserCircle className="perfil-icone-gigante" />
-        
-        <h1 className="perfil-nome">{user.nome}</h1>
-        <p className="perfil-turma">{user.turma} • {user.sexo === 'M' ? 'Masculino' : 'Feminino'}</p>
-
-        <div className="perfil-card">
-          <h3><FaThList /> Minhas Inscrições</h3>
-          
-          {inscricao && inscricao.modalidades && inscricao.modalidades.length > 0 ? (
-            <>
-              <ul className="perfil-lista-inscricoes">
-                {inscricao.modalidades.map((codigo, index) => (
-                  <li key={index}>{traduzirEscolha(codigo)} {inscricao.visitante?.codigos?.includes(codigo) && " · por " + inscricao.visitante.turma}</li>
-                ))}
-              </ul>
-              
-              <div className="resumo-pontos" style={{ marginTop: '15px', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                  Total: <strong>{inscricao.pontuacaoTotal}</strong> modalidades contabilizadas.
-              </div>
-
-              <div style={{ marginTop: '25px', borderTop: '1px dashed #444', paddingTop: '20px' }}>
-                <button 
-                  onClick={handleCancelarInscricao}
-                  className="btn-cancelar-inscricao"
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: '1px solid #FF5555',
-                    color: '#FF5555',
-                    padding: '12px',
-                    width: '100%',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-title)',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  <FaTrash /> Cancelar Minha Inscrição
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="sem-inscricao-container">
-                <p className="perfil-lista-vazia">Você ainda não se inscreveu em nada.</p>
-                
-                <button 
-                    className="btn-ir-inscricao" 
-                    style={{marginTop: '15px', width: '100%', padding: '10px', cursor: 'pointer'}}
-                    onClick={() => navigate('/inscricao')}
-                >
-                    Ir para Inscrição
-                </button>
-            </div>
-          )}
+  const inscrito = dados.status === 'inscrito';
+  const dataInscricao = new Date(dados.inscricao?.data_inscricao);
+  return <div className="perfil-armoriar">
+    <header className="perfil-topo">
+      <span className="perfil-avatar"><FaUser aria-hidden="true"/></span>
+      <div className="perfil-identidade">
+        <p>Meu perfil</p>
+        <h1>{user.nome}</h1>
+        <span>{user.turma}</span>
+        {user.sexo === 'M' && <span>Masculino</span>}
+        {user.sexo === 'F' && <span>Feminino</span>}
+      </div>
+      <button className="perfil-sair" type="button" onClick={() => { playClick(); logout(); }}>
+        <FaRightFromBracket aria-hidden="true"/> Sair
+      </button>
+    </header>
+    <section className="perfil-inscricao" aria-labelledby="perfil-titulo-inscricao" aria-busy={dados.status === 'carregando'}>
+      <div className="perfil-inscricao-titulo">
+        <h2 id="perfil-titulo-inscricao" ref={tituloInscricao} tabIndex={-1}>Minha inscrição</h2>
+        {inscrito && <span className="perfil-confirmada"><FaCalendarCheck aria-hidden="true"/> Confirmada</span>}
+      </div>
+      <p className="perfil-mensagem" role="status">{mensagem}</p>
+      {dados.status === 'carregando' && <p role="status">Carregando inscrição…</p>}
+      {dados.status === 'erro' && <>
+        <p role="alert">Não foi possível consultar sua inscrição.</p>
+        <button className="perfil-acao" type="button" onClick={() => { setDados({ status: 'carregando' }); repetir(n => n + 1); }}>
+          Tentar novamente
+        </button>
+      </>}
+      {dados.status === 'vazio' && <div className="perfil-vazio">
+        <div>
+          <h3>Você ainda não se inscreveu</h3>
+          <p>Veja as modalidades e as vagas disponíveis para sua turma.</p>
         </div>
-
-        <button onClick={() => { playClick(); logout(); }} className="perfil-logout-btn">
-          <FaSignOutAlt /> Sair (Logout)
+        <Link className="perfil-acao" to="/inscricao">Ir para inscrição <FaArrowRight aria-hidden="true"/></Link>
+      </div>}
+      {inscrito && <>
+        <p className="perfil-total"><strong>{dados.inscricao.pontuacaoTotal}</strong> modalidades contabilizadas
+          {Number.isFinite(dataInscricao.valueOf()) && <> · {formatoData.format(dataInscricao)}</>}</p>
+        <ul className="perfil-escolhas">{dados.escolhas.map(item => <li key={item.id}>
+          <strong>{item.nome}</strong>
+          {item.formatos.length > 0 && <span>{item.formatos.join(' · ')}</span>}
+        </li>)}</ul>
+        <button className="perfil-cancelar" type="button" onClick={() => {
+          playClick(); setErro(''); dialogo.current.showModal();
+        }}>Cancelar inscrição</button>
+      </>}
+    </section>
+    <dialog className="perfil-dialogo" ref={dialogo} aria-labelledby="perfil-cancelar-titulo"
+      onCancel={evento => { if (cancelando) evento.preventDefault(); }}>
+      <h2 id="perfil-cancelar-titulo">Cancelar sua inscrição?</h2>
+      <p>Suas escolhas serão apagadas e as vagas voltarão a ficar disponíveis para a turma.</p>
+      {erro && <p className="perfil-erro" role="alert">{erro}</p>}
+      <div className="perfil-dialogo-acoes">
+        <button className="perfil-secundaria" type="button" autoFocus disabled={cancelando}
+          onClick={() => dialogo.current.close()}>Manter inscrição</button>
+        <button className="perfil-cancelar" type="button" disabled={cancelando} onClick={cancelar}>
+          {cancelando ? 'Cancelando…' : 'Confirmar cancelamento'}
         </button>
       </div>
-    </div>
-  );
-};
-
-export default MeuPerfil;
+    </dialog>
+  </div>;
+}

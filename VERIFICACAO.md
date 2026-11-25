@@ -20,7 +20,7 @@ Os 12 brasões vieram da organização e a capa usa o cartaz Armoriar fornecido 
 
 ## Pendências para a escola
 
-1. Confirmar com a organização se FIFA X1 e X2 podem ser acumulados e como devem ser contados. Os três modos de configuração foram testados.
+1. Conferir o FIFA com X1 e X2 no mesmo grupo e duas vagas por formato em cada turma.
 2. Publicar o PDF definitivo quando a pessoa responsável o entregar.
 3. Instalar o pacote na VPS, configurar o domínio e o HTTPS, carregar as matrículas e conferir o WebSocket pelo proxy público. A estimativa operacional é de 20 a 40 minutos com acesso, DNS e proxy disponíveis.
 

@@ -38,7 +38,7 @@ O pacote de implantação contém código, imagens públicas e programação. As
 
 ## Configuração da competição
 
-O prazo termina no início de 2 de dezembro de 2026, no horário de Pernambuco. Com `FIFA_CONTAGEM=pendente`, cada aluno pode escolher um formato. Após a decisão da organização, use `conjunta` para contar X1 e X2 juntos ou `separada` para contar cada formato. Aplique com `docker compose up -d --wait`.
+O prazo termina no início de 2 de dezembro de 2026, no horário de Pernambuco. X1 e X2 de FIFA contam juntos. Cada turma tem duas vagas no X1 e duas para montar a dupla no X2.
 
 O PDF definitivo pode ser publicado em **Gestão → Visão geral → Atualizar edital geral**. A planilha de horários original acompanha a página Horários. Alterações feitas pela monitoria atualizam a agenda do site. A planilha para download é a versão de origem.
 

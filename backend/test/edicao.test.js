@@ -11,6 +11,11 @@ test('futsal, quadrado e futmesa ocupam três vagas no limite anual', () => {
   assert.equal(validar(escolhas, ['101-0','102-0','103-0']).total, 3);
   assert.throws(() => validar(escolhas, ['101-0','102-0','103-0','117-0']));
 });
+test('FIFA oferece duas vagas para o X1 e duas para a dupla, com contagem única', () => {
+  const fifa = escolhas.modalidades.find(mod => mod.slug === 'fifa');
+  assert.deepEqual(fifa.opcoes.map(opcao => [opcao.nome, opcao.limite]), [['X1', 2], ['X2', 2]]);
+  assert.equal(validar(escolhas, ['126-0', '126-1', '117-0']).total, 2);
+});
 test('sexo, exclusividade do kata, códigos duplicados e mínimo do terceiro ano', () => {
   for (const lista of [['101-1','117-0'],['115-0','115-1','117-0'],['117-0','117-0'],['116','117-0']])
     assert.throws(() => validar(escolhas, lista));

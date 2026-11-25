@@ -20,7 +20,6 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env da raiz}
       MONGO_URI: mongodb://mongo:27017/intergil2026?replicaSet=intergil
-      FIFA_CONTAGEM: ${FIFA_CONTAGEM:-pendente}
     volumes:
       - arquivos:/app/uploads
     depends_on:

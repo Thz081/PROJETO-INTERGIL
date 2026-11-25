@@ -41,13 +41,13 @@ Categoria agrupa modalidades. Modalidade é a unidade de contagem da inscrição
 - **1º e 2º anos** escolhem de 2 a 3 modalidades. **3º ano** escolhe de 3 a 4. O prazo inclui todo o dia 1º de dezembro, no horário de Pernambuco.
 - **Basquete** agrupa 5×5 e 3×3 na contagem. O 3×3 feminino permanece disponível sozinho.
 - **Free Fire** agrupa 4×4 e X1 na contagem. X1 tem uma vaga por sala.
-- **FIFA** permite selecionar X1 e X2 e conta o conjunto como uma modalidade. X1 tem **uma vaga por sala**, conforme a confirmação mais recente. X2 tem uma dupla por sala, com duas vagas individuais para compô-la.
+- **FIFA** permite selecionar X1 e X2 e conta o conjunto como uma modalidade. X1 tem **duas vagas por sala**, conforme a confirmação mais recente. X2 tem uma dupla por sala, com duas vagas individuais para compô-la.
 - **RPG** permite marcar as quatro atividades livres, com um único ponto na contagem de modalidades.
 - **Corrida** oferece 100 m, 200 m e revezamento de 800 m dentro do Atletismo e conta como uma modalidade. **Kata** permite escolher uma entre Karatê, Judô e Taekwondo.
 - **Futsal, Quadrado e Futmesa** são modalidades independentes. O mesmo vale para Vôlei, Vôleimesa e Vôlei quase de praia. Golzinho, X1 de futsal, Brawl e Clash saíram.
 - **Vagas** são conferidas no servidor pela sala e pelo formato. UNO tem quatro vagas por sala. Inscrição e cancelamento atualizam o contador ao vivo. Cada inscrição pertence à turma do aluno. A migração preserva escolhas gravadas e contabiliza todas pela turma de origem.
 
-A configuração do backend ainda usa o estado pendente para FIFA e tem duas vagas no X1. Essa correção e a atualização dos banners no catálogo persistido são tarefas da frente de Erick.
+A atualização dos banners no catálogo persistido é tarefa da frente de Erick.
 
 ## Referências
 

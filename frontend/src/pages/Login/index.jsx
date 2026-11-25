@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMaskInput } from 'react-imask';
 import { useAuth } from '../../context/AuthProvider';
@@ -20,6 +20,12 @@ export default function Login() {
   const [erro, definirErro] = useState(null);
   const [data, definirData] = useState('');
   const [comprovante, definirComprovante] = useState('');
+  const formularioAtual = useRef(null);
+  const faseAnterior = useRef(fase);
+  useEffect(() => {
+    if (fase !== faseAnterior.current) formularioAtual.current?.querySelector('input')?.focus();
+    faseAnterior.current = fase;
+  }, [fase]);
 
   function trocarFase(novaFase) {
     definirErro(null);
@@ -62,7 +68,7 @@ export default function Login() {
     </button>
     <nav className="portal-perfis" aria-label="Portais da equipe"><Link to="/login-monitor">Monitoria</Link><Link to="/login-admin">Gestão</Link></nav>
   </>}>
-    <form key={fase} className="portal-form" noValidate onSubmit={autenticar}>
+    <form ref={formularioAtual} key={fase} className="portal-form" noValidate onSubmit={autenticar}>
       {campos.map(([nome, rotulo, tipo, inputMode, autoComplete, pattern]) => {
         const atributos = { id: id + '-' + nome, name: nome, required: true,
           'aria-invalid': erro?.campo === nome,

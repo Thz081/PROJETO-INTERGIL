@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import { FaDownload, FaArrowLeft, FaArrowRight, FaStream } from 'react-icons/fa';
 import api, { assetURL } from '../../api';
 import './style.css';
@@ -13,6 +13,7 @@ function LinkDocumento({ url, children }) {
 
 export default function ModalidadeDetalhe() {
   const { slug } = useParams();
+  const { state } = useLocation();
   const [resultado, definirResultado] = useState(null);
   const [tentativa, tentar] = useState(0);
 
@@ -26,7 +27,7 @@ export default function ModalidadeDetalhe() {
     return () => controller.abort();
   }, [slug, tentativa]);
 
-  const voltar = <Link to="/#modalidades" className="modalidade-voltar"><FaArrowLeft aria-hidden="true"/> Modalidades</Link>;
+  const voltar = <Link to={{ pathname: '/', search: state?.buscaCarrossel || '', hash: '#modalidades' }} className="modalidade-voltar"><FaArrowLeft aria-hidden="true"/> Modalidades</Link>;
   if (resultado?.slug !== slug || resultado?.tentativa !== tentativa) return <section className="modalidade-armoriar"><p role="status">Carregando modalidade…</p></section>;
   if (resultado.erro || !resultado.modalidade) return <section className="modalidade-armoriar">
     {voltar}<h1>{resultado.erro ? 'Falha ao carregar' : 'Modalidade não encontrada'}</h1>
@@ -69,8 +70,8 @@ export default function ModalidadeDetalhe() {
       </li>)}</ul>
     </section>}
     {!!vizinhas.length && <nav className="modalidade-vizinhas" aria-label="Outras modalidades">
-      <Link to={'/modalidade/' + vizinhas[0].slug}><FaArrowLeft aria-hidden="true"/> {vizinhas[0].nome}</Link>
-      <Link to={'/modalidade/' + vizinhas[1].slug}>{vizinhas[1].nome} <FaArrowRight aria-hidden="true"/></Link>
+      <Link to={'/modalidade/' + vizinhas[0].slug} state={state}><FaArrowLeft aria-hidden="true"/> {vizinhas[0].nome}</Link>
+      <Link to={'/modalidade/' + vizinhas[1].slug} state={state}>{vizinhas[1].nome} <FaArrowRight aria-hidden="true"/></Link>
     </nav>}
   </article>;
 }

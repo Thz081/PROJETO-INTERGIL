@@ -21,7 +21,7 @@
 ## Uso e recuperação
 
 - O conteúdo e os rótulos são em pt-BR. O foco é visível e as ações têm nomes acessíveis. Links navegáveis usam links e ações usam botões.
-- O carrossel preserva a ordem do catálogo. A categoria reduz a mesma lista. Os botões refletem os limites de rolagem. A tela preserva uma área de carregamento e permite tentar novamente após erro.
+- O carrossel preserva a ordem do catálogo. A categoria reduz a mesma lista e permanece na URL ao voltar do detalhe. Os botões refletem os limites de rolagem. A tela preserva uma área de carregamento e permite tentar novamente após erro.
 - O detalhe distingue modalidade ausente de falha na API. Uma falha de imagem usa a moldura padrão. URLs de editais e chaveamentos são exibidas quando cadastradas.
 - Campo obrigatório, data inválida e formato inválido mostram mensagem em texto e apontam o foco para o campo. Falha de autenticação preserva as entradas. A senha começa oculta. O usuário pode alternar a exibição, colar e usar preenchimento automático.
 - O portal do aluno continua usando matrícula e data de nascimento para o primeiro acesso. Os portais da Gestão e Monitoria continuam com seus próprios modos de autenticação e redirecionamento. Os endpoints e permissões pertencem à frente de backend.

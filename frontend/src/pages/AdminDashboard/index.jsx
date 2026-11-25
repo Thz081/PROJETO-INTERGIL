@@ -93,7 +93,7 @@ export default function AdminDashboard() {
     </div>
     <div className="painel-grade painel-publicacoes">
       <NomeEvento/>
-      <Publicacao tipo="pdf" titulo="Edital geral" legenda="PDF disponível na página inicial."
+      <Publicacao tipo="pdf" titulo="Edital geral" legenda="O PDF publicado pode ser baixado na página inicial."
         endpoint="/admin/upload-edital-geral" campo="editalGeral"
         publicado={config.editalDisponivel && api.defaults.baseURL + '/edital-geral'}/>
       <Publicacao tipo="imagem" titulo="Cartaz" legenda="Arte completa usada na abertura da página inicial."

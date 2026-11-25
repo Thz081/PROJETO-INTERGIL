@@ -1,6 +1,6 @@
 const Config = require('../models/config.model');
 const fs = require('node:fs');
-const path = require('node:path');
+const arquivoEditalGeral = require('../config/edital-geral');
 
 async function configuracao() {
   const atual = await Config.findOne().sort({ _id: 1 });
@@ -10,7 +10,8 @@ async function configuracao() {
 }
 async function getConfig(req, res) {
   const atual = await configuracao();
-  res.json({ ...atual.toObject(), editalDisponivel: fs.existsSync(path.join(__dirname, '../../uploads/EDITAL_GERAL_2026.pdf')) });
+  res.set('Cache-Control', 'no-store');
+  res.json({ ...atual.toObject(), editalDisponivel: fs.existsSync(arquivoEditalGeral) });
 }
 async function updateConfig(req, res) {
   const atual = await configuracao();

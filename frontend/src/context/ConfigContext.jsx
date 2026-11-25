@@ -8,20 +8,26 @@ export const ConfigProvider = ({ children }) => {
     siteName: "INTERGIL 2026",
     logoUrl: "/images/armoriar.png"
   });
+  const [estadoConfig, definirEstado] = useState('carregando');
 
   const refreshConfig = async () => {
+    definirEstado('carregando');
     try {
       const { data } = await api.get('/config');
       setConfig(data);
       if (data.siteName) document.title = data.siteName;
-    } catch (error) { console.error('Erro ao carregar a configuração.', error); }
+      definirEstado('pronto');
+    } catch (error) {
+      definirEstado('erro');
+      console.error('Erro ao carregar a configuração.', error);
+    }
   };
   useEffect(() => {
     refreshConfig();
   }, []);
 
   return (
-    <ConfigContext.Provider value={{ config, refreshConfig }}>
+    <ConfigContext.Provider value={{ config, estadoConfig, refreshConfig }}>
       {children}
     </ConfigContext.Provider>
   );

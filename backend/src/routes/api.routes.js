@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path'); 
+const arquivoEditalGeral = require('../config/edital-geral');
 
 // Controllers
 const { getModalidades, getModalidadeBySlug, validarInscricao, getRankingSalas, getMomentos } = require('../controllers/modalidade.controller.js');
@@ -19,10 +19,12 @@ router.get('/config', getConfig);
 router.get('/hall', hallController.getHall); // <--- NOVO
 
 // Edital Download
-router.get('/edital-geral', (req, res) => {
-  const filePath = path.join(process.cwd(), 'uploads', 'EDITAL_GERAL_2026.pdf');
-  res.download(filePath, 'Edital_Geral.pdf', (err) => {
-    if(err) res.status(404).send('Edital não encontrado.');
+router.get('/edital-geral', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  res.download(arquivoEditalGeral, 'Edital-geral-Intergil-2026.pdf', (erro) => {
+    if (!erro) return;
+    if (!res.headersSent && erro.status === 404) return res.status(404).send('Edital ainda não publicado.');
+    next(erro);
   });
 });
 

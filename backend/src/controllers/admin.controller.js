@@ -1,6 +1,8 @@
 // Arquivo: InterDoZero/src/controllers/admin.controller.js
 // VERSÃO 3.3 - CORREÇÃO PATH MOMENTOS
 
+const { rename } = require('node:fs/promises');
+const arquivoEditalGeral = require('../config/edital-geral');
 const Sala = require('../models/sala.model');
 const LogAcao = require('../models/logAcao.model');
 const Inscricao = require('../models/inscricao.model');
@@ -160,7 +162,7 @@ const uploadEditalGeral = async (req, res) => {
     }
   
     if (req.file.mimetype !== 'application/pdf') return res.status(400).json({ message: 'Envie um PDF.' });
-    await require('fs').promises.rename(req.file.path, require('path').join(__dirname, '../../uploads/EDITAL_GERAL_2026.pdf'));
+    await rename(req.file.path, arquivoEditalGeral);
     const filePath = 'arquivos/EDITAL_GERAL_2026.pdf';
   
     await LogAcao.create({

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowRight, FaCalendarAlt } from 'react-icons/fa';
+import { FaArrowRight, FaCalendarAlt, FaDownload, FaRegFilePdf } from 'react-icons/fa';
 import Leaderboard from '../../components/Leaderboard';
 import ModalidadesCarousel from '../../components/ModalidadesCarousel';
-import api, { assetURL } from '../../api';
+import api, { apiURL, assetURL } from '../../api';
 import { useConfig } from '../../context/ConfigContext';
 import './style.css';
 
@@ -11,7 +11,7 @@ export default function Home() {
   const [modalidades, definirModalidades] = useState([]);
   const [estado, definirEstado] = useState('carregando');
   const [tentativa, tentar] = useState(0);
-  const { config } = useConfig();
+  const { config, estadoConfig, refreshConfig } = useConfig();
   useEffect(() => {
     const controller = new AbortController();
     api.get('/modalidades', { signal: controller.signal }).then(({ data }) => {
@@ -36,8 +36,23 @@ export default function Home() {
         </div>
         <div className="capa-armoriar-info">
           <span>{encerrada ? 'Inscrições encerradas' : 'Inscrições até 1º de dezembro'}</span>
-          {config.editalDisponivel && <a href={api.defaults.baseURL + '/edital-geral'}>Baixar edital geral</a>}
         </div>
+        <section className="capa-edital" aria-labelledby="capa-edital-titulo">
+          <FaRegFilePdf className="capa-edital-icone" aria-hidden="true"/>
+          <div className="capa-edital-texto">
+            <h2 id="capa-edital-titulo">Edital geral de 2026</h2>
+            <p aria-live="polite">
+              {estadoConfig === 'carregando' ? 'Consultando disponibilidade…' :
+                estadoConfig === 'erro' ? 'Não foi possível consultar o edital.' :
+                  config.editalDisponivel ? 'Regulamento oficial do Intergil' : 'Aguardando publicação'}
+            </p>
+          </div>
+          {config.editalDisponivel && <a className="arm-botao arm-botao-contorno" href={apiURL + '/edital-geral'}>
+            <FaDownload aria-hidden="true"/> Baixar PDF
+          </a>}
+          {!config.editalDisponivel && estadoConfig === 'erro' &&
+            <button type="button" className="arm-botao arm-botao-contorno" onClick={refreshConfig}>Tentar novamente</button>}
+        </section>
       </div>
       <img className="capa-armoriar-cartaz" src={assetURL(config.logoUrl)}
         width="834" height="997" alt="Cartaz oficial do X Intergil com cavalo alado, sol e mandacaru" fetchPriority="high"/>

@@ -11,7 +11,11 @@
 .arm-botao-contorno {background:#171c31;color:var(--arm-papel);border-color:#a39f98;}
 .arm-botao-contorno:hover {background:#29334e;border-color:var(--arm-turquesa);}
 .capa-armoriar-info {display:flex;gap:8px 16px;flex-wrap:wrap;margin-top:14px;font-size:.78rem;color:#ddd2bd;}
-.capa-armoriar-info a {color:var(--arm-turquesa);text-underline-offset:3px;}
+.capa-edital {display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;margin-top:20px;padding:12px 14px;border:1px solid #a39f98;border-left:3px solid var(--arm-laranja);border-radius:4px;background:var(--arm-tinta);}
+.capa-edital-icone {flex:none;color:var(--arm-laranja);font-size:1.4rem;}
+.capa-edital-texto {flex:1 1 150px;min-width:0;}
+.edicao-home .capa-edital h2 {margin:0;color:var(--arm-papel);font:500 1.12rem/1.3 var(--arm-display);}
+.edicao-home .capa-edital p {margin:3px 0 0;color:#ddd2bd;font-size:.78rem;}
 .capa-armoriar-cartaz {display:block;width:min(100%,270px);height:auto;aspect-ratio:834/997;object-fit:contain;justify-self:center;filter:drop-shadow(7px 12px 0 #090c21a6);}
 .edicao-home .leaderboard-container {background:#20263d;border-color:#806f65;color:var(--arm-papel);margin-top:12px;}
 .edicao-home .leaderboard-container h2 {font-family:var(--arm-display);color:var(--arm-papel);}
@@ -23,6 +27,7 @@
   .capa-armoriar-edicao{grid-column:1;grid-row:3;}
   .capa-armoriar-acoes{grid-column:1;grid-row:4;margin-top:0;gap:7px;}
   .capa-armoriar-info{grid-column:1/-1;margin-top:0;}
+  .capa-edital{grid-column:1/-1;margin-top:0;}
   .capa-armoriar-cartaz{grid-column:2;grid-row:3/5;align-self:center;}
 }
 @media(max-width:390px){.capa-armoriar{grid-template-columns:minmax(0,1fr) minmax(0,97px)}.capa-armoriar-acoes .arm-botao{padding-inline:9px;}}

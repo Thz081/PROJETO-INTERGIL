@@ -1,4 +1,5 @@
 // Arquivo: intergil-client/src/pages/Ranking/index.js
+import TituloArmorial from '../../components/TituloArmorial';
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -35,7 +36,7 @@ const Ranking = () => {
   return (
     <div className="ranking-page-container">
       <div className="leaderboard-container"> {/* Reaproveitando o CSS */}
-        <h2 className="leaderboard-titulo">RANKING GERAL</h2>
+        <h2 className="leaderboard-titulo"><TituloArmorial arte="ranking-geral" escuro>RANKING GERAL</TituloArmorial></h2>
         
         {loading && <p className="loading-text">Carregando Ranking...</p>}
         {error && <p className="loading-text error">{error}</p>}

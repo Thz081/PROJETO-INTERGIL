@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import TituloArmorial from '../../components/TituloArmorial';
 import api, { assetURL } from '../../api';
 import './style.css';
 
@@ -38,7 +39,7 @@ function Visualizar({ item, fechar }) {
 export default function Momentos() {
   const [itens,setItens] = useState(null), [erro,setErro] = useState(''), [aberto,abrir] = useState(null);
   useEffect(() => { api.get('/momentos').then(r => setItens(r.data)).catch(() => setErro('Falha ao carregar a galeria.')); },[]);
-  return <section className="galeria-edicao"><h1>Momentos do Intergil</h1>
+  return <section className="galeria-edicao"><h1><TituloArmorial arte="momentos">Momentos do Intergil</TituloArmorial></h1>
     {erro ? <p role="alert">{erro}</p> : !itens ? <p>Carregando…</p> : !itens.length ? <p>As fotos e os vídeos do evento aparecerão aqui.</p> :
       <div className="grade-momentos">{itens.map(item => <button key={item._id} onClick={() => abrir(item)}>
         {item.tipo === 'foto' ? <img loading="lazy" src={assetURL(item.url)} alt=""/> :

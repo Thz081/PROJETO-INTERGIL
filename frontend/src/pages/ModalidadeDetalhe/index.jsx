@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import TituloArmorial from '../../components/TituloArmorial';
 import { useLocation, useParams, Link } from 'react-router-dom';
 import { FaDownload, FaArrowLeft, FaArrowRight, FaStream } from 'react-icons/fa';
 import api, { assetURL } from '../../api';
@@ -44,7 +45,7 @@ export default function ModalidadeDetalhe() {
     <div className="modalidade-topo">
       <div>
         <p className="arm-sobrelinha">{modalidade.categoria || 'Modalidade'}</p>
-        <h1>{modalidade.nome}</h1>
+        <h1><TituloArmorial arte={`jogo-${modalidade.slug}`}>{modalidade.nome}</TituloArmorial></h1>
       </div>
       <div className="modalidade-acoes">
         <Link className="arm-botao" to={fechada ? '/meu-perfil' : '/inscricao'}>

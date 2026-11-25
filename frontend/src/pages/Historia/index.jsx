@@ -1,4 +1,5 @@
 import api, { assetURL } from '../../api';
+import TituloArmorial from '../../components/TituloArmorial';
 import React, { useState, useEffect } from 'react';
 import './style.css'; 
 import Timeline from '../../components/Timeline'; 
@@ -44,7 +45,7 @@ const Historia = () => {
   return (
     <div className="historia-container">
       <div className="historia-origem">
-        <h1 className="historia-titulo-pagina">A origem do Intergil</h1>
+        <h1 className="historia-titulo-pagina"><TituloArmorial arte="origem" escuro>A origem do Intergil</TituloArmorial></h1>
         {textoHistoria.split('\n\n').map((paragrafo, index) => (
           <p key={index} className="historia-paragrafo">{paragrafo}</p>
         ))}

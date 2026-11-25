@@ -1,8 +1,17 @@
 import React, { useId, useState } from 'react';
+import TituloArmorial from '../TituloArmorial';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthProvider';
 import './style.css';
+
+const arteTitulo = {
+  Entrar: 'entrar',
+  'Primeiro acesso': 'primeiro-acesso',
+  'Criar sua senha': 'criar-senha',
+  'Portal da gestão': 'portal-gestao',
+  'Portal da monitoria': 'portal-monitoria'
+};
 
 export function PortalAcesso({ perfil, titulo, children, rodape }) {
   return <section className="portal-armoriar">
@@ -10,7 +19,7 @@ export function PortalAcesso({ perfil, titulo, children, rodape }) {
       <div className="portal-cartaz" aria-hidden="true"><img src="/images/armoriar.png" alt="" width="834" height="997"/></div>
       <div className="portal-conteudo">
         <p className="arm-sobrelinha">{perfil} · X Intergil</p>
-        <h1>{titulo}</h1>
+        <h1><TituloArmorial arte={arteTitulo[titulo]}>{titulo}</TituloArmorial></h1>
         {children}
         <div className="portal-rodape">{rodape}</div>
       </div>

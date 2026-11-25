@@ -1,0 +1,10 @@
+.arm-titulo-arte {
+  display: inline-block;
+  vertical-align: -.11em;
+  width: min(var(--arm-titulo-largura), 100%);
+  height: auto;
+}
+
+.arm-titulo-arte-escura {
+  filter: brightness(.16);
+}

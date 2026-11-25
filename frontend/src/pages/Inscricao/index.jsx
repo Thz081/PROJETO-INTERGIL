@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import TituloArmorial from '../../components/TituloArmorial';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowRight, FaCheck, FaChevronDown } from 'react-icons/fa6';
 import api from '../../api';
@@ -48,7 +49,7 @@ export default function Inscricao() {
     {erro && <button type="button" onClick={() => { setErro(''); repetir(n => n + 1); }}>Tentar novamente</button>}
   </section>;
   if (Date.now() >= Date.parse(ficha.fim)) return <section className="inscricao-armoriar inscricao-estado">
-    <h1>Inscrições encerradas</h1><Link to="/meu-perfil">Ver meu perfil <FaArrowRight aria-hidden="true"/></Link>
+    <h1><TituloArmorial arte="inscricoes-encerradas">Inscrições encerradas</TituloArmorial></h1><Link to="/meu-perfil">Ver meu perfil <FaArrowRight aria-hidden="true"/></Link>
   </section>;
 
   const categorias = new Map();
@@ -104,7 +105,7 @@ export default function Inscricao() {
   return <form className="inscricao-armoriar" onSubmit={confirmar}>
     <header className="inscricao-topo">
       <Link to="/meu-perfil">Meu perfil</Link>
-      <h1>Inscrição nos jogos</h1>
+      <h1><TituloArmorial arte="inscricao">Inscrição nos jogos</TituloArmorial></h1>
       <p>Escolha de <strong>{ficha.minimo} a {ficha.maximo} modalidades</strong> até {diaDoPrazo.format(Date.parse(ficha.fim) - 1)}.</p>
       <p className="inscricao-turma"><span>{user.turma}</span>
         <span className={conectado ? 'inscricao-conexao conectada' : 'inscricao-conexao'} role="status">{vagas.status}</span></p>

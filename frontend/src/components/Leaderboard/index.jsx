@@ -1,4 +1,5 @@
 // Arquivo: intergil-client/src/components/Leaderboard/index.js
+import TituloArmorial from '../TituloArmorial';
 // VERSÃO 2.1 - CORRIGIDO (Com o JSX correto para o seu CSS)
 
 import React, { useState, useEffect } from 'react';
@@ -40,7 +41,7 @@ const Leaderboard = () => {
   if (error) {
     return (
       <div className="leaderboard-container">
-        <h2 className="leaderboard-titulo">RANKING 2026</h2>
+        <h2 className="leaderboard-titulo"><TituloArmorial arte="ranking-2026">RANKING 2026</TituloArmorial></h2>
         <p className="loading-text" style={{color: 'var(--neon-purple)'}}>
           {error}
         </p>
@@ -52,7 +53,7 @@ const Leaderboard = () => {
   if (loading) {
     return (
       <div className="leaderboard-container">
-        <h2 className="leaderboard-titulo">RANKING 2026</h2>
+        <h2 className="leaderboard-titulo"><TituloArmorial arte="ranking-2026">RANKING 2026</TituloArmorial></h2>
         <p className="loading-text">Carregando Ranking...</p>
       </div>
     );
@@ -62,7 +63,7 @@ const Leaderboard = () => {
   // Trocamos os <div>s por uma <Table> para bater com o seu CSS
   return (
     <div className="leaderboard-container">
-      <h2 className="leaderboard-titulo">RANKING 2026</h2>
+      <h2 className="leaderboard-titulo"><TituloArmorial arte="ranking-2026">RANKING 2026</TituloArmorial></h2>
       
       {/* Usando <table> com a classe que o seu CSS espera */}
       <table className="leaderboard-table">

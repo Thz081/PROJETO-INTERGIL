@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import TituloArmorial from '../../components/TituloArmorial';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaCalendarCheck, FaRightFromBracket, FaUser } from 'react-icons/fa6';
 import { useAudio } from '../../context/AudioContext';
@@ -91,7 +92,7 @@ export default function MeuPerfil() {
     </header>
     <section className="perfil-inscricao" aria-labelledby="perfil-titulo-inscricao" aria-busy={dados.status === 'carregando'}>
       <div className="perfil-inscricao-titulo">
-        <h2 id="perfil-titulo-inscricao" ref={tituloInscricao} tabIndex={-1}>Minha inscrição</h2>
+        <h2 id="perfil-titulo-inscricao" ref={tituloInscricao} tabIndex={-1}><TituloArmorial arte="minha-inscricao" escuro>Minha inscrição</TituloArmorial></h2>
         {inscrito && <span className="perfil-confirmada"><FaCalendarCheck aria-hidden="true"/> Confirmada</span>}
       </div>
       <p className="perfil-mensagem" role="status">{mensagem}</p>

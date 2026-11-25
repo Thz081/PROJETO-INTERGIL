@@ -1,4 +1,5 @@
 import React from 'react';
+import TituloArmorial from '../TituloArmorial';
 import './style.css';
 import { FaTrophy, FaInstagram } from 'react-icons/fa'; 
 
@@ -48,7 +49,7 @@ const Timeline = ({ items }) => {
 
   return (
     <div className="timeline-container">
-      <h2 className="timeline-titulo">HALL DA FAMA</h2>
+      <h2 className="timeline-titulo"><TituloArmorial arte="hall">HALL DA FAMA</TituloArmorial></h2>
       <div className="timeline">
         {items.map((item, index) => {
           const hasLink = item.instaUrl && item.instaUrl !== '#';

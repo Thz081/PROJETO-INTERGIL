@@ -1,4 +1,5 @@
 import { assetURL } from '../../api';
+import TituloArmorial from '../../components/TituloArmorial';
 import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import api from '../../api';
@@ -112,7 +113,7 @@ const Horarios = () => {
     return (
         <div className="horarios-wrapper">
             <div className="horarios-container">
-                <h1 className="horarios-titulo">Horários e Local dos Jogos</h1>
+                <h1 className="horarios-titulo"><TituloArmorial arte="horarios" escuro>Horários e Local dos Jogos</TituloArmorial></h1>
                 <p className="horarios-subtitulo">
                     Sexta-feira na quadra: esportes com os professores das 10h30 às 12h e premiação às 13h.
                 </p>

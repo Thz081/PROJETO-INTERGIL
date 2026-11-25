@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import TituloArmorial from '../TituloArmorial';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaArrowUpRightFromSquare, FaPause, FaPlay } from 'react-icons/fa6';
 import { assetURL } from '../../api';
@@ -77,7 +78,7 @@ export default function ModalidadesCarousel({ modalidades, estado, recarregar })
 
   return <section id="modalidades" ref={secao} className="carrossel-jogos" aria-labelledby={id + '-titulo'}>
     <div className="carrossel-cabecalho">
-      <h2 id={id + '-titulo'}>Modalidades</h2>
+      <h2 id={id + '-titulo'}><TituloArmorial arte="modalidades">Modalidades</TituloArmorial></h2>
       {modalidades.length > 0 && <div className="carrossel-controles">
         <div className="carrossel-filtro"><label htmlFor={id + '-categoria'}>Categoria</label>
           <select id={id + '-categoria'} value={categoria} onChange={e => {

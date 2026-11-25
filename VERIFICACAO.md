@@ -8,7 +8,6 @@ O pacote de implantação foi extraído em outro diretório e usado para constru
 | Primeiro acesso | Uma matrícula aleatória do primeiro ano e outra do terceiro validaram o nascimento, cadastraram e-mail e senha e voltaram a entrar. A API recusou senha com cinco caracteres. O banco de homologação armazenou os hashes bcrypt com custo 12. |
 | Inscrição | O primeiro ano confirmou duas modalidades e o terceiro confirmou três. Foram testados o cancelamento, as quatro atividades de imaginação, basquete, Free Fire, corrida, exclusividade no kata e limites por sexo e por série. |
 | Vagas ao vivo | A inscrição e o cancelamento mudaram o contador sem recarregar a página. O navegador recuperou a contagem após a reconexão do WebSocket. Duas requisições simultâneas disputaram a última vaga de UNO e somente uma foi confirmada. |
-| Inscrição por outra sala | A vaga de visitante foi contabilizada na sala representada e a outra modalidade ficou na turma de origem. O aluno declara no formulário que sua sala não tem time. |
 | Gestão e monitoria | Foram exercitadas criação, edição e exclusão de sala e modalidade, troca de brasão, capa, nome do evento e logo da página inicial, lançamento de pontos, ranking, histórico, registro de ações e exportação XLSX. A monitoria incluiu, alterou e excluiu horários e publicou chaveamento. |
 | Editais | Foram enviados PDFs de teste nos níveis geral, modalidade e opção. As páginas públicas abriram os arquivos. O edital definitivo da escola ainda precisa ser publicado pela gestão. |
 | Galeria | Foram enviados uma foto e um MP4 de aproximadamente 9 MB. A foto abriu ampliada, o vídeo reproduziu com controles e o Nginx entregou intervalos de bytes com HTTP 206. Foto e vídeo entraram e saíram da tela cheia. |
@@ -26,3 +25,14 @@ Os 12 brasões vieram da organização e a capa usa o cartaz Armoriar fornecido 
 3. Instalar o pacote na VPS, configurar o domínio e o HTTPS, carregar as matrículas e conferir o WebSocket pelo proxy público. A estimativa operacional é de 20 a 40 minutos com acesso, DNS e proxy disponíveis.
 
 Os testes de tela estreita usaram navegador desktop redimensionado. O domínio público e aparelhos físicos continuam fora da cobertura desta rodada.
+
+## Rodada de integração Armoriar
+
+- Docker recompilado sobre a base local e iniciado em um segundo projeto Compose com Mongo limpo. As contas e arquivos de teste ficaram nessa instalação isolada.
+- Primeiro acesso real no navegador de um aluno fictício de 1º ano e outro de 3º ano, login por matrícula e senha, limites por série, exclusividade de Kata, opções livres e agrupamentos de RPG, Basquete e Free Fire.
+- Vagas ao vivo em duas sessões, 4 → 3 → 4 no UNO, concorrência na última vaga, reconexão do WebSocket e contagem isolada por turma. Uma tentativa de usar a representação antiga foi rejeitada. A migração preservou sete fichas sintéticas e corrigiu a contagem para a turma de origem.
+- Gestão conferida com uma linha por inscrito na lista e na planilha. Logins reais de Gestão e Monitoria e nove rotas públicas testados em cinco larguras.
+- Carrossel com avanço, retorno ao início, pausa, setas, toque, filtro e movimento reduzido. Validadas **27 capas e 27 banners distintos 16:9** no navegador a 390 e 1280 px. Alatares está como campeã de 2025 na prévia local e o ícone do Instagram ficou separado da logo.
+- Inscrição e perfil validados de 360 a 1280 px, com atalho de categoria no celular, confirmação, cancelamento e estado vazio.
+- Momentos com upload real de WebP e MP4, reprodução e tela cheia em ambos. O proxy entrega MP4 como `video/mp4`, inclusive quando o navegador envia o arquivo como `application/mp4`.
+- Monitoria com criação, edição e exclusão de horário, publicação de chaveamento e upload e download de PDF de modalidade e de formato, em base de homologação.

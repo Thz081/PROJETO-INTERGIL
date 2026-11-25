@@ -4,11 +4,11 @@
 
 | Capacidade | Referência |
 |---|---|
-| Carrossel e filtro | `ModalidadesCarousel` usa lista com links, seletor nativo, rolagem por toque e botões de avanço |
+| Carrossel e filtro | `ModalidadesCarousel` usa lista com links, seletor nativo, rolagem por toque, setas e controle de avanço automático |
 | Marca e menu público | `Header` usa um menu com estado expandido e fechamento por Escape |
 | Portais | `PortalAcesso` reúne layout, botão, exibição de senha, validação e erro. O portal do aluno mantém as etapas de primeiro acesso. |
 | Navegação de detalhe | `ModalidadeDetalhe` usa o banner publicado e volta à seção de modalidades. |
-| Gestão e inscrição | Componentes e contratos existentes nos PRs da frente de regras e operação. |
+| Gestão e inscrição | Inscrição por categoria e perfil com resumo. Gestão recebe uma linha por aluno inscrito. |
 
 ## Canonical UI Map
 
@@ -25,4 +25,4 @@
 - O detalhe distingue modalidade ausente de falha na API. Uma falha de imagem usa a moldura padrão. URLs de editais e chaveamentos são exibidas quando cadastradas.
 - Campo obrigatório, data inválida e formato inválido mostram mensagem em texto e apontam o foco para o campo. Falha de autenticação preserva as entradas. A senha começa oculta. O usuário pode alternar a exibição, colar e usar preenchimento automático.
 - O portal do aluno continua usando matrícula e data de nascimento para o primeiro acesso. Os portais da Gestão e Monitoria continuam com seus próprios modos de autenticação e redirecionamento. Os endpoints e permissões pertencem à frente de backend.
-- A interface evita autoplay. Os botões rolam sem animação quando a pessoa prefere movimento reduzido. A página comporta menus e formulários em telas estreitas.
+- O carrossel avança a cada cinco segundos enquanto está visível e permite pausar. O toque, o cursor sobre o carrossel e o foco pelo teclado suspendem o avanço. Preferência por movimento reduzido desliga o avanço por padrão e faz os botões rolarem sem animação. A página comporta menus e formulários em telas estreitas.

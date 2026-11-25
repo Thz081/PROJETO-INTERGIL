@@ -15,15 +15,15 @@ Os tokens públicos têm como fonte `frontend/src/styles/armoriar.css`.
 | `--arm-laranja` | `#ff904e` | Botões primários, estado ativo e títulos auxiliares |
 | `--arm-turquesa` | `#68dddd` | Links, foco e sinais de navegação |
 | `--arm-vinho` | `#813047` | Acento da paleta para a expansão em revisão |
-| `--arm-display` | Young Serif | Títulos da prova principal |
+| `--arm-display` | Young Serif | Títulos atuais |
 | `--arm-text` | Poppins | Formulários, navegação, rótulos e ações |
 | `--arm-margem` | `clamp(16px,5vw,68px)` | Margens públicas fluidas |
 
-O arquivo `frontend/public/fonts/armoriar.css` declara as fontes locais e `frontend/public/fonts/` contém as licenças. Tacyo escolheu Young Serif para títulos após a revisão lado a lado com Press Start 2P. Poppins atende a navegação, os rótulos, o texto e os controles.
+O arquivo `frontend/public/fonts/armoriar.css` declara as fontes locais e `frontend/public/fonts/` contém as licenças. Tacyo escolheu Young Serif para títulos após a revisão lado a lado com Press Start 2P. Poppins atende a navegação, os rótulos, o texto e os controles. O letreiro da home e do cabeçalho usa a Tipografia Armorial de 2000 exportada em WebP transparente. A direção para os demais títulos é o Alfabeto Armorial, condicionada à autorização de incorporação e à cobertura de português. [Referência do arquivo](https://baralhoarmorial.wordpress.com/2011/02/01/tipografia-armorial/) · [Especificação de incorporação](https://learn.microsoft.com/en-us/typography/opentype/spec/os2)
 
 ## Ativos e composição
 
 - O cabeçalho usa uma assinatura horizontal transparente. A home exibe o cartaz inteiro.
 - As capas quadradas continuam em `public/images/gravuras/`. Os banners 16:9 ficam em `public/images/gravuras/banners/`. Um banner publicado pelo painel tem prioridade sobre o padrão.
 - A prova tem um banner de Futsal criado para essa modalidade e composições preliminares com as demais gravuras. O acervo de 2025 continua disponível como referência de composição e para a revisão posterior.
-- O carrossel mostra um trecho do card seguinte no celular, setas em todas as larguras e navegação pelo gesto nativo. As artes reservam espaço nominal para evitar deslocamento durante o carregamento.
+- O carrossel mostra um trecho do card seguinte no celular, setas em todas as larguras e navegação pelo gesto nativo. O avanço automático dispõe de botão para pausar, para durante a interação e inicia desligado com preferência por movimento reduzido. As artes reservam espaço nominal para evitar deslocamento durante o carregamento.

@@ -29,3 +29,8 @@
 .momentos-confirmacao button + button { margin-left: .5rem; }
 .momentos-erro { border-left: 3px solid #ff904e; padding: .6rem .8rem; background: #37232e; }
 @media (max-width: 760px) { .momentos-equipe-grade { grid-template-columns: minmax(0, 1fr); } }
+
+.momentos-atalho { margin: 0 0 1rem; }
+.momentos-atalho summary { font-family: var(--arm-display, Georgia, serif); font-size: 1.32rem; cursor: pointer; }
+.momentos-atalho fieldset { padding: 0; border: 0; min-width: 0; }
+.momentos-lista-filtros { margin-top: .65rem; }

@@ -53,7 +53,7 @@ export default function ModalidadeDetalhe() {
         </Link>
         <LinkDocumento url={modalidade.linkEdital}>Edital da modalidade</LinkDocumento>
         <LinkDocumento url={modalidade.linkChaveamento}>Chaveamento</LinkDocumento>
-        <Link className="arm-botao arm-botao-contorno" to={`/momentos?assunto=modalidade&modalidade=${modalidade._id}`}>
+        <Link className="arm-botao arm-botao-contorno" to={`/momentos/albuns?album=${modalidade._id}`}>
           Ver cobertura
         </Link>
       </div>

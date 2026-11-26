@@ -3,6 +3,9 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'reac
 import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaExpand, FaInstagram, FaPlay, FaRegImages } from 'react-icons/fa';
 import TituloArmorial from '../../components/TituloArmorial';
 import api, { assetURL } from '../../api';
+import Colecoes, { CreditosTurmas, PerfisTurmas } from './Colecoes';
+import Lances from './Lances';
+import abrirTelaCheia from './telaCheia';
 import './style.css';
 
 const rota = '/acervo-momentos';
@@ -35,7 +38,10 @@ function Capa({ item, destaque = false }) {
 }
 
 export default function Momentos() {
-  const { id } = useParams();
+  const { id, sala } = useParams();
+  const { pathname } = useLocation();
+  const lances = pathname === '/momentos/lances';
+  const albuns = Boolean(sala) || pathname === '/momentos/albuns';
   const [busca, definirBusca] = useSearchParams();
   const [catalogo, definirCatalogo] = useState(null);
   const [falhaCatalogo, definirFalhaCatalogo] = useState(false);
@@ -49,16 +55,21 @@ export default function Momentos() {
   }, [tentarCatalogo]);
 
   return <section className="galeria-edicao">
-    {id ? <Detalhe key={id} id={id} busca={busca} catalogo={catalogo}/> : <>
+    {lances ? <Lances catalogo={catalogo}/> : albuns ? <Colecoes key={sala || 'geral'} catalogo={catalogo}
+      salaId={sala} Visor={Visor}/> : id ? <Detalhe key={id} id={id} busca={busca} catalogo={catalogo}/> : <>
       <div className="momentos-topo">
         <div><h1><TituloArmorial arte="momentos">Momentos do Intergil</TituloArmorial></h1>
           <p>Fotos e vídeos dos jogos, das danças e da torcida.</p></div>
         <a href={instagram} target="_blank" rel="noreferrer"><FaInstagram aria-hidden/> Cobertura da AGR TV</a>
       </div>
+      <PerfisTurmas catalogo={catalogo}/>
+      <div className="momento-recentes-topo"><h2>Publicações recentes</h2>
+        <Link to="/momentos/lances" className="arm-botao"><FaPlay aria-hidden/> Explorar Lances</Link>
+      </div>
       <Acervo key={busca.toString()} busca={busca} definirBusca={definirBusca} catalogo={catalogo}/>
-      {falhaCatalogo && <p role="status">Não foi possível carregar os filtros. <button type="button"
-        className="arm-botao arm-botao-contorno" onClick={() => definirTentativaCatalogo(n => n + 1)}>Tentar novamente</button></p>}
     </>}
+    {falhaCatalogo && <p role="status">Não foi possível carregar o catálogo de turmas e modalidades. <button type="button"
+        className="arm-botao arm-botao-contorno" onClick={() => definirTentativaCatalogo(n => n + 1)}>Tentar novamente</button></p>}
   </section>;
 }
 
@@ -105,8 +116,7 @@ function Acervo({ busca, definirBusca, catalogo }) {
   return <>
     <div className="momentos-abas" role="group" aria-label="Tipo de publicação">
       <button type="button" aria-pressed={tipo === 'foto'} onClick={() => mudar({ tipo: '', lance: '' })}>Álbuns de fotos</button>
-      <button type="button" aria-pressed={tipo === 'video' && !lance} onClick={() => mudar({ tipo: 'video', lance: '' })}>Vídeos</button>
-      <button type="button" aria-pressed={lance} onClick={() => mudar({ tipo: 'video', lance: '1' })}><FaPlay aria-hidden/> Lances</button>
+      <button type="button" aria-pressed={tipo === 'video'} onClick={() => mudar({ tipo: 'video', lance: '' })}>Vídeos</button>
     </div>
     <div className="momentos-filtros">
       <label>Assunto
@@ -162,7 +172,8 @@ function Detalhe({ id, busca, catalogo }) {
   const [tentativa, tentar] = useState(0);
   const [indice, definirIndice] = useState(0);
   const [aberto, abrir] = useState(Boolean(state?.reproduzir));
-  const volta = '/momentos' + (busca.size ? '?' + busca.toString() : item?.tipo === 'video' ? '?tipo=video' : '');
+  const destaColecao = /^\/momentos\/(?:albuns|lances|turmas\/[a-f0-9]{24})(?:\?|$)/.test(state?.voltar || '');
+  const volta = destaColecao ? state.voltar : '/momentos' + (busca.size ? '?' + busca.toString() : item?.tipo === 'video' ? '?tipo=video' : '');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -172,7 +183,6 @@ function Detalhe({ id, busca, catalogo }) {
     return () => controller.abort();
   }, [id, tentativa]);
 
-  const turmas = item?.salas.map(sala => catalogo?.salas.find(turma => turma._id === sala)).filter(Boolean);
   const midia = item?.midias[indice];
   const lances = state?.lances || [];
   const posicao = lances.indexOf(id);
@@ -192,7 +202,7 @@ function Detalhe({ id, busca, catalogo }) {
           <p className="momento-contexto">{rotulo(item, catalogo)}{item.formato && ' · ' + item.formato}</p>
           <h1>{item.titulo}</h1>
           {item.tema && <p className="momento-tema">{item.tema}</p>}
-          {turmas.length > 0 && <ul className="momento-turmas">{turmas.map(turma => <li key={turma._id}>{turma.turma} · {turma.nome}</li>)}</ul>}
+          <CreditosTurmas ids={item.salas} catalogo={catalogo}/>
         </header>
         {midia && <button className="momento-abrir" type="button" onClick={() => abrir(true)}>
           <Capa item={{ ...item, midias: [midia] }} destaque/>
@@ -237,10 +247,7 @@ function Visor({ item, indice, definirIndice, fechar, anteriorLance, proximoLanc
   async function telaCheia() {
     try {
       const video = ref.current.querySelector('video');
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else if (video?.webkitEnterFullscreen && /iPhone|iPad/.test(navigator.userAgent)) video.webkitEnterFullscreen();
-      else if (ref.current.firstElementChild.requestFullscreen) await ref.current.firstElementChild.requestFullscreen();
-      else avisar('A mídia já ocupa o espaço disponível neste navegador.');
+      await abrirTelaCheia(ref.current.firstElementChild, video, Boolean(video && midia.largura > midia.altura));
     } catch { avisar('Use o botão de tela cheia no player.'); }
   }
 

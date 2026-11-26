@@ -1,4 +1,4 @@
-const { randomUUID } = require('node:crypto');
+const { createHash, randomUUID } = require('node:crypto');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const jwt = require('jsonwebtoken');
@@ -14,6 +14,7 @@ const idValido = valor => typeof valor === 'string' && /^[a-f0-9]{24}$/i.test(va
 const tipoValido = tipo => tipo === 'foto' || tipo === 'video';
 const assuntos = ['evento', 'modalidade', 'mascote', 'danca'];
 const publico = { estado: { $nin: ['rascunho', 'retirado'] } };
+const podeAnexar = { $or: [{ estado: { $in: ['rascunho', 'retirado'] } }, { estado: 'publicado', tipo: 'foto' }] };
 const erro = (status, message) => Object.assign(new Error(message), { status });
 const lerTrecho = express.raw({ type: 'application/octet-stream', limit: 4 * MiB });
 const nomeOriginal = valor => {
@@ -30,10 +31,42 @@ function idMomento(req) {
 
 async function catalogo(_req, res) {
   const [modalidades, salas] = await Promise.all([
-    Modalidade.find().select('nome slug categoria submodalidades.nome').sort({ nome: 1 }).lean(),
+    Modalidade.find().select('nome slug categoria submodalidades.nome imgCarrossel').sort({ nome: 1 }).lean(),
     Sala.find().select('nome turma logo_url').sort({ turma: 1 }).lean()
   ]);
   res.json({ modalidades, salas });
+}
+
+async function colecoes(req, res) {
+  const { sala } = req.query;
+  if (sala && !idValido(sala)) throw erro(400, 'Selecione uma turma válida.');
+  const filtro = { ...publico, assunto: { $in: ['modalidade', 'mascote', 'danca'] },
+    ...(sala && { salas: new Types.ObjectId(sala) }) };
+  const resumo = await Momento.aggregate([
+    { $match: filtro },
+    { $sort: { _id: -1 } },
+    { $project: {
+      assunto: 1, modalidade: 1, tipo: 1, url: 1, formato: { $ifNull: ['$formato', ''] },
+      prontas: { $filter: { input: { $ifNull: ['$midias', []] }, as: 'm', cond: { $eq: ['$$m.estado', 'pronta'] } } }
+    } },
+    { $project: { assunto: 1, modalidade: 1, tipo: 1, url: 1, formato: 1,
+      arquivos: { $cond: [{ $gt: [{ $size: '$prontas' }, 0] }, { $size: '$prontas' }, { $cond: ['$url', 1, 0] }] },
+      capaId: { $arrayElemAt: ['$prontas._id', 0] }
+    } },
+    { $match: { arquivos: { $gt: 0 } } },
+    { $group: {
+      _id: { assunto: '$assunto', modalidade: '$modalidade', formato: '$formato', tipo: '$tipo' },
+      total: { $sum: '$arquivos' }, publicacao: { $first: '$_id' }, capaId: { $first: '$capaId' }, url: { $first: '$url' }
+    } }
+  ]).option({ maxTimeMS: 3000 });
+  res.set('Cache-Control', 'no-store').json(resumo.map(({ _id, total, publicacao, capaId, url }) => ({
+    ..._id, total, capa: capaId ? `/api/acervo-momentos/${publicacao}/arquivo/${capaId}/capa` :
+      _id.tipo === 'foto' ? url : undefined
+  })));
+}
+
+function chaveAlbum({ modalidade, formato, salas }) {
+  return createHash('sha256').update(JSON.stringify([modalidade, formato || '', salas.map(sala => String(sala).toLowerCase()).sort()])).digest('hex');
 }
 
 function texto(valor, max) {
@@ -54,6 +87,8 @@ async function campos(body, tipo) {
     throw erro(400, 'Selecione turmas válidas e distintas.');
   if ((assunto === 'mascote' && salas.length !== 1) || (assunto === 'danca' && salas.length !== 3))
     throw erro(400, 'Selecione uma turma para Mascote ou três para Dança geral.');
+  if (assunto === 'modalidade' && salas.length > 2)
+    throw erro(400, 'Marque até duas turmas por registro da modalidade.');
   const tema = assunto === 'danca' ? texto(body.tema, 120) : '';
   if (assunto === 'danca' && !tema) throw erro(400, 'Informe o tema da dança geral.');
   const modalidade = assunto === 'modalidade' ? Number(body.modalidade) : null;
@@ -87,7 +122,13 @@ async function lista(req, res, equipe = false) {
   if (assuntos.includes(assunto)) filtro.assunto = assunto;
   if (/^\d{1,8}$/.test(modalidade)) filtro.modalidade = Number(modalidade);
   if (idValido(sala)) filtro.salas = sala;
-  if (lance === '1') filtro.lance = true;
+  if (typeof req.query.formato === 'string' && req.query.formato && req.query.formato.length <= 100)
+    filtro.formato = req.query.formato;
+  if (lance === '1') {
+    filtro.lance = true;
+    filtro.tipo = 'video';
+    if (!equipe) filtro.midias = { $elemMatch: { estado: 'pronta', duracao: { $gt: 0, $lte: 90 } } };
+  }
   if (idValido(antes)) filtro._id = { $lt: antes };
   const itens = await Momento.find(filtro).sort({ _id: -1 }).limit(13).lean();
   res.set('Cache-Control', 'no-store').json({
@@ -112,13 +153,33 @@ async function criar(req, res) {
   res.status(201).json(ficha(doc, true));
 }
 
+async function abrirAlbum(req, res) {
+  const modalidade = Number(req.body.modalidade);
+  const registro = Number.isSafeInteger(modalidade) && await Modalidade.findById(modalidade).select('nome').lean();
+  if (!registro) throw erro(404, 'Modalidade não encontrada.');
+  const formato = texto(req.body.formato, 100);
+  const titulo = [registro.nome, formato].filter(Boolean).join(' · ').slice(0, 120);
+  const valores = await campos({ titulo, assunto: 'modalidade', modalidade, formato, salas: req.body.salas }, 'foto');
+  valores.salas = valores.salas.map(sala => sala.toLowerCase());
+  const albumChave = chaveAlbum(valores);
+  const filtro = { albumChave };
+  const dados = { ...valores, tipo: 'foto', estado: 'rascunho', midias: [], autor: String(req.user.id), albumChave };
+  const doc = await Momento.findOneAndUpdate(filtro, { $setOnInsert: dados }, { upsert: true, new: true }).lean()
+    .catch(falha => { if (falha.code === 11000) return Momento.findOne(filtro).lean(); throw falha; });
+  if (!doc) throw erro(409, 'O álbum foi alterado. Abra a coleção novamente.');
+  res.json(ficha(doc, true));
+}
+
 async function editar(req, res) {
   const doc = await Momento.findById(idMomento(req)).lean();
   if (!doc) throw erro(404, 'Publicação não encontrada.');
   const valores = await campos(req.body, doc.tipo);
   if (valores.lance && doc.midias?.some(item => item.duracao > 90))
     throw erro(400, 'Use como Lance apenas um vídeo de até 90 segundos.');
-  const atual = await Momento.findByIdAndUpdate(doc._id, { $set: valores }, { new: true }).lean();
+  const atualizacao = { $set: valores };
+  if (doc.albumChave && (valores.assunto !== 'modalidade' || chaveAlbum(valores) !== doc.albumChave))
+    atualizacao.$unset = { albumChave: '' };
+  const atual = await Momento.findByIdAndUpdate(doc._id, atualizacao, { new: true }).lean();
   res.json(ficha(atual, true));
 }
 
@@ -134,7 +195,7 @@ async function iniciarEnvio(req, res) {
   const id = idMomento(req);
   const doc = await Momento.findById(id).select('tipo estado midias').lean();
   if (!doc || !doc.midias) throw erro(404, 'Rascunho não encontrado.');
-  if (doc.estado === 'publicado') throw erro(409, 'Retire a publicação do ar antes de enviar arquivos.');
+  if (doc.estado === 'publicado' && doc.tipo !== 'foto') throw erro(409, 'Retire o vídeo do ar antes de trocar o arquivo.');
   const nome = nomeOriginal(req.body.nome);
   const extensao = path.extname(nome).toLowerCase();
   const { bytes, alteradoEm } = req.body;
@@ -173,7 +234,7 @@ async function iniciarEnvio(req, res) {
     const midia = { _id: new Types.ObjectId(), estado: 'enviando', entrada: randomUUID() + extensao,
       tamanho: bytes, bytesOriginais: bytes, alteradoEm, original: nome, autor, tocadoEm: new Date() };
     const atual = await Momento.findOneAndUpdate({
-      _id: id, estado: { $in: ['rascunho', 'retirado'] }, [`midias.${maximo - 1}`]: { $exists: false },
+      _id: id, ...podeAnexar, [`midias.${maximo - 1}`]: { $exists: false },
       midias: { $not: { $elemMatch: { autor, original: nome, bytesOriginais: bytes, alteradoEm, estado: { $ne: 'falhou' } } } }
     }, { $push: { midias: midia } }).lean();
     if (!atual) throw erro(409, 'A publicação foi alterada. Confira o estado e tente novamente.');
@@ -190,7 +251,7 @@ async function anexarTrecho(req, res) {
   if (recebendo) throw erro(429, 'Outro trecho está chegando. Retome o envio em instantes.');
   recebendo = true;
   try {
-    const doc = await Momento.findOne({ _id: id, estado: { $in: ['rascunho', 'retirado'] }, 'midias._id': midia })
+    const doc = await Momento.findOne({ _id: id, ...podeAnexar, 'midias._id': midia })
       .select('midias').lean();
     const item = doc?.midias.find(arquivo => String(arquivo._id) === midia && arquivo.autor === String(req.user.id));
     if (!item) throw erro(404, 'Envio não encontrado.');
@@ -224,10 +285,13 @@ async function removerMidia(req, res) {
   try {
     const midia = req.params.midia;
     const filtro = { _id: midia, estado: { $ne: 'processando' } };
+    const restantePublica = { $gt: [{ $size: { $filter: { input: { $ifNull: ['$midias', []] }, as: 'foto',
+      cond: { $and: [{ $ne: ['$$foto._id', new Types.ObjectId(midia)] }, { $eq: ['$$foto.estado', 'pronta'] }] }
+    } } }, 0] };
     const antigo = await Momento.findOneAndUpdate({
-      _id: id, estado: { $in: ['rascunho', 'retirado'] }, midias: { $elemMatch: filtro }
+      _id: id, $or: [podeAnexar.$or[0], { ...podeAnexar.$or[1], $expr: restantePublica }], midias: { $elemMatch: filtro }
     }, { $pull: { midias: { _id: midia } } }).lean();
-    if (!antigo) throw erro(409, 'Retire a publicação ou aguarde o processamento antes de remover o arquivo.');
+    if (!antigo) throw erro(409, 'Aguarde o processamento ou retire a publicação do ar antes de remover a última mídia.');
     const arquivo = antigo.midias.find(item => String(item._id) === midia);
     await Promise.all([
       fs.rm(path.join(saida, midia), { recursive: true, force: true }),
@@ -280,4 +344,4 @@ async function arquivo(req, res) {
   res.sendFile(path.join(saida, midia, nome));
 }
 
-module.exports = { catalogo, lista, detalhe, criar, editar, iniciarEnvio, anexarTrecho, removerMidia, estado, arquivo };
+module.exports = { catalogo, colecoes, lista, detalhe, criar, abrirAlbum, editar, iniciarEnvio, anexarTrecho, removerMidia, estado, arquivo };

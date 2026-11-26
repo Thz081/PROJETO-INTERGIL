@@ -14,6 +14,8 @@ Transformar [Momentos](http://localhost:4176/momentos) no acervo oficial da cobe
 
 ## Página pública
 
+**Perfis e álbuns por turma.** A grade usa as turmas ativas e seus brasões. Cada turma recebe álbuns de fotos e de vídeos para todas as modalidades e seus formatos, em ordem alfabética. A aba Danças traz Dança geral e Dança do mascote. As coleções vazias aparecem com o estado adequado. A AGR TV abre e edita um álbum compartilhável pelo atalho do catálogo. O Mongo guarda uma publicação e seus vínculos, e cada perfil consulta os registros marcados para ele. Fotos adicionadas a um álbum publicado passam a aparecer quando prontas. Dentro do álbum, o arraste carrega só a foto selecionada. O feed vertical de Lances embaralha a ordem de cada lote e mantém só o vídeo visível montado.
+
 Preservar a marca Armoriar e reaproveitar a tinta, o papel e o laranja de `DESIGN.md`. Usar a arte Armorial no título, Young Serif nos títulos dinâmicos e Poppins em filtros, datas e legendas. A imagem principal é uma foto ou capa escolhida pela AGR TV. Uma faixa horizontal de cartazes dá acesso aos lances curtos no celular e por teclado. O destaque só ocupa espaço quando existe uma publicação escolhida.
 
 ```text

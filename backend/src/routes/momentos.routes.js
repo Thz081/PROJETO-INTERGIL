@@ -6,6 +6,7 @@ const { escopoMonitor } = require('../controllers/monitor.controller');
 const publico = express.Router();
 publico.get('/', (req, res) => controller.lista(req, res));
 publico.get('/catalogo', controller.catalogo);
+publico.get('/colecoes', controller.colecoes);
 publico.get('/:id', (req, res) => controller.detalhe(req, res));
 publico.get('/:id/arquivo/:midia/:parte', controller.arquivo);
 
@@ -17,6 +18,7 @@ equipe.use(protect, async (req, res, next) => {
     res.status(403).json({ message: 'Acesso reservado à equipe de Momentos.' }));
 });
 equipe.route('/').get((req, res) => controller.lista(req, res, true)).post(controller.criar);
+equipe.post('/colecoes', controller.abrirAlbum);
 equipe.route('/:id').get((req, res) => controller.detalhe(req, res, true)).patch(controller.editar);
 equipe.patch('/:id/estado', controller.estado);
 equipe.post('/:id/envios', controller.iniciarEnvio);

@@ -19,6 +19,51 @@ const mensagem = (erro, fallback) => erro.response?.data?.message || fallback;
 const campos = item => ({ ...vazio, ...item, modalidade: item.modalidade || '', formato: item.formato || '',
   tema: item.tema || '', legenda: item.legenda || '', salas: item.salas || [] });
 
+function AtalhoColecoes({ catalogo, bloqueado, abrir }) {
+  const [modalidade, definirModalidade] = useState('');
+  const [formato, definirFormato] = useState('');
+  const [primeira, definirPrimeira] = useState('');
+  const [segunda, definirSegunda] = useState('');
+  const registro = catalogo.modalidades.find(item => String(item._id) === modalidade);
+  const titulo = registro && [registro.nome, formato].filter(Boolean).join(' · ');
+  const salas = [primeira, segunda].filter(Boolean);
+  const opcoes = catalogo.salas.map(item => <option key={item._id} value={item._id}>{item.nome} · {item.turma}</option>);
+  return <details className="momentos-equipe-painel momentos-atalho">
+    <summary>Álbuns do catálogo</summary>
+    <p>Escolha a modalidade e, se precisar, o formato. Marque as turmas que devem receber a publicação no perfil.</p>
+    <fieldset className="momentos-equipe-dupla" disabled={bloqueado}>
+      <label className="momentos-equipe-campo">Modalidade do álbum
+        <select value={modalidade} onChange={e => { definirModalidade(e.target.value); definirFormato(''); }}>
+          <option value="">Selecione</option>
+          {catalogo.modalidades.map(item => <option key={item._id} value={item._id}>{item.nome}</option>)}
+        </select>
+      </label>
+      <label className="momentos-equipe-campo">Formato do álbum
+        <select value={formato} disabled={!registro?.submodalidades?.length} onChange={e => definirFormato(e.target.value)}>
+          <option value="">Álbum principal</option>
+          {registro?.submodalidades.map(item => <option key={item.nome}>{item.nome}</option>)}
+        </select>
+      </label>
+      <label className="momentos-equipe-campo">Primeira turma
+        <select value={primeira} onChange={e => definirPrimeira(e.target.value)}>
+          <option value="">Opcional</option>{opcoes.filter(item => item.props.value !== segunda)}
+        </select>
+      </label>
+      <label className="momentos-equipe-campo">Segunda turma
+        <select value={segunda} onChange={e => definirSegunda(e.target.value)}>
+          <option value="">Opcional</option>{opcoes.filter(item => item.props.value !== primeira)}
+        </select>
+      </label>
+    </fieldset>
+    <div className="momentos-equipe-acoes">
+      <button className="arm-botao" type="button" disabled={!registro || bloqueado}
+        onClick={() => abrir({ titulo, tipo: 'foto', modalidade, formato, salas })}>Abrir álbum de fotos</button>
+      <button className="arm-botao arm-botao-contorno" type="button" disabled={!registro || bloqueado}
+        onClick={() => abrir({ titulo, tipo: 'video', modalidade, formato, salas })}>Novo vídeo nesse álbum</button>
+    </div>
+  </details>;
+}
+
 export default function AdminMomentos() {
   const { user } = useAuth();
   if (user?.role === 'monitor' && !user.agrTv) return <Navigate to="/monitor-dashboard" replace/>;
@@ -28,7 +73,7 @@ export default function AdminMomentos() {
 function PainelMomentos() {
   const [catalogo, definirCatalogo] = useState({ modalidades: [], salas: [] });
   const [lista, definirLista] = useState({ itens: [], proximo: null });
-  const [filtro, definirFiltro] = useState('');
+  const [filtros, definirFiltros] = useState({ tipo: '', modalidade: '', sala: '' });
   const [carregando, definirCarregando] = useState(true);
   const [selecionado, selecionar] = useState(null);
   const [form, formulario] = useState(vazio);
@@ -41,13 +86,19 @@ function PainelMomentos() {
   const [confirmacao, confirmar] = useState(null);
   const abortar = useRef(null);
 
-  async function carregarLista(antes, tipo = filtro) {
+  async function carregarLista(antes, ativos = filtros) {
     definirCarregando(true);
     try {
-      const { data } = await api.get(rota, { params: { antes, tipo } });
+      const { data } = await api.get(rota, { params: { antes, ...ativos } });
       definirLista(anterior => ({ ...data, itens: antes ? [...anterior.itens, ...data.itens] : data.itens }));
     } catch (falha) { definirErro(mensagem(falha, 'Não foi possível carregar as publicações.')); }
     finally { definirCarregando(false); }
+  }
+
+  function filtrar(chave, valor) {
+    const ativos = { ...filtros, [chave]: valor };
+    definirFiltros(ativos);
+    carregarLista(null, ativos);
   }
 
   useEffect(() => {
@@ -86,6 +137,21 @@ function PainelMomentos() {
       const { data } = await api.get(rota + '/' + id);
       selecionar(data); formulario(campos(data)); definirArquivos([]);
     } catch (falha) { definirErro(mensagem(falha, 'Não foi possível abrir a publicação.')); }
+    finally { ocupar(false); }
+  }
+
+  async function abrirColecao(dados) {
+    nova();
+    if (dados.tipo === 'video') {
+      formulario({ ...vazio, ...dados, assunto: 'modalidade', titulo: dados.titulo.slice(0, 120) });
+      return;
+    }
+    ocupar(true);
+    try {
+      const { data } = await api.post(rota + '/colecoes', dados);
+      await abrir(data._id);
+      carregarLista();
+    } catch (falha) { definirErro(mensagem(falha, 'Não foi possível abrir o álbum do catálogo.')); }
     finally { ocupar(false); }
   }
 
@@ -171,6 +237,8 @@ function PainelMomentos() {
   const modalidade = catalogo.modalidades.find(item => String(item._id) === String(form.modalidade));
   const lugares = form.assunto === 'danca' ? 3 : form.assunto === 'mascote' ? 1 : form.assunto === 'modalidade' ? 2 : 0;
   const publicado = selecionado?.estado === 'publicado';
+  const albumAoVivo = publicado && selecionado.tipo === 'foto';
+  const fotosProntas = selecionado?.midias?.filter(item => item.estado === 'pronta').length || 0;
   const pronto = selecionado?.midias?.length && selecionado.midias.every(midia => !midia.estado || midia.estado === 'pronta')
     && (!selecionado.lance || selecionado.midias.every(midia => !midia.duracao || midia.duracao <= 90));
   const espaco = (form.tipo === 'foto' ? 12 : 1) - (selecionado?.midias?.length || 0);
@@ -191,6 +259,8 @@ function PainelMomentos() {
     {erro && <p className="momentos-erro" role="alert" id="momento-erro-editor">{erro}</p>}
     {aviso && <p role="status">{aviso}</p>}
 
+    <AtalhoColecoes catalogo={catalogo} bloqueado={bloqueado} abrir={abrirColecao}/>
+
     <div className="momentos-equipe-grade">
       <section className="momentos-equipe-painel">
         <div className="momentos-equipe-linha">
@@ -198,10 +268,24 @@ function PainelMomentos() {
           <button className="arm-botao" type="button" disabled={bloqueado} onClick={nova}><FaPlus aria-hidden/> Nova</button>
         </div>
         <label className="momentos-equipe-campo">Tipo
-          <select value={filtro} onChange={e => { definirFiltro(e.target.value); carregarLista(null, e.target.value); }} disabled={carregando}>
+          <select value={filtros.tipo} onChange={e => filtrar('tipo', e.target.value)} disabled={carregando}>
             <option value="">Todos</option><option value="foto">Álbuns</option><option value="video">Vídeos</option>
           </select>
         </label>
+        <div className="momentos-equipe-dupla momentos-lista-filtros">
+          <label className="momentos-equipe-campo">Modalidade
+            <select value={filtros.modalidade} onChange={e => filtrar('modalidade', e.target.value)} disabled={carregando}>
+              <option value="">Todas</option>
+              {catalogo.modalidades.map(item => <option key={item._id} value={item._id}>{item.nome}</option>)}
+            </select>
+          </label>
+          <label className="momentos-equipe-campo">Turma
+            <select value={filtros.sala} onChange={e => filtrar('sala', e.target.value)} disabled={carregando}>
+              <option value="">Todas</option>
+              {catalogo.salas.map(item => <option key={item._id} value={item._id}>{item.nome}</option>)}
+            </select>
+          </label>
+        </div>
         <ul className="momentos-publicacoes">
           {lista.itens.map(item => <li key={item._id}>
             <button type="button" aria-pressed={idAtual === item._id} disabled={bloqueado} onClick={() => abrir(item._id)}>
@@ -283,13 +367,14 @@ function PainelMomentos() {
                 <small>{estados[item.estado] || 'Arquivo anterior'}</small>{item.erro && <p>{item.erro}</p>}
                 {item.url && <a href={assetURL(item.url)} target="_blank" rel="noreferrer">Ver arquivo</a>}
               </div>
-              {!publicado && item.estado && item.estado !== 'processando' && <button
+              {(!publicado || albumAoVivo && (item.estado !== 'pronta' || fotosProntas > 1)) && item.estado && item.estado !== 'processando' && <button
                 className="arm-botao arm-botao-contorno" type="button" disabled={bloqueado}
                 onClick={() => confirmar({ midia: item._id, texto: 'Remover este arquivo da publicação?' })}>Remover</button>}
             </li>)}
           </ul>}
 
-          {!publicado && !selecionado.legado && (espaco > 0 || retomaveis > 0) && <>
+          {(!publicado || albumAoVivo) && !selecionado.legado && (espaco > 0 || retomaveis > 0) && <>
+            {albumAoVivo && <p>As fotos novas aparecem em todos os perfis marcados quando o processamento termina.</p>}
             {retomaveis > 0 && <p>Selecione o mesmo arquivo para continuar um envio incompleto.</p>}
             <ArquivoCampo titulo={selecionado.tipo === 'foto' ? 'Selecionar fotos' : 'Selecionar vídeo'}
               tipo={selecionado.tipo === 'foto' ? 'fotoMomento' : 'videoMomento'} arquivos={arquivos}

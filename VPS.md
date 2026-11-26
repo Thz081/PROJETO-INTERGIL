@@ -125,6 +125,8 @@ unset senha_intergil
 
 O processador usa a mesma imagem da API, com outro comando. O Compose desta versão inclui o serviço `processador-momentos` e o volume persistente `momentos`. Ao atualizar a partir de uma versão anterior ao acervo, use o novo Compose além da nova tag. Preserve os volumes `arquivos` e `momentos` e o backup do Atlas.
 
+Os 12 perfis, modalidades e formatos vêm do catálogo cadastrado e aparecem assim que o novo site sobe. A AGR TV pode entrar em Momentos → Álbuns do catálogo, escolher a modalidade, o formato e as turmas e abrir o álbum para receber fotos. O mesmo registro abastece todos os perfis marcados. O instalador não precisa copiar rascunhos, contas de demonstração ou arquivos da prévia.
+
 O envio usa trechos de até 4 MiB. A equipe pode selecionar o mesmo arquivo novamente para continuar do trecho confirmado. A publicação só fica disponível após o processamento. O original serve como entrada temporária, por isso a AGR TV deve preservar suas cópias. O acervo usa 5 GiB como teto padrão. Para mudar esse valor, defina `MOMENTOS_ACERVO_MIB` no ambiente antes de recriar a API. O trabalhador usa até 0,75 CPU e 768 MiB de RAM. O Nginx limita a entrega a 12 transferências simultâneas de vídeo. Confirme a memória, o espaço em disco e a banda disponível antes de abrir a cobertura.
 
 A Gestão e a AGR TV usam o mesmo editor. Para vincular um aluno que já tem cadastro, informar o usuário externo ou retirar a permissão de uma conta, execute na VPS:

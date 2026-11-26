@@ -46,6 +46,7 @@ const momentoSchema = new mongoose.Schema({
   formato: String,
   salas: { type: [mongoose.Schema.Types.ObjectId], default: undefined },
   lance: Boolean,
+  albumChave: String,
   autor: String,
   publicadoEm: Date,
   midias: { type: [midiaSchema], default: undefined }
@@ -53,5 +54,8 @@ const momentoSchema = new mongoose.Schema({
 
 momentoSchema.index({ tipo: 1, estado: 1, _id: -1 });
 momentoSchema.index({ 'midias.estado': 1 });
+momentoSchema.index({ salas: 1, assunto: 1, modalidade: 1, tipo: 1, _id: -1 });
+momentoSchema.index({ lance: 1, _id: -1 });
+momentoSchema.index({ albumChave: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Momento', momentoSchema);

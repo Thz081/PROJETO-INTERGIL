@@ -78,6 +78,9 @@ function App() {
           <Route path="/horarios" element={<Horarios />} />
           <Route path="/historia" element={<Historia />} />
           <Route path="/momentos" element={<TelaMomentos />} />
+          <Route path="/momentos/albuns" element={<TelaMomentos />} />
+          <Route path="/momentos/turmas/:sala" element={<TelaMomentos />} />
+          <Route path="/momentos/lances" element={<TelaMomentos />} />
           <Route path="/momentos/:id" element={<TelaMomentos />} />
           <Route path="/modalidade/:slug" element={<ModalidadeDetalhe />} />
           <Route path="/ranking" element={<Ranking />} />

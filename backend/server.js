@@ -69,6 +69,7 @@ const PORT = process.env.PORT || 3001;
 async function start() {
   try {
     await connectDB({ dbName: 'intergil2026' });
+    await require('./src/models/momento.model').init();
     await iniciar();
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🔥 Servidor rodando na porta ${PORT}`);

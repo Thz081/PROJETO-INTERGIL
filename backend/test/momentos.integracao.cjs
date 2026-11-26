@@ -44,6 +44,17 @@ async function testar() {
   await chamar(editor, 403, { token: (await entrar(monitor.matricula)).token });
 
   const salas = (await Sala.find().limit(3).select('_id').lean()).map(item => String(item._id));
+  const catalogo = await chamar(galeria + '/catalogo', 200);
+  assert.equal(catalogo.salas.length, 12);
+  const futsal = catalogo.modalidades.find(item => item.slug === 'futsal');
+  const formato = futsal.submodalidades[0].nome;
+  const abrirAlbum = dados => chamar(editor + '/colecoes', 200, { metodo: 'POST', token, dados });
+  const [colaboracao, reaberto] = await Promise.all([
+    abrirAlbum({ modalidade: futsal._id, formato, salas: salas.slice(0, 2) }),
+    abrirAlbum({ modalidade: futsal._id, formato, salas: [salas[1], salas[0]] })
+  ]);
+  assert.equal(colaboracao._id, reaberto._id);
+  await chamar(galeria + '/' + colaboracao._id, 404);
   const criar = dados => chamar(editor, 201, { metodo: 'POST', token, dados });
   const album = await criar({ titulo: 'Dança sintética', assunto: 'danca', tipo: 'foto', tema: 'Tema de teste', salas });
   const publicar = (id, estado, status = 200) => chamar(editor + '/' + id + '/estado', status,
@@ -55,9 +66,13 @@ async function testar() {
   try {
     const jpeg = path.join(pasta, 'fixture.jpeg');
     const mov = path.join(pasta, 'fixture.mov');
+    const horizontal = path.join(pasta, 'horizontal.mov');
+    const segundaFoto = path.join(pasta, 'segunda.jpeg');
     const ffmpeg = opcoes => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-filter_threads', '1', ...opcoes]);
     ffmpeg(['-f','lavfi','-i','color=c=orange:s=128x96','-frames:v','1','-threads','1',jpeg]);
     ffmpeg(['-f','lavfi','-i','testsrc2=s=128x192:r=24','-t','2','-c:v','libx264','-threads','1',mov]);
+    ffmpeg(['-f','lavfi','-i','testsrc2=s=192x128:r=24','-t','2','-c:v','libx264','-threads','1',horizontal]);
+    await fs.copyFile(jpeg, segundaFoto);
 
     async function enviar(id, origem) {
       const arquivo = await fs.readFile(origem);
@@ -72,7 +87,7 @@ async function testar() {
       await chamar(url, 200, { metodo: 'PUT', token, bloco: arquivo.subarray(trecho), offset: trecho });
       for (let i = 0; i < 40; i++) {
         const doc = await chamar(editor + '/' + id, 200, { token });
-        const midia = doc.midias[0];
+        const midia = doc.midias.find(item => item._id === inicio.midia);
         assert.notEqual(midia.estado, 'falhou', midia.erro);
         if (midia.estado === 'pronta') return midia.url;
         await esperar(500);
@@ -88,14 +103,49 @@ async function testar() {
     for (const sala of salas) {
       const { itens } = await chamar(galeria + '?tipo=foto&assunto=danca&sala=' + sala, 200);
       assert(itens.some(item => item._id === album._id));
+      const colecoes = await chamar(galeria + '/colecoes?sala=' + sala, 200);
+      assert(colecoes.some(item => item.assunto === 'danca' && item.total === 1));
     }
-    const doc = await criar({ tipo: 'video', titulo: 'Lance sintético', assunto: 'modalidade', modalidade: 101, lance: true });
+    await enviar(colaboracao._id, jpeg);
+    await publicar(colaboracao._id, 'publicado');
+    const fotoExtra = await enviar(colaboracao._id, segundaFoto);
+    const itensDoGrupo = sala => chamar(galeria + '?' + new URLSearchParams({
+      modalidade: futsal._id, formato, sala, tipo: 'foto'
+    }), 200);
+    for (const sala of salas.slice(0, 2)) {
+      const { itens } = await itensDoGrupo(sala);
+      assert.equal(itens[0]._id, colaboracao._id);
+      assert.equal(itens[0].midias.length, 2);
+    }
+    assert.equal((await itensDoGrupo(salas[2])).itens.length, 0);
+    const midiaExtra = fotoExtra.split('/').at(-2);
+    await chamar(editor + '/' + colaboracao._id + '/arquivos/' + midiaExtra, 204, { metodo: 'DELETE', token });
+    await chamar(fotoExtra, 404);
+    const principal = (await itensDoGrupo(salas[1])).itens[0].midias[0];
+    await chamar(editor + '/' + colaboracao._id + '/arquivos/' + principal._id, 409, { metodo: 'DELETE', token });
+    await chamar(editor + '/' + colaboracao._id, 200, { metodo: 'PATCH', token,
+      dados: { ...colaboracao, salas: salas.slice(1) } });
+    assert.equal((await itensDoGrupo(salas[0])).itens.length, 0);
+    for (const sala of salas.slice(1)) assert.equal((await itensDoGrupo(sala)).itens[0].midias.length, 1);
+
+    const doc = await criar({ tipo: 'video', titulo: 'Lance sintético', assunto: 'modalidade', modalidade: futsal._id,
+      formato, salas: salas.slice(0, 2), lance: true });
     const previaVideo = await enviar(doc._id, mov);
     await publicar(doc._id, 'publicado');
     const parte = await chamar(previaVideo.split('?')[0], 206, { intervalo: 'bytes=0-255' });
     assert.equal(parte.length, 256);
     const lances = await chamar(galeria + '?tipo=video&lance=1', 200);
-    assert.deepEqual(lances.itens.map(item => item._id), [doc._id]);
+    assert(lances.itens.some(item => item._id === doc._id && item.midias[0].largura < item.midias[0].altura));
+    const outro = await criar({ tipo: 'video', titulo: 'Lance horizontal sintético', assunto: 'modalidade',
+      modalidade: futsal._id, formato, salas: salas.slice(0, 2), lance: true });
+    await enviar(outro._id, horizontal);
+    await publicar(outro._id, 'publicado');
+    const paisagem = await chamar(galeria + '/' + outro._id, 200);
+    assert(paisagem.midias[0].largura > paisagem.midias[0].altura);
+    for (const sala of salas.slice(0, 2)) {
+      const colecoes = await chamar(galeria + '/colecoes?sala=' + sala, 200);
+      assert(colecoes.some(item => item.modalidade === futsal._id && item.formato === formato && item.tipo === 'video' && item.total >= 2));
+    }
 
     await publicar(album._id, 'retirado');
     await chamar(foto, 404);

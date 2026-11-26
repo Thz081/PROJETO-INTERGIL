@@ -31,7 +31,7 @@ const getAutorLog = (req) => {
 // --- GET SALAS (OK) ---
 const getSalasAdmin = async (req, res) => {
   try {
-    const salas = await Sala.find().sort({ turma: 1 });
+    const salas = await Sala.find().select('-movimentosPontuacao').sort({ turma: 1 });
     res.status(200).json(salas);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao buscar salas.', error: error.message });
@@ -100,7 +100,8 @@ const deleteSala = async (req, res) => {
     if (!sala) return res.status(404).json({ message: 'Sala não encontrada.' });
     if (await temAlunos(sala.turma)) return res.status(409).json({ message: 'Esta sala ainda tem alunos ativos.' });
     const nomeSalaApagada = sala.nome;
-    await sala.deleteOne();
+    const apagada = await Sala.deleteOne({ _id: sala._id, pontos: { $in: [0, null] }, 'movimentosPontuacao.0': { $exists: false } });
+    if (!apagada.deletedCount) return res.status(409).json({ message: 'Esta sala tem lançamentos de pontuação registrados.' });
     await LogAcao.create({
         autor: getAutorLog(req),
         acao: `Apagou a sala: ${nomeSalaApagada}`
@@ -108,25 +109,6 @@ const deleteSala = async (req, res) => {
     res.status(200).json({ message: 'Sala apagada com sucesso.' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao apagar sala.', error: error.message });
-  }
-};
-
-// --- UPDATE PONTOS (OK) ---
-const updatePontos = async (req, res) => {
-  try {
-    const { salaId, pontos } = req.body;
-    if (!Number.isSafeInteger(pontos) || pontos === 0) return res.status(400).json({ message: 'Informe um número inteiro de pontos.' });
-    const salaAtualizada = await Sala.findByIdAndUpdate(salaId, { $inc: { pontos } }, { new: true });
-    if (!salaAtualizada) return res.status(404).json({ message: 'Sala não encontrada.' });
-    
-    const acaoLog = `${pontos > 0 ? 'Adicionou' : 'Removeu'} ${Math.abs(pontos)} pontos da sala ${salaAtualizada.nome}.`;
-    await LogAcao.create({
-      autor: getAutorLog(req),
-      acao: acaoLog
-    });
-    res.status(200).json(salaAtualizada);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar pontos.', error: error.message });
   }
 };
 
@@ -259,7 +241,6 @@ module.exports = {
   createSala,
   updateSala,
   deleteSala,
-  updatePontos,
   getAllInscricoes,
   getLogs,
   uploadEditalGeral,

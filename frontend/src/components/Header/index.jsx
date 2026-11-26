@@ -7,12 +7,12 @@ import { useAuth } from '../../context/AuthProvider';
 import { useConfig } from '../../context/ConfigContext';
 import './style.css';
 
-const links = [['/', 'Início'], ['/horarios', 'Horários'], ['/momentos', 'Momentos'], ['/historia', 'História']];
+const links = [['/', 'Início'], ['/horarios', 'Horários'], ['/resultados', 'Resultados'], ['/momentos', 'Momentos'], ['/historia', 'História']];
 const destinos = { aluno: '/meu-perfil', gestao: '/admin-dashboard', monitor: '/monitor-dashboard' };
 const marcaPadrao = '/images/marca/armoriar-logotipo.webp';
 
 export default function Header() {
-  const { isMuted, toggleMute, playClick } = useAudio();
+  const { isMuted, toggleMute } = useAudio();
   const { user } = useAuth();
   const { config } = useConfig();
   const [aberto, abrir] = useState(false);
@@ -31,7 +31,6 @@ export default function Header() {
   }, [aberto]);
 
   function navegar() {
-    playClick();
     abrir(false);
   }
 
@@ -43,10 +42,10 @@ export default function Header() {
         <span>{siteName}</span>
       </Link>
       <button className="arm-menu" aria-label={aberto ? 'Fechar menu' : 'Abrir menu'} aria-expanded={aberto} aria-controls="arm-navigation"
-        ref={menu} type="button" onClick={() => { playClick(); abrir(!aberto); }}>{aberto ? <FaTimes aria-hidden="true"/> : <FaBars aria-hidden="true"/>}</button>
+        ref={menu} type="button" onClick={() => abrir(!aberto)}>{aberto ? <FaTimes aria-hidden="true"/> : <FaBars aria-hidden="true"/>}</button>
       <nav id="arm-navigation" className={aberto ? 'arm-nav aberta' : 'arm-nav'} aria-label="Navegação principal">
         {links.map(([url, texto]) => <NavLink key={url} to={url} end={url === '/'} onClick={navegar}>{texto}</NavLink>)}
-        <button className="arm-som" type="button" onClick={toggleMute} aria-label={isMuted ? 'Ativar som' : 'Silenciar'}>
+        <button className="arm-som" type="button" onClick={toggleMute} aria-label={isMuted ? 'Ativar som dos cliques' : 'Silenciar cliques'}>
           {isMuted ? <FaVolumeMute aria-hidden="true"/> : <FaVolumeUp aria-hidden="true"/>}
         </button>
         <NavLink className="arm-conta" to={user ? destinos[user.role] || '/meu-perfil' : '/login'} onClick={navegar}>

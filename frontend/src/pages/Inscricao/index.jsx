@@ -96,6 +96,7 @@ export default function Inscricao() {
         onChange={() => selecionar(opcao.codigo)}/>
       <span className="inscricao-opcao-texto">
         <strong>{avulsa ? modalidade.nome : opcao.nome}</strong>
+        {opcao.principal && <small>Formato principal</small>}
         {avulsa && nome && <small>{nome}</small>}
       </span>
       <span className={'inscricao-vaga' + (livres === 0 ? ' lotada' : '')}>{capacidade}</span>

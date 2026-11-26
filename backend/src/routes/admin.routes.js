@@ -16,7 +16,6 @@ const {
   createSala,
   updateSala,
   deleteSala,
-  updatePontos,
   getLogs,
   getAllInscricoes,
   uploadEditalGeral,
@@ -27,6 +26,7 @@ const {
 
 const { updateConfig, updateLogo } = require('../controllers/config.controller');
 const gestaoController = require('../controllers/gestao.controller.js');
+const pontuacao = require('../controllers/pontuacao.controller');
 
 // === >>> O IMPORT QUE FALTOU <<< ===
 const hallController = require('../controllers/hall.controller.js'); 
@@ -52,7 +52,9 @@ router.route('/salas/:id')
   .delete(deleteSala);
 
 // === ROTAS DE PONTUAÇÃO E LOGS ===
-router.put('/pontos', updatePontos);
+router.put('/pontos', pontuacao.lancarPontos);
+router.get('/pontuacao', pontuacao.gestaoPontuacao);
+router.put('/pontuacao/podios/:id', pontuacao.salvarPodio);
 router.get('/logs', getLogs);
 router.get('/inscricoes', getAllInscricoes);
 router.get('/alunos', async (_req, res) => {

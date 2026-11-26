@@ -3,7 +3,8 @@ const router = express.Router();
 const arquivoEditalGeral = require('../config/edital-geral');
 
 // Controllers
-const { getModalidades, getModalidadeBySlug, validarInscricao, getRankingSalas, getMomentos } = require('../controllers/modalidade.controller.js');
+const { getModalidades, getModalidadeBySlug, validarInscricao, getMomentos } = require('../controllers/modalidade.controller.js');
+const pontuacao = require('../controllers/pontuacao.controller');
 const { getConfig } = require('../controllers/config.controller');
 const hallController = require('../controllers/hall.controller'); // <--- NOVO
 
@@ -11,7 +12,9 @@ const hallController = require('../controllers/hall.controller'); // <--- NOVO
 router.get('/modalidades', getModalidades);
 router.get('/modalidades/:slug', getModalidadeBySlug); 
 router.post('/inscricao', validarInscricao);
-router.get('/ranking/salas', getRankingSalas);
+router.get('/ranking/salas', pontuacao.rankingPublico);
+router.get('/ranking/salas/:id', pontuacao.extratoPublico);
+router.get('/resultados/modalidades', pontuacao.resultadosPublicos);
 router.get('/momentos', getMomentos);
 router.get('/config', getConfig);
 

@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { FaTrash, FaPlus, FaVideo } from 'react-icons/fa';
 import api, { assetURL } from '../../api';
 import ArquivoCampo from '../../components/ArquivoCampo';
-import { useAudio } from '../../context/AudioContext';
 // Reusa o CSS do AdminSalas para manter o padrão
 import '../AdminSalas/style.css'; 
 
 const AdminMomentos = () => {
-  const { playClick } = useAudio();
   const [momentos, setMomentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,7 +45,6 @@ const AdminMomentos = () => {
   // --- 3. CRIAR NOVO MOMENTO (COM UPLOAD) ---
   const handleCreateMomento = async (e) => {
     e.preventDefault();
-    playClick();
 
     if (!titulo || !arquivo) {
       setError('Título e Arquivo são obrigatórios.');
@@ -83,7 +80,6 @@ const AdminMomentos = () => {
 
   // --- 4. DELETAR MOMENTO ---
   const handleDeleteMomento = async (id, titulo) => {
-    playClick();
     if (!window.confirm(`Tem certeza que quer apagar o momento "${titulo}"?`)) {
       return;
     }

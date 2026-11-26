@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import TituloArmorial from '../../components/TituloArmorial';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaCalendarCheck, FaRightFromBracket, FaUser } from 'react-icons/fa6';
-import { useAudio } from '../../context/AudioContext';
 import { useAuth } from '../../context/AuthProvider';
 import api from '../../api';
 import './style.css';
@@ -26,7 +25,6 @@ function agruparEscolhas(codigos, modalidades) {
 }
 
 export default function MeuPerfil() {
-  const { playClick } = useAudio();
   const { user, logout } = useAuth();
   const [dados, setDados] = useState({ status: 'carregando' });
   const [tentativa, repetir] = useState(0);
@@ -86,7 +84,7 @@ export default function MeuPerfil() {
         {user.sexo === 'M' && <span>Masculino</span>}
         {user.sexo === 'F' && <span>Feminino</span>}
       </div>
-      <button className="perfil-sair" type="button" onClick={() => { playClick(); logout(); }}>
+      <button className="perfil-sair" type="button" onClick={logout}>
         <FaRightFromBracket aria-hidden="true"/> Sair
       </button>
     </header>
@@ -118,7 +116,7 @@ export default function MeuPerfil() {
           {item.formatos.length > 0 && <span>{item.formatos.join(' · ')}</span>}
         </li>)}</ul>
         <button className="perfil-cancelar" type="button" onClick={() => {
-          playClick(); setErro(''); dialogo.current.showModal();
+          setErro(''); dialogo.current.showModal();
         }}>Cancelar inscrição</button>
       </>}
     </section>

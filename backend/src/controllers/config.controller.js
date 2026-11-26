@@ -16,6 +16,10 @@ async function getConfig(req, res) {
 async function updateConfig(req, res) {
   const atual = await configuracao();
   const { siteName, logoUrl } = req.body;
+  if (req.body.rankingVisivel !== undefined) {
+    if (typeof req.body.rankingVisivel !== 'boolean') return res.status(400).json({ message: 'Informe se o ranking deve ficar visível.' });
+    atual.rankingVisivel = req.body.rankingVisivel;
+  }
   if (typeof siteName === 'string' && siteName.trim()) atual.siteName = siteName.trim();
   if (typeof logoUrl === 'string' && logoUrl.trim()) atual.logoUrl = logoUrl.trim();
   res.json(await atual.save());
@@ -33,4 +37,4 @@ async function updateLogo(req, res) {
   await atual.save();
   res.json({ logoUrl: atual.logoUrl, headerLogoUrl: atual.headerLogoUrl, config: atual });
 }
-module.exports = { getConfig, updateConfig, updateLogo };
+module.exports = { configuracao, getConfig, updateConfig, updateLogo };

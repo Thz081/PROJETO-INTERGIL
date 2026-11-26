@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaEdit, FaPlus, FaMinus, FaInstagram } from 'react-icons/fa';
-import { useAudio } from '../../context/AudioContext';
+import { Link } from 'react-router-dom';
 import api, { assetURL } from '../../api';
 import ArquivoCampo from '../../components/ArquivoCampo';
 import './style.css';
 import ImportarAlunos from './ImportarAlunos';
+import DialogoPontuacao from './DialogoPontuacao';
 
 const AdminSalas = () => {
-  const { playClick } = useAudio(); 
   const [salas, setSalas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +21,8 @@ const AdminSalas = () => {
   const [editando, setEditando] = useState(null);
   const [arquivoLogo, setArquivoLogo] = useState(null);
   const [pontosInput, setPontosInput] = useState({});
+  const [lancamento, definirLancamento] = useState(null);
+  const [retornoPontos, responderPontos] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [retorno, setRetorno] = useState('');
 
@@ -41,34 +43,25 @@ const AdminSalas = () => {
     fetchSalas();
   }, []);
 
-  const handleUpdatePontos = async (salaId, pontos) => {
-    playClick();
-    const pontosNum = parseInt(pontos, 10);
-    if (isNaN(pontosNum) || pontosNum === 0) {
-      setError('Por favor, digite um número de pontos válido (Ex: 100 ou -50).');
+  function abrirLancamento(sala, sinal) {
+    const pontos = Number(pontosInput[sala._id]);
+    if (!Number.isSafeInteger(pontos) || pontos < 1) {
+      responderPontos({ erro: true, texto: 'Informe a quantidade de pontos como um inteiro positivo.' });
       return;
     }
-    const acao = pontosNum > 0 ? 'ADICIONAR' : 'REMOVER';
-    if (!window.confirm(`Tem certeza que quer ${acao} ${Math.abs(pontosNum)} pontos desta sala?`)) {
-      return;
-    }
-    try {
-      setError(null);
-      await api.put('/admin/pontos', {
-        salaId: salaId,
-        pontos: pontosNum
-      });
-      fetchSalas();
-      setPontosInput(prev => ({ ...prev, [salaId]: '' }));
-    } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao salvar pontos');
-    }
-  };
+    responderPontos(null);
+    definirLancamento({ sala, pontos: sinal * pontos });
+  }
+
+  function atualizarPontuacao(sala) {
+    setSalas(atuais => atuais.map(item => item._id === sala._id ? { ...item, pontos: sala.pontos } : item));
+    setPontosInput(atuais => ({ ...atuais, [sala._id]: '' }));
+    responderPontos({ texto: `Pontuação de ${sala.nome} atualizada para ${sala.pontos} pts.` });
+  }
   
   // --- CRIAR SALA (CORRIGIDO) ---
   const handleCreateSala = async (e) => {
     e.preventDefault();
-    playClick();
     if (!nomeSala || !turmaSala) { // <-- USA 'turma'
       setError('Nome e Turma são obrigatórios para criar uma sala.');
       return;
@@ -102,7 +95,6 @@ const AdminSalas = () => {
 
   const handleDeleteSala = async (salaId, salaNome) => {
     // ... (função delete está ok) ...
-    playClick();
     if (!window.confirm(`TEM CERTEZA QUE QUER APAGAR A SALA "${salaNome}"?`)) {
       return;
     }
@@ -116,19 +108,11 @@ const AdminSalas = () => {
   };
 
   const handleEditSala = (sala) => {
-    playClick();
     setNomeSala(sala.nome); setTurmaSala(sala.turma); setLogoSala(sala.logo_url || '');
     setInstagramSala(sala.instagram || ''); setEditando(sala._id); setArquivoLogo(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  const handlePontosInputChange = (salaId, valor) => {
-    // ... (função pontos está ok) ...
-    if (valor === '' || valor === '-' || !isNaN(parseInt(valor, 10))) {
-        setPontosInput(prev => ({ ...prev, [salaId]: valor }));
-    }
-  };
-
   return (
     <div className="admin-salas-container">
       <header className="admin-header-bar"><h2>Salas e alunos</h2></header>
@@ -184,6 +168,8 @@ const AdminSalas = () => {
       <ImportarAlunos salas={salas}/>
       <div className="admin-section">
         <h2>Salas Cadastradas ({salas.length})</h2>
+        <Link to="/admin-pontuacao" className="painel-link">Lançar pódios e controlar o ranking</Link>
+        {retornoPontos && <p role={retornoPontos.erro ? 'alert' : 'status'} className={'painel-retorno' + (retornoPontos.erro ? ' erro' : '')}>{retornoPontos.texto}</p>}
         {loading && <p>Carregando...</p>}
         <div className="admin-tabela-container" role="region" aria-label="Salas cadastradas" tabIndex={0}>
           <table className="admin-tabela">
@@ -225,21 +211,21 @@ const AdminSalas = () => {
                     <td>
                       <div className="tabela-acoes-pontos">
                         <input 
-                          type="text"
+                          type="number" min="1" step="1" inputMode="numeric"
                           className="admin-pontos-input"
                           placeholder="Pts" aria-label={`Pontos de ${sala.nome}`}
                           value={pontosAtuais}
-                          onChange={(e) => handlePontosInputChange(sala._id, e.target.value)}
+                          onChange={e => setPontosInput(atuais => ({ ...atuais, [sala._id]: e.target.value }))}
                         />
                         <button 
-                          onClick={() => handleUpdatePontos(sala._id, pontosAtuais)} 
+                          onClick={() => abrirLancamento(sala, 1)}
                           className="admin-btn-tabela add" 
                           title="Adicionar Pontos"
                         >
                           <FaPlus />
                         </button>
                         <button 
-                          onClick={() => handleUpdatePontos(sala._id, -pontosAtuais)} 
+                          onClick={() => abrirLancamento(sala, -1)}
                           className="admin-btn-tabela remove" 
                           title="Remover Pontos"
                         >
@@ -261,6 +247,7 @@ const AdminSalas = () => {
           </table>
         </div>
       </div>
+      {lancamento && <DialogoPontuacao {...lancamento} fechar={() => definirLancamento(null)} atualizou={atualizarPontuacao}/>}
     </div>
   );
 };

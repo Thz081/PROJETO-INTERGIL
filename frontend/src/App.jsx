@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation, Outlet } from 'react-router-dom'; // <--- IMPORTANTE: Outlet
+import React from 'react';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import './styles/global.css'; 
 
 // === Layouts ===
@@ -22,6 +22,8 @@ import Horarios from './pages/Horarios';
 import Momentos from './pages/Momentos';
 import MeuPerfil from './pages/MeuPerfil';
 import Ranking from './pages/Ranking';
+import Extrato from './pages/Ranking/Extrato';
+import Resultados from './pages/Resultados';
 
 // === Páginas Admin ===
 import AdminDashboard from './pages/AdminDashboard'; 
@@ -31,6 +33,7 @@ import AdminListaInscricoes from './pages/AdminListaInscricoes';
 import AdminMomentos from './pages/AdminMomentos';
 import AdminModalidades from './pages/AdminModalidades';
 import AdminHallFama from './pages/AdminHallFama';
+import AdminPontuacao from './pages/AdminPontuacao';
 
 // === Páginas Monitor ===
 import MonitorDashboard from './pages/MonitorDashboard';
@@ -53,35 +56,12 @@ const PublicLayout = () => (
 );
 
 function App() {
-  const { playTheme, isMuted, playClick } = useAudio();
-  const [interacted, setInteracted] = useState(false);
-  const location = useLocation();
-
-  // Lógica de Áudio (Mantida)
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      if (!interacted) {
-        if (!isMuted) playTheme();
-        setInteracted(true);
-        // Limpa os listeners
-        window.removeEventListener('click', handleFirstInteraction, true);
-        window.removeEventListener('keydown', handleFirstInteraction, true);
-      }
-    };
-    window.addEventListener('click', handleFirstInteraction, true);
-    window.addEventListener('keydown', handleFirstInteraction, true);
-    return () => {
-      window.removeEventListener('click', handleFirstInteraction, true);
-      window.removeEventListener('keydown', handleFirstInteraction, true);
-    };
-  }, [interacted, isMuted, playTheme]);
-
-  useEffect(() => {
-    if (interacted) playClick();
-  }, [location, interacted, playClick]);
+  const { playClick } = useAudio();
 
   return (
-    <div className="App">
+    <div className="App" onClickCapture={evento => {
+      if (evento.target.closest?.('a[href], summary, button:not(:disabled):not(.arm-som)')) playClick();
+    }}>
       <ScrollToTop />
       
       <Routes>
@@ -93,6 +73,8 @@ function App() {
           <Route path="/momentos" element={<Momentos />} />
           <Route path="/modalidade/:slug" element={<ModalidadeDetalhe />} />
           <Route path="/ranking" element={<Ranking />} />
+          <Route path="/ranking/salas/:id" element={<Extrato />} />
+          <Route path="/resultados" element={<Resultados />} />
           <Route path="/login" element={<Login />} />
           <Route path="/login-admin" element={<LoginAdmin />} />
           <Route path="/login-monitor" element={<LoginMonitor />} />
@@ -109,6 +91,7 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin-salas" element={<AdminSalas />} />
+          <Route path="/admin-pontuacao" element={<AdminPontuacao />} />
           <Route path="/admin-log" element={<AdminLog />} />
           <Route path="/admin-lista-inscricoes" element={<AdminListaInscricoes />} />
           <Route path="/admin-momentos" element={<AdminMomentos />} />

@@ -6,8 +6,9 @@ function opcoesDaModalidade(mod, aluno) {
   return opcoes.flatMap((sub, indice) => {
     if (sub && (sub.inscricao === false || (sub.genero && sub.genero !== 'X' && sub.genero !== aluno.sexo))) return [];
     const codigo = sub ? `${mod._id}-${indice}` : String(mod._id);
-    return [{ codigo, grupo: mod.slug, nome: sub?.nome || mod.nome, limite: sub?.max_inscritos ?? mod.max_inscritos ?? null }];
-  });
+    return [{ codigo, grupo: mod.slug, nome: sub?.nome || mod.nome,
+      limite: sub?.max_inscritos ?? mod.max_inscritos ?? null, principal: sub?.isPrincipal === true }];
+  }).sort((a, b) => Number(b.principal) - Number(a.principal));
 }
 function ficha(mods, aluno) {
   const terceiro = /^3/.test(aluno.turma?.trim());

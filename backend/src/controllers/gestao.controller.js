@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const { unlink } = require('node:fs/promises');
 const Modalidade = require('../models/modalidade.model');
 const Inscricao = require('../models/inscricao.model');
+const Podio = require('../models/podio.model');
 const { Controle } = require('../edicao/iniciar');
+const { formatosDePodio } = require('../edicao/pontuacao');
 const { categoriasModalidades } = require('../edicao/catalogo');
 
 function erro(status, message) {
@@ -132,6 +134,10 @@ exports.updateModalidade = rota(async (req, res) => {
     if (!atual) erro(404, 'Modalidade não encontrada.');
     const dados = campos(req.body, atual);
     if (dados.submodalidades) {
+      const formatos = new Set(formatosDePodio(dados).map(item => item.chave));
+      const podios = await Podio.find({ modalidadeId: id, formato: { $nin: [...formatos] } }).select('posicoes').session(session).lean();
+      if (podios.some(podio => podio.posicoes.some(Boolean)))
+        erro(409, 'Mantenha os formatos que têm um pódio publicado.');
       const removidos = atual.submodalidades.slice(dados.submodalidades.length)
         .map((_, indice) => `${id}-${dados.submodalidades.length + indice}`);
       if (!atual.submodalidades.length && dados.submodalidades.length) removidos.push(String(id));
@@ -153,6 +159,8 @@ exports.deleteModalidade = rota(async (req, res) => {
   await alterarCatalogo(async session => {
     if (await Inscricao.exists({ modalidades: new RegExp(`^${id}(?:-|$)`) }).session(session))
       erro(409, 'Esta modalidade tem inscrições e não pode ser excluída.');
+    const podios = await Podio.find({ modalidadeId: id }).select('posicoes').session(session).lean();
+    if (podios.some(podio => podio.posicoes.some(Boolean))) erro(409, 'Esta modalidade tem um pódio publicado.');
     const resultado = await Modalidade.deleteOne({ _id: id }, { session });
     if (!resultado.deletedCount) erro(404, 'Modalidade não encontrada.');
   });

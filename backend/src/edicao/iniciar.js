@@ -4,14 +4,17 @@ const Sala = require('../models/sala.model');
 const Inscricao = require('../models/inscricao.model');
 const Aluno = require('../models/aluno.model');
 const Hall = require('../models/hall.model');
+const Podio = require('../models/podio.model');
 const historico = require('./historico.json');
-const { modalidades, salas } = require('./catalogo');
+const { modalidades, salas, freeFireMapaAberto } = require('./catalogo');
+const { movimentosIniciais } = require('./pontuacao');
+const { chaveTurma } = require('./regras');
 const horarios = require('./horarios');
 const Controle = mongoose.model('ControleEdicao', new mongoose.Schema({
   _id: String, versao: Number, aviso: String
 }));
 async function iniciar() {
-  await Promise.all([Controle.init(), Modalidade.init(), Inscricao.init(), Sala.init(), Hall.init(), Aluno.init()]);
+  await Promise.all([Controle.init(), Modalidade.init(), Inscricao.init(), Sala.init(), Hall.init(), Aluno.init(), Podio.init()]);
   await Controle.updateOne({ _id: 'vagas' }, { $setOnInsert: { versao: 0 } }, { upsert: true });
   await mongoose.connection.transaction(async session => {
     if (await Controle.exists({ _id: 'inscricao-turma-2026' }).session(session)) return;
@@ -69,6 +72,27 @@ async function iniciar() {
     if (await Controle.exists({ _id: 'primeiro-acesso-2026' }).session(session)) return;
     await Aluno.updateMany({}, { $unset: { senhaHash: 1, email: 1 }, $inc: { versaoAcesso: 1 } }, { session });
     await Controle.create([{ _id: 'primeiro-acesso-2026' }], { session });
+  });
+  await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'pontuacao-inicial-2026' }).session(session)) return;
+    const turmasOficiais = new Set(salas.map(sala => chaveTurma(sala.turma)));
+    const cadastradas = await Sala.find().session(session);
+    for (const sala of cadastradas) {
+      const movimentos = turmasOficiais.has(chaveTurma(sala.turma))
+        ? movimentosIniciais(sala)
+        : sala.pontos ? [{ motivo: 'Saldo anterior ao registro de motivos', pontos: sala.pontos }] : [];
+      sala.movimentosPontuacao = movimentos;
+      sala.pontos = movimentos.reduce((total, item) => total + item.pontos, 0);
+      await sala.save({ session });
+    }
+    await Controle.create([{ _id: 'pontuacao-inicial-2026' }], { session });
+  });
+  await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'free-fire-mapa-aberto-2026' }).session(session)) return;
+    await Controle.updateOne({ _id: 'vagas' }, { $inc: { versao: 1 } }, { session });
+    await Modalidade.updateOne({ slug: 'free-fire', 'submodalidades.nome': { $nin: [freeFireMapaAberto.nome, 'Free Fire Mapa Aberto'] } },
+      { $push: { submodalidades: freeFireMapaAberto }, $max: { maxEscolhas: 3 } }, { session });
+    await Controle.create([{ _id: 'free-fire-mapa-aberto-2026' }], { session });
   });
 }
 module.exports = { Controle, iniciar };

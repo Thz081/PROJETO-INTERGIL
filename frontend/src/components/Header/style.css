@@ -10,7 +10,7 @@
 .arm-nav .arm-conta {background:var(--arm-laranja);color:var(--arm-tinta);padding-inline:12px;max-width:145px;overflow-wrap:anywhere;}
 .arm-nav .arm-conta:hover,.arm-nav .arm-conta[aria-current="page"] {background:#ffb080;color:var(--arm-tinta);}
 .arm-header .arm-menu {display:none;}
-@media(max-width:850px){
+@media(max-width:940px){
   .arm-header .arm-menu {display:inline-flex;width:44px;border-color:#67718c;font-size:1.05rem;}
   .arm-nav {display:none;position:absolute;inset:100% 0 auto;background:#101526;border-bottom:1px solid #67718c;padding:12px var(--arm-margem) 20px;}
   .arm-nav.aberta {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}

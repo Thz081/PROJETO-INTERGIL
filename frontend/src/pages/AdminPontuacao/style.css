@@ -1,0 +1,20 @@
+.gestao-pontuacao .pontuacao-config {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.gestao-pontuacao .pontuacao-config p {margin:4px 0 0;}
+.gestao-pontuacao .pontuacao-config button {display:inline-flex;align-items:center;gap:8px;}
+.pontuacao-saldos summary,.pontuacao-modalidade summary {cursor:pointer;color:var(--arm-papel);font-weight:700;}
+.pontuacao-saldos ul {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:8px;padding:0;margin:14px 0;list-style:none;}
+.pontuacao-saldos li {display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;padding:7px 9px;border:1px solid #57617e;border-radius:4px;}
+.pontuacao-saldos li strong {color:var(--arm-laranja);white-space:nowrap;}
+.pontuacao-filtro .campo-painel {width:min(100%,220px);}
+.pontuacao-modalidade summary {display:grid;grid-template-columns:56px minmax(0,1fr) 1rem;align-items:center;gap:12px;list-style:none;}
+.pontuacao-modalidade summary::-webkit-details-marker {display:none;}
+.pontuacao-modalidade summary::after {content:'+';font-size:1.2rem;color:var(--arm-laranja);}
+.pontuacao-modalidade[open] summary::after {content:'−';}
+.pontuacao-modalidade summary img {border-radius:4px;object-fit:cover;}
+.pontuacao-modalidade summary small {display:block;font-weight:400;margin-top:3px;}
+.pontuacao-formato fieldset {margin:16px 0 0;padding:12px 0 0;border:0;border-top:1px solid #57617e;min-width:0;}
+.pontuacao-formato legend {padding:0 8px 0 0;font-weight:700;color:var(--arm-papel);}
+.pontuacao-formato small {color:var(--arm-laranja);}
+.pontuacao-lugares {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:10px;margin-bottom:12px;}
+.pontuacao-lugares label span {display:flex;justify-content:space-between;gap:6px;}
+.gestao-pontuacao summary:focus-visible {outline:2px solid var(--arm-turquesa);outline-offset:5px;}

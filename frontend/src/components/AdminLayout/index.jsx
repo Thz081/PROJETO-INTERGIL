@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaClipboardList, FaGamepad, FaHistory, FaImages, FaListOl, FaTrophy, FaUsers } from 'react-icons/fa';
+import { FaClipboardList, FaGamepad, FaHistory, FaImages, FaListOl, FaMedal, FaTrophy, FaUsers } from 'react-icons/fa';
 import PainelEquipe from '../PainelEquipe';
 
 const links = [
   { rota: '/admin-dashboard', texto: 'Visão geral', Icone: FaClipboardList },
   { rota: '/admin-salas', texto: 'Salas e alunos', Icone: FaUsers },
+  { rota: '/admin-pontuacao', texto: 'Pontuação', Icone: FaMedal },
   { rota: '/admin-lista-inscricoes', texto: 'Inscrições', Icone: FaListOl },
   { rota: '/admin-dashboard/modalidades', texto: 'Modalidades', Icone: FaGamepad },
   { rota: '/admin-dashboard/hall', texto: 'Hall da Fama', Icone: FaTrophy },

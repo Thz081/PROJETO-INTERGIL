@@ -3,13 +3,11 @@ import TituloArmorial from '../../components/TituloArmorial';
 import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import api from '../../api';
-import { useAudio } from '../../context/AudioContext';
 import './style.css';
 
 // SEU IP DE HOJE
 
 const Horarios = () => {
-    const { playClick } = useAudio();
     const [modalidadesComHorarios, setModalidadesComHorarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -38,7 +36,6 @@ const Horarios = () => {
     }, []);
 
     const toggleAccordion = (modId) => {
-        playClick();
         if (idAberto === modId) setIdAberto(null);
         else setIdAberto(modId);
     };

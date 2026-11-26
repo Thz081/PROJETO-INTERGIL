@@ -1,0 +1,45 @@
+.pontuacao-publica{max-width:1180px;margin:auto;padding:clamp(24px,5vw,60px) var(--arm-margem);color:var(--arm-papel);font-family:var(--arm-text);}
+.pontuacao-publica-topo{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #57617e;}
+.pontuacao-publica :is(h1,h2,h3){color:var(--arm-papel);font-family:var(--arm-display);font-weight:400;text-shadow:none;text-transform:none;letter-spacing:normal;}
+.pontuacao-publica h1{margin:6px 0 0;font-size:clamp(1.8rem,5vw,3rem);}
+.pontuacao-publica-topo p{margin:0;}
+.pontuacao-categoria{display:flex;flex-direction:column;gap:6px;width:min(100%,250px);margin-bottom:18px;font-size:.85rem;}
+.pontuacao-categoria select{min-height:44px;border:1px solid #67718c;border-radius:4px;background:#20263d;color:var(--arm-papel);padding:8px;font:inherit;}
+.pontuacao-resultados{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px;}
+.pontuacao-cartao{background:#20263d;border:1px solid #57617e;border-radius:5px;padding:12px;}
+.pontuacao-cartao[open]{border-top-color:var(--arm-laranja);}
+.pontuacao-cartao summary{display:grid;grid-template-columns:64px minmax(0,1fr) 14px;align-items:center;gap:12px;list-style:none;cursor:pointer;}
+.pontuacao-cartao summary::-webkit-details-marker{display:none;}
+.pontuacao-cartao summary::after{content:'+';color:var(--arm-laranja);font-size:1.2rem;}
+.pontuacao-cartao[open] summary::after{content:'−';}
+.pontuacao-cartao summary img{width:64px;height:64px;object-fit:cover;border-radius:4px;}
+.pontuacao-cartao summary h2{margin:2px 0;font-size:clamp(1rem,3vw,1.2rem);line-height:1.3;}
+.pontuacao-cartao summary p,.pontuacao-cartao summary small,.pontuacao-publica small{margin:0;font-size:.75rem;color:#ddd2bd;}
+.pontuacao-podio{margin-top:12px;border-top:1px solid #57617e;padding-top:8px;}
+.pontuacao-podio h3{font-size:.9rem;margin:0 0 4px;}
+.pontuacao-podio ol,.pontuacao-movimentos{padding:0;margin:0;list-style:none;}
+.pontuacao-podio li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:45px;font-size:.8rem;}
+.pontuacao-podio li + li{border-top:1px solid #3a4561;}
+.pontuacao-podio li > strong,.pontuacao-posicao{color:var(--arm-laranja);white-space:nowrap;}
+.pontuacao-posicao{font:400 1rem var(--arm-display);}
+.pontuacao-equipe{display:inline-flex;align-items:center;gap:8px;color:inherit;min-width:0;line-height:1.2;text-decoration:none;}
+a.pontuacao-equipe:hover strong{text-decoration:underline;color:var(--arm-turquesa);}
+.pontuacao-equipe img{flex:none;width:34px;height:34px;object-fit:cover;border:1px solid #67718c;border-radius:50%;}
+.pontuacao-equipe span{display:grid;gap:3px;overflow-wrap:anywhere;}
+.pontuacao-extrato{max-width:900px;}
+.pontuacao-extrato-topo{justify-content:start;align-items:center;flex-wrap:nowrap;margin-top:20px;}
+.pontuacao-extrato-topo img{border-radius:50%;object-fit:cover;border:2px solid var(--arm-laranja);width:clamp(56px,11vw,84px);height:auto;aspect-ratio:1;}
+.pontuacao-extrato-topo h1{overflow-wrap:anywhere;}
+.pontuacao-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 20px;}
+.pontuacao-resumo div,.pontuacao-movimentos{background:#20263d;border:1px solid #57617e;border-radius:5px;padding:clamp(8px,2.5vw,16px);}
+.pontuacao-resumo div:first-child{border-top:3px solid var(--arm-laranja);}
+.pontuacao-resumo dt{font-size:.75rem;color:#ddd2bd;}
+.pontuacao-resumo dd{margin:6px 0 0;font:400 clamp(.9rem,3vw,1.5rem)/1.3 var(--arm-display);}
+.pontuacao-movimentos li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;align-items:start;overflow-wrap:anywhere;}
+.pontuacao-movimentos li + li{border-top:1px solid #57617e;}
+.pontuacao-movimentos small{display:block;margin-top:4px;}
+.pontuacao-movimentos li > strong{white-space:nowrap;}
+.pontos-recebidos{color:var(--arm-turquesa);}
+.pontos-descontados{color:#ffab97;}
+.pontuacao-publica :focus-visible,.pontuacao-equipe:focus-visible{outline:2px solid var(--arm-turquesa);outline-offset:4px;}
+@media(max-width:640px){.pontuacao-resultados{grid-template-columns:minmax(0,1fr);}}

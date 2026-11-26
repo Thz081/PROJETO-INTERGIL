@@ -34,3 +34,5 @@
 - Gestão lista alunos ativos por turma e situação de inscrição. O Excel sempre representa a lista completa em três abas, independentemente dos filtros da tela.
 - Monitoria carrega até três modalidades atribuídas ao perfil. Horários, editais e chaveamentos seguem o mesmo escopo na interface e na API. O monitor pode publicar PDF ou link por modalidade ou por formato. Cada publicação mostra o link gravado.
 - Gestão edita categoria e formatos de participação do catálogo. IDs e posições de opções já usadas sustentam as inscrições. O servidor rejeita exclusões e mudanças de formato que invalidariam fichas gravadas.
+- Pontuação registra um pódio por competição do catálogo. As três colocações valem 500, 300 e 100 pontos. Uma correção substitui apenas os pontos daquela competição. Os botões de adição e desconto em Salas exigem um motivo que aparece no extrato público da turma.
+- Resultados fica na navegação pública, inclusive no menu móvel. Ocultar ranking esconde a classificação e os extratos na interface e na API, mantendo os pódios disponíveis.

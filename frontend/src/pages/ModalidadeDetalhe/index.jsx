@@ -61,9 +61,9 @@ export default function ModalidadeDetalhe() {
       }}/>
     {!!modalidade.submodalidades?.length && <section className="modalidade-opcoes">
       <h2>Formatos de participação</h2>
-      <ul>{modalidade.submodalidades.map(opcao => <li key={opcao.nome}>
+      <ul>{[...modalidade.submodalidades].sort((a, b) => Number(!!b.isPrincipal) - Number(!!a.isPrincipal)).map(opcao => <li key={opcao.nome}>
         <div><strong>{opcao.nome}</strong>
-          <span>{opcao.max_inscritos == null ? 'Livre' : `${opcao.max_inscritos} por turma`}</span>
+          <span>{opcao.isPrincipal && 'Principal · '}{opcao.max_inscritos == null ? 'Livre' : `${opcao.max_inscritos} por turma`}</span>
         </div>
         <div className="modalidade-acoes">
           <LinkDocumento url={opcao.edital}>Edital</LinkDocumento><LinkDocumento url={opcao.chaveamento}>Chaveamento</LinkDocumento>

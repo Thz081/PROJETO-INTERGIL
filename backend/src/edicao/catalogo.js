@@ -14,6 +14,7 @@ const salas = nomes.map((nome, i) => ({
 const quadra = 'Esportes de quadra';
 const tabuleiro = 'Jogos de tabuleiro';
 const digitais = 'Jogos digitais';
+const freeFireMapaAberto = { ...opcao('Mapa aberto', 5), isPrincipal: true };
 function modalidade(_id, nome, slug, categoria, submodalidades, maxEscolhas = 1) {
   const imagem = '/images/gravuras/' + slug + '.webp';
   return { _id, nome, slug, categoria, submodalidades, maxEscolhas, max_inscritos: null,
@@ -45,9 +46,9 @@ const modalidades = [
   modalidade(122, 'Just Dance', 'just-dance', digitais, [opcao('Individual', 5)]),
   modalidade(123, 'Street Fight', 'street-fight', digitais, [opcao('Individual', 2)]),
   modalidade(124, 'Mobile Legends: Bang Bang', 'mobile-legends', digitais, [opcao('Equipe', 5)]),
-  modalidade(125, 'Free Fire', 'free-fire', digitais, [opcao('4×4', 4), opcao('X1', 1)], 2),
+  modalidade(125, 'Free Fire', 'free-fire', digitais, [opcao('4×4', 4), opcao('X1', 1), freeFireMapaAberto], 3),
   modalidade(126, 'FIFA', 'fifa', digitais, [opcao('X1', 2), opcao('X2', 2)], 2),
   modalidade(127, 'RPG', 'rpg', 'Jogos de imaginação', ['RPG de mesa', 'Card Game', 'Cosplay', 'PVP'].map(n => opcao(n)), 4)
 ];
 const categoriasModalidades = [...new Set(modalidades.map(modalidade => modalidade.categoria)), 'Outras modalidades'];
-module.exports = { modalidades, salas, categoriasModalidades };
+module.exports = { modalidades, salas, categoriasModalidades, freeFireMapaAberto };

@@ -50,6 +50,7 @@ function autorizarFormato(req, id, formato) {
 }
 
 function limitarVisao(req, modalidade) {
+  modalidade.submodalidades?.sort((a, b) => Number(!!b.isPrincipal) - Number(!!a.isPrincipal));
   const permitidos = req.formatosMonitor?.get(modalidade._id);
   if (!permitidos) return modalidade;
   const { linkEdital, linkChaveamento, ...visivel } = modalidade;

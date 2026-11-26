@@ -301,3 +301,9 @@
 .previa-alunos {overflow:auto;max-height:360px;}
 .previa-alunos table {width:100%;text-align:left;}
 .previa-alunos td,.previa-alunos th {padding:5px 8px;}
+.admin-pontos-dialogo{margin:auto;width:min(440px,calc(100% - 24px));padding:22px;border:1px solid #67718c;border-top:3px solid var(--arm-laranja);border-radius:6px;background:#20263d;color:var(--arm-papel);font-family:var(--arm-text);}
+.admin-pontos-dialogo::backdrop{background:#090c21a6;}
+.admin-pontos-dialogo h3{margin:0 0 6px;font-family:var(--arm-display);color:var(--arm-papel);}
+.admin-pontos-dialogo form,.admin-pontos-dialogo .campo-painel{display:grid;gap:10px;}
+.admin-pontos-dialogo textarea{width:100%;resize:vertical;padding:8px;border:1px solid #67718c;border-radius:4px;background:#101526;color:var(--arm-papel);font:inherit;}
+.admin-pontos-dialogo .painel-linha{justify-content:flex-end;}

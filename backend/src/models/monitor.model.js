@@ -16,6 +16,7 @@ const monitorSchema = new mongoose.Schema(
             required() { return !this.alunoId; },
         },
         alunoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Aluno' },
+        agrTv: { type: Boolean, default: false },
         modalidadeId: {
             type: String,
         },

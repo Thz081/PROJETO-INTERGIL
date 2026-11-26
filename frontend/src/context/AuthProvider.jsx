@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }) => {
       setUser(newUser);
 
       api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-      navigate('/monitor-dashboard');
+      navigate(newUser.agrTv && !newUser.temModalidades ? '/monitor-momentos' : '/monitor-dashboard');
       
     } catch (error) {
       console.error('Falha no login do Monitor:', error);

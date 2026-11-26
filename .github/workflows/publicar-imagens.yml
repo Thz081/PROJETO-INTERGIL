@@ -34,6 +34,7 @@ jobs:
           curl --fail --silent --show-error --output /dev/null http://127.0.0.1:18086/images/gravuras/banners/futsal.webp
           docker compose exec -T api node - < backend/test/monitoria.integracao.cjs
           docker compose exec -T api node - < backend/test/pontuacao.integracao.cjs
+          docker compose exec -T api node - < backend/test/momentos.integracao.cjs
           MONGO_URI=mongodb+srv://exemplo.invalid/intergil2026 INTERGIL_VERSAO="$GITHUB_SHA" docker compose -f compose.vps.yaml config --quiet
 
       - name: Guardar imagens verificadas

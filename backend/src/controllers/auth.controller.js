@@ -32,7 +32,7 @@ const loginMonitor = async (req, res) => {
     try {
         const { matricula, senha } = req.body;
         if (typeof matricula !== 'string' || !matricula.trim() || typeof senha !== 'string' || !senha || Buffer.byteLength(senha) > 72)
-            return res.status(400).json({ message: 'Informe sua matrícula e senha.' });
+            return res.status(400).json({ message: 'Informe sua matrícula ou usuário e sua senha.' });
 
         const monitor = await Monitor.findOne({ matricula: matricula.trim() }).lean();
         const aluno = monitor?.alunoId && await Aluno.findOne({
@@ -40,9 +40,13 @@ const loginMonitor = async (req, res) => {
         }).select('+senhaHash nome versaoAcesso').lean();
         const hash = monitor?.alunoId ? aluno?.senhaHash : monitor?.senha;
         if (!hash || !await bcrypt.compare(senha, hash))
-            return res.status(401).json({ message: 'Confira a matrícula e a senha. Se você é aluno e ainda não cadastrou uma senha, use o Primeiro acesso no portal do aluno.' });
+            return res.status(401).json({ message: 'Confira a matrícula ou o usuário e a senha. Se você é aluno e ainda não cadastrou uma senha, use o Primeiro acesso no portal do aluno.' });
 
         const user = { id: monitor._id, nome: aluno?.nome || monitor.nome, role: 'monitor' };
+        if (monitor.agrTv) {
+            user.agrTv = true;
+            user.temModalidades = (monitor.modalidadesIds?.length ?? Number(Boolean(monitor.modalidadeId))) > 0;
+        }
         const sessao = aluno ? { ...user, alunoId: String(aluno._id), versaoAcesso: aluno.versaoAcesso } : user;
         const token = jwt.sign(sessao, JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ token, user });

@@ -42,7 +42,8 @@ const getModalidadeBySlug = async (req, res) => {
 // --- GET /api/momentos (Público) ---
 const getMomentos = async (req, res) => {
   try {
-    const momentos = await Momento.find().sort({ ordem: 1 });
+    const momentos = await Momento.find({ url: { $type: 'string' }, estado: { $nin: ['rascunho', 'retirado'] } })
+      .select('titulo url tipo ordem').sort({ ordem: 1 });
     res.json(momentos);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao buscar momentos.' });

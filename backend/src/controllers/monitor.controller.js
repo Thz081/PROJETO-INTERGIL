@@ -24,7 +24,7 @@ function rota(fn) {
 
 async function escopoMonitor(req, res, next) {
   const monitor = await Monitor.findById(req.user.id)
-    .select('modalidadesIds modalidadeId restricoesFormato alunoId matricula').lean();
+    .select('modalidadesIds modalidadeId restricoesFormato alunoId matricula agrTv').lean();
   if (!monitor) return res.status(401).json({ message: 'Sessão expirada. Entre novamente.' });
   if (monitor.alunoId && (req.user.alunoId !== String(monitor.alunoId) || req.user.versaoAcesso == null ||
       !await Aluno.exists({ _id: monitor.alunoId, n_inscricao: monitor.matricula,
@@ -39,6 +39,7 @@ async function escopoMonitor(req, res, next) {
     ids = legado ? [legado._id] : [];
   }
   req.modalidadesMonitor = (ids || []).slice(0, 3);
+  req.monitorAgrTv = monitor.agrTv === true;
   req.formatosMonitor = new Map((monitor.restricoesFormato || []).map(item => [item.modalidadeId, item.formatos]));
   next();
 }

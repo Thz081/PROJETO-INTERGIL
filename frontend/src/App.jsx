@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import './styles/global.css'; 
 
@@ -19,7 +19,6 @@ import Inscricao from './pages/Inscricao';
 import LoginAdmin from './pages/LoginAdmin';
 import LoginMonitor from './pages/LoginMonitor';
 import Horarios from './pages/Horarios'; 
-import Momentos from './pages/Momentos';
 import MeuPerfil from './pages/MeuPerfil';
 import Ranking from './pages/Ranking';
 import Extrato from './pages/Ranking/Extrato';
@@ -30,7 +29,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminSalas from './pages/AdminSalas'; 
 import AdminLog from './pages/AdminLog'; 
 import AdminListaInscricoes from './pages/AdminListaInscricoes';
-import AdminMomentos from './pages/AdminMomentos';
 import AdminModalidades from './pages/AdminModalidades';
 import AdminHallFama from './pages/AdminHallFama';
 import AdminPontuacao from './pages/AdminPontuacao';
@@ -42,6 +40,15 @@ import MonitorLinks from './pages/MonitorLinks';
 
 // === Context ===
 import { useAudio } from './context/AudioContext';
+
+const Momentos = lazy(() => import('./pages/Momentos'));
+const AdminMomentos = lazy(() => import('./pages/AdminMomentos'));
+
+function TelaMomentos({ equipe = false }) {
+  return <Suspense fallback={<p className="momentos-carregando" role="status">Carregando Momentos…</p>}>
+    {equipe ? <AdminMomentos /> : <Momentos />}
+  </Suspense>;
+}
 
 // === NOVO LAYOUT PÚBLICO (USANDO OUTLET) ===
 // Isso impede que o Header/Footer recarreguem a cada clique
@@ -70,7 +77,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/horarios" element={<Horarios />} />
           <Route path="/historia" element={<Historia />} />
-          <Route path="/momentos" element={<Momentos />} />
+          <Route path="/momentos" element={<TelaMomentos />} />
+          <Route path="/momentos/:id" element={<TelaMomentos />} />
           <Route path="/modalidade/:slug" element={<ModalidadeDetalhe />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/ranking/salas/:id" element={<Extrato />} />
@@ -94,7 +102,7 @@ function App() {
           <Route path="/admin-pontuacao" element={<AdminPontuacao />} />
           <Route path="/admin-log" element={<AdminLog />} />
           <Route path="/admin-lista-inscricoes" element={<AdminListaInscricoes />} />
-          <Route path="/admin-momentos" element={<AdminMomentos />} />
+          <Route path="/admin-momentos" element={<TelaMomentos equipe />} />
           <Route path="/admin-dashboard/modalidades" element={<AdminModalidades />} />
           <Route path="/admin-dashboard/hall" element={<AdminHallFama />} />
         </Route>
@@ -106,6 +114,7 @@ function App() {
           <Route path="/monitor-dashboard" element={<MonitorDashboard />} />
           <Route path="/monitor-horarios" element={<MonitorHorarios />} />
           <Route path="/monitor-links" element={<MonitorLinks />} />
+          <Route path="/monitor-momentos" element={<TelaMomentos equipe />} />
         </Route>
         </Route>
       </Routes>

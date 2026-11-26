@@ -87,7 +87,7 @@ export function PortalEquipe({ monitor = false }) {
     rodape={<Link to="/login">Voltar ao portal do aluno</Link>}>
     <form className="portal-form" noValidate onSubmit={autenticar}>
       <div className="portal-campo">
-        <label htmlFor={id}>{monitor ? 'Matrícula' : 'Usuário'}</label>
+        <label htmlFor={id}>{monitor ? 'Matrícula ou usuário' : 'Usuário'}</label>
         <input id={id} name={chave} autoComplete="username" required
           aria-invalid={erro?.campo === chave}
           aria-describedby={erro?.campo === chave ? id + '-erro' : undefined}/>

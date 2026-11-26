@@ -13,6 +13,7 @@ const apiRoutes = require('./src/routes/api.routes.js');
 const adminRoutes = require('./src/routes/admin.routes.js');
 const monitorRoutes = require('./src/routes/monitor.routes.js');
 const inscricaoRoutes = require('./src/routes/inscricao.routes.js');
+const momentosRoutes = require('./src/routes/momentos.routes.js');
 
 const { iniciar } = require('./src/edicao/iniciar');
 const conectarVagas = require('./src/edicao/vagasSocket');
@@ -54,6 +55,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/monitor', monitorRoutes);
 app.use('/api/inscricoes', inscricaoRoutes);
+app.use('/api/acervo-momentos', momentosRoutes.publico);
+app.use('/api/equipe/momentos', momentosRoutes.equipe);
 app.use('/api', apiRoutes);
 
 app.use((err, req, res, next) => {

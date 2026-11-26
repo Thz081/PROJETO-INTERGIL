@@ -53,6 +53,9 @@ export default function ModalidadeDetalhe() {
         </Link>
         <LinkDocumento url={modalidade.linkEdital}>Edital da modalidade</LinkDocumento>
         <LinkDocumento url={modalidade.linkChaveamento}>Chaveamento</LinkDocumento>
+        <Link className="arm-botao arm-botao-contorno" to={`/momentos?assunto=modalidade&modalidade=${modalidade._id}`}>
+          Ver cobertura
+        </Link>
       </div>
     </div>
     <img key={banner} className="modalidade-banner" width="1040" height="585" alt="" src={assetURL(banner)}

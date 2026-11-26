@@ -1,6 +1,7 @@
 import React from 'react';
-import { FaClipboardList, FaClock, FaLink } from 'react-icons/fa';
+import { FaClipboardList, FaClock, FaLink, FaPhotoVideo } from 'react-icons/fa';
 import PainelEquipe from '../PainelEquipe';
+import { useAuth } from '../../context/AuthProvider';
 
 const links = [
   { rota: '/monitor-dashboard', texto: 'Visão geral', Icone: FaClipboardList },
@@ -9,5 +10,8 @@ const links = [
 ];
 
 export default function MonitorLayout() {
-  return <PainelEquipe perfil="Monitoria" links={links}/>;
+  const { user } = useAuth();
+  const modalidades = user?.agrTv && !user.temModalidades ? [] : links;
+  const menu = user?.agrTv ? [...modalidades, { rota: '/monitor-momentos', texto: 'Momentos', Icone: FaPhotoVideo }] : modalidades;
+  return <PainelEquipe perfil={user?.agrTv && !user.temModalidades ? 'AGR TV' : 'Monitoria'} links={menu}/>;
 }

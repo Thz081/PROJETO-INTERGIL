@@ -167,7 +167,7 @@ const uploadEditalGeral = async (req, res) => {
 // --- GET MOMENTOS ---
 const getAllMomentosAdmin = async (req, res) => {
   try {
-    const momentos = await Momento.find().sort({ ordem: 1 });
+    const momentos = await Momento.find({ url: { $type: 'string' } }).sort({ ordem: 1 });
     res.json(momentos);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao buscar momentos.' });
@@ -214,7 +214,7 @@ const createMomento = async (req, res) => {
 const deleteMomento = async (req, res) => {
   try {
     const { id } = req.params;
-    const momento = await Momento.findById(id);
+    const momento = await Momento.findOne({ _id: id, url: { $type: 'string' } });
     if (!momento) {
       return res.status(404).json({ message: 'Momento não encontrado.' });
     }

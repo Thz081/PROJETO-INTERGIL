@@ -6,3 +6,6 @@
 
 .acesso-gestao-local
 .acesso-monitor-local
+
+# Mídia local fora do volume Docker
+/backend/momentos/

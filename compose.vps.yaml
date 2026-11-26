@@ -8,22 +8,43 @@ services:
       NODE_ENV: production
       MONGO_URI: ${MONGO_URI:?Defina a URI do MongoDB Atlas no .env}
       JWT_SECRET: ${JWT_SECRET:?Gere JWT_SECRET no .env}
+      MOMENTOS_ACERVO_MIB: ${MOMENTOS_ACERVO_MIB:-5120}
     volumes:
       - arquivos:/app/uploads
+      - momentos:/app/momentos
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/modalidades').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 15
 
+  processador-momentos:
+    image: ghcr.io/thz081/intergil-api:${INTERGIL_VERSAO:?Defina INTERGIL_VERSAO no .env}
+    command: ["node", "src/edicao/processar-momentos.js"]
+    restart: unless-stopped
+    init: true
+    cpus: 0.75
+    mem_limit: 768m
+    pids_limit: 64
+    environment:
+      MONGO_URI: ${MONGO_URI:?Defina a URI do MongoDB Atlas no .env}
+    volumes:
+      - momentos:/app/momentos
+    depends_on:
+      api:
+        condition: service_healthy
+
   web:
     image: ghcr.io/thz081/intergil-web:${INTERGIL_VERSAO:?Defina INTERGIL_VERSAO no .env}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${INTERGIL_PORT:-8086}:80"
+    volumes:
+      - momentos:/srv/momentos:ro
     depends_on:
       api:
         condition: service_healthy
 
 volumes:
   arquivos:
+  momentos:

@@ -15,13 +15,16 @@ services:
   api:
     networks: [banco-interno, site]
     build: ./backend
+    image: ${COMPOSE_PROJECT_NAME:-intergil2026}-api
     restart: unless-stopped
     environment:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env da raiz}
       MONGO_URI: mongodb://mongo:27017/intergil2026?replicaSet=intergil
+      MOMENTOS_ACERVO_MIB: ${MOMENTOS_ACERVO_MIB:-5120}
     volumes:
       - arquivos:/app/uploads
+      - momentos:/app/momentos
     depends_on:
       mongo:
         condition: service_healthy
@@ -30,18 +33,38 @@ services:
       interval: 10s
       timeout: 5s
       retries: 15
+  processador-momentos:
+    image: ${COMPOSE_PROJECT_NAME:-intergil2026}-api
+    pull_policy: never
+    command: ["node", "src/edicao/processar-momentos.js"]
+    restart: unless-stopped
+    init: true
+    cpus: 0.75
+    mem_limit: 768m
+    pids_limit: 64
+    networks: [banco-interno]
+    environment:
+      MONGO_URI: mongodb://mongo:27017/intergil2026?replicaSet=intergil
+    volumes:
+      - momentos:/app/momentos
+    depends_on:
+      api:
+        condition: service_healthy
   web:
     networks: [site]
     build: ./frontend
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${INTERGIL_PORT:-8086}:80"
+      - "${INTERGIL_BIND:-127.0.0.1}:${INTERGIL_PORT:-8086}:80"
+    volumes:
+      - momentos:/srv/momentos:ro
     depends_on:
       api:
         condition: service_healthy
 volumes:
   banco:
   arquivos:
+  momentos:
 
 networks:
   banco-interno:

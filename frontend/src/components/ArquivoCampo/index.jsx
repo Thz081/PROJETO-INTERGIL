@@ -6,6 +6,8 @@ const formatos = {
   imagem: { accept: '.jpg,.jpeg,.png,.webp,.gif', limite: 5, ajuda: 'JPEG, PNG, WebP ou GIF · até 5 MB' },
   pdf: { accept: '.pdf', limite: 10, ajuda: 'PDF · até 10 MB' },
   midia: { accept: '.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm', limite: 100, ajuda: 'Imagem, MP4 ou WebM · até 100 MB' },
+  fotoMomento: { accept: '.jpg,.jpeg,.png,.webp,.heic,.heif', limite: 25, ajuda: 'JPEG, PNG, WebP ou HEIC · até 25 MB por foto' },
+  videoMomento: { accept: '.mp4,.mov,.webm,.m4v', limite: 480, ajuda: 'MP4, MOV, WebM ou M4V · até 480 MB e 15 minutos' },
   planilha: { accept: '.xls,.xlsx', ajuda: 'Planilhas XLS ou XLSX' }
 };
 

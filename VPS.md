@@ -82,9 +82,9 @@ No Portal do aluno, selecione **Primeiro acesso**, informe matrícula e nascimen
 
 Envie o pacote da aplicação e o domínio que deverá apontar para a VPS. Gere um JWT_SECRET próprio no servidor. O Compose já configura a conexão com o Mongo do projeto. A pessoa da escola com acesso de gestão pode importar as duas planilhas pelo navegador com HTTPS. Assim o pacote de código pode circular separado dos dados dos alunos.
 
-As artes padrão e os brasões ficam em `frontend/public/images`. A gestão pode alterar o título, a logo da capa e do cabeçalho, os brasões e as imagens das modalidades. A imagem enviada recebe um nome ASCII com identificador único e o banco passa a apontar para ela. O volume `arquivos` recebe uploads, inclusive os editais em PDF e as mídias da galeria. Em uma instalação nova os arquivos padrão já acompanham o frontend. Para mover fotos, vídeos, PDFs ou logos publicados posteriormente, transfira esse volume junto com o banco.
+As artes padrão e os brasões ficam em `frontend/public/images`. A gestão pode alterar o título, a logo da capa e do cabeçalho, os brasões e as imagens das modalidades. A imagem enviada recebe um nome ASCII com identificador único e o banco passa a apontar para ela. O volume `arquivos` guarda editais, logos e mídias legadas. O volume `momentos` guarda envios e mídias novas do acervo. Para mover a instalação, transfira os dois volumes junto com o banco.
 
-A galeria aceita fotos JPEG, PNG, WebP ou GIF e vídeos MP4 ou WebM até 100 MB. O proxy externo precisa aceitar o tamanho do envio e permitir o upgrade de WebSocket. Caddy permite ambos por padrão. Em um Nginx externo, ajuste `client_max_body_size 105m` e encaminhe os cabeçalhos de upgrade.
+O acervo da AGR TV aceita fotos de até 25 MiB e vídeos de até 480 MiB e 15 minutos. Cada requisição de upload leva no máximo 4 MiB. Confira o envio pelo domínio e preserve o upgrade de WebSocket do site.
 
 ## Atribuir modalidades aos monitores
 
@@ -120,3 +120,22 @@ unset senha_intergil
 - Registre o commit publicado e os backups. Para voltar ao código anterior em caso de regressão, reconstrua o último commit aceito na mesma instalação, com o mesmo projeto Compose e volumes. Aplique restauração de dados separadamente se houver motivo para recuperar o último backup.
 
 [Docker Compose up](https://docs.docker.com/reference/cli/docker/compose/up/) · [Volumes do Compose](https://docs.docker.com/reference/compose-file/volumes/) · [Proxy WebSocket do Nginx](https://nginx.org/en/docs/http/websocket.html)
+
+## Momentos da AGR TV
+
+O processador usa a mesma imagem da API, com outro comando. O Compose desta versão inclui o serviço `processador-momentos` e o volume persistente `momentos`. Ao atualizar a partir de uma versão anterior ao acervo, use o novo Compose além da nova tag. Preserve os volumes `arquivos` e `momentos` e o backup do Atlas.
+
+O envio usa trechos de até 4 MiB. A equipe pode selecionar o mesmo arquivo novamente para continuar do trecho confirmado. A publicação só fica disponível após o processamento. O original serve como entrada temporária, por isso a AGR TV deve preservar suas cópias. O acervo usa 5 GiB como teto padrão. Para mudar esse valor, defina `MOMENTOS_ACERVO_MIB` no ambiente antes de recriar a API. O trabalhador usa até 0,75 CPU e 768 MiB de RAM. O Nginx limita a entrega a 12 transferências simultâneas de vídeo. Confirme a memória, o espaço em disco e a banda disponível antes de abrir a cobertura.
+
+A Gestão e a AGR TV usam o mesmo editor. Para vincular um aluno que já tem cadastro, informar o usuário externo ou retirar a permissão de uma conta, execute na VPS:
+
+```sh
+docker compose -f compose.vps.yaml exec api node src/edicao/agr-tv.js vincular MATRICULA
+read -rs -p 'Senha do integrante: ' SENHA_AGR
+printf '\n'
+printf '%s\n' "$SENHA_AGR" | docker compose -f compose.vps.yaml exec -T api node src/edicao/agr-tv.js criar usuario-agr 'Nome do integrante'
+unset SENHA_AGR
+docker compose -f compose.vps.yaml exec api node src/edicao/agr-tv.js retirar USUARIO_OU_MATRICULA
+```
+
+Teste pelo domínio um envio acima de 100 MB e confira se o proxy entrega vídeo com resposta HTTP 206 para uma requisição de intervalo. Monitore `docker stats`, o espaço do volume e os logs do processador durante um ensaio com os celulares da AGR TV. Em uma máquina apertada, é possível pausar a conversão com `docker compose -f compose.vps.yaml stop processador-momentos`. O acervo publicado continua funcionando e os novos envios aguardam na fila. Para reativar, use `docker compose -f compose.vps.yaml start processador-momentos`.

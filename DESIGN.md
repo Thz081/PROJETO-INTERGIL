@@ -31,3 +31,5 @@ O arquivo `frontend/public/fonts/armoriar.css` declara as fontes locais e `front
 ## Gestão e Monitoria
 
 O componente `PainelEquipe` usa a marca horizontal e as fontes públicas com superfícies próprias de trabalho. O menu lateral vira uma navegação recolhível em telas estreitas. O botão mantém o rótulo e a indicação de menu aberto. Tabelas largas rolam dentro da região nomeada. Campos de arquivo compartilham o estilo, as instruções de formato e a mensagem de validação.
+
+Em Momentos, a arte do título e o crédito da AGR TV abrem a galeria. A tinta e o papel seguem a identidade da edição, com laranja na aba ativa e turquesa nos links. As capas usam quadros de proporção fixa na lista. O visor mostra a proporção original da foto ou do vídeo. Gestão e AGR TV usam o mesmo editor em duas colunas no desktop e uma no celular.

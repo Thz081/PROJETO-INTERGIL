@@ -14,7 +14,7 @@
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
-| Select/Listbox | Seletor nativo em ModalidadesCarousel | UX-CONTRACT.md | Filtro de categoria com popup do navegador | Teclado, filtro e largura estreita |
+| Select/Listbox | Nativo | UX-CONTRACT.md | Categoria no carrossel e seletores do acervo e do editor de Momentos, com popup do navegador | Teclado, filtro e largura estreita |
 | Form | PortalAcesso e formulário do aluno | UX-CONTRACT.md | Credenciais e etapas de primeiro acesso | Vazio, erro e sucesso |
 | Scrollbar | CSS público e trilho de ModalidadesCarousel | DESIGN.md | Rolagem horizontal do carrossel | Toque, teclado e setas |
 
@@ -36,3 +36,5 @@
 - Gestão edita categoria e formatos de participação do catálogo. IDs e posições de opções já usadas sustentam as inscrições. O servidor rejeita exclusões e mudanças de formato que invalidariam fichas gravadas.
 - Pontuação registra um pódio por competição do catálogo. As três colocações valem 500, 300 e 100 pontos. Uma correção substitui apenas os pontos daquela competição. Os botões de adição e desconto em Salas exigem um motivo que aparece no extrato público da turma.
 - Resultados fica na navegação pública, inclusive no menu móvel. Ocultar ranking esconde a classificação e os extratos na interface e na API, mantendo os pódios disponíveis.
+- A AGR TV tem acesso editorial independente das atribuições de modalidade. O mesmo editor atende Gestão e AGR TV. Fotos e vídeos têm publicações separadas. Os arquivos em andamento mostram o estado e ficam privados até a publicação. O painel pode retomar o mesmo arquivo do último trecho confirmado.
+- Momentos separa Álbuns, Vídeos e Lances. Filtros ficam na URL. A lista pede só capas e o vídeo toca apenas no visor. Fotos e lances podem ser percorridos com toque ou botões.

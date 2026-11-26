@@ -8,6 +8,7 @@ const clique = new Howl({ src: [clickSound], volume: 0.5, preload: false });
 export function AudioProvider({ children }) {
   const [isMuted, setIsMuted] = useState(true);
   const toggleMute = () => {
+    if (isMuted && clique.state() === 'unloaded') clique.load();
     if (!isMuted) clique.stop();
     setIsMuted(!isMuted);
   };

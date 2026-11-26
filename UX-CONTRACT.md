@@ -31,7 +31,7 @@
 ## Painéis da equipe
 
 - `PainelEquipe` define navegação, menu móvel, foco ao fechar com Escape e saída. `ArquivoCampo` concentra seleção e remoção de anexo, formato, limite e erro. Formulários mostram a resposta do servidor junto à ação.
-- Gestão lista alunos ativos por turma e situação de inscrição. O Excel sempre representa a lista completa em três abas, independentemente dos filtros da tela.
+- Gestão lista alunos ativos por turma, situação, modalidade e formato. O Excel geral preserva as abas Todos os alunos, Inscritos e Pendentes e acrescenta uma aba por turma. O Excel da seleção aplica os filtros da tela. Ao selecionar uma modalidade, a lista para monitoria tem os inscritos agrupados por turma e separa os formatos em abas quando o filtro está em Todos os formatos.
 - Monitoria carrega até três modalidades atribuídas ao perfil. Horários, editais e chaveamentos seguem o mesmo escopo na interface e na API. O monitor pode publicar PDF ou link por modalidade ou por formato. Cada publicação mostra o link gravado.
 - Gestão edita categoria e formatos de participação do catálogo. IDs e posições de opções já usadas sustentam as inscrições. O servidor rejeita exclusões e mudanças de formato que invalidariam fichas gravadas.
 - Pontuação registra um pódio por competição do catálogo. As três colocações valem 500, 300 e 100 pontos. Uma correção substitui apenas os pontos daquela competição. Os botões de adição e desconto em Salas exigem um motivo que aparece no extrato público da turma.

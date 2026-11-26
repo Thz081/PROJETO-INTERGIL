@@ -12,3 +12,5 @@
 .lista-gestao-tabela { min-width: 530px; margin-top: 8px; font-size: .8rem; text-align: left; }
 .lista-gestao-tabela :is(th, td) { padding: 8px; border-bottom: 1px solid var(--painel-borda); }
 .lista-gestao-tabela thead { background: var(--painel-campo); color: var(--golden-yellow); }
+.lista-gestao-exportacao { margin-top: 16px; }
+.lista-gestao-exportacao small { color: var(--text-secondary); }

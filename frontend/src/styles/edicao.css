@@ -1,5 +1,5 @@
 .main-content {display:flow-root;min-height:65vh;}
-.main-content :is(.horarios-wrapper,.page-modalidade-wrapper,.historia-container,.galeria-edicao) {
+.main-content :is(.horarios-wrapper,.page-modalidade-wrapper,.historia-container) {
   --text-primary:#2d2223;--text-secondary:#61534a;--neon-cyan:#6f321b;--neon-purple:#a98760;--golden-yellow:#853919;--background-dark:#fff7e8;
   background:#f7eedb;color:var(--text-primary);
 }
@@ -24,7 +24,6 @@
   box-shadow:none;
   padding:clamp(16px,4vw,42px);
 }
-.App .galeria-edicao {max-width:none;padding-inline:max(var(--arm-margem),calc((100vw - 1050px)/2));}
 .App .historia-container {display:flow-root;}
 .App .historia-paragrafo {color:#252539;text-align:left;font:1rem/1.8 var(--arm-text);}
 .App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.galeria-edicao h1) {
@@ -48,7 +47,6 @@
 .App .horarios-subtitulo {margin:10px 0 16px;}
 .App .programacao-link a {color:#763719;text-underline-offset:4px;}
 .App .galeria-edicao .visor-momento h2 {color:#f9edda;}
-.App .grade-momentos button {border-radius:5px;overflow:hidden;}
 .App .admin-menu-link.active {color:#241c1a;}
 @media(max-width:600px){
  .App .historia-origem {margin:20px auto;}

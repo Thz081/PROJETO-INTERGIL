@@ -34,4 +34,4 @@ O componente `PainelEquipe` usa a marca horizontal e as fontes públicas com sup
 
 Em Momentos, a arte do título e o crédito da AGR TV abrem a galeria. A tinta e o papel seguem a identidade da edição, com laranja na aba ativa e turquesa nos links. As capas usam quadros de proporção fixa na lista. O visor mostra a proporção original da foto ou do vídeo. Gestão e AGR TV usam o mesmo editor em duas colunas no desktop e uma no celular.
 
-Os brasões identificam os perfis de turma. O trilho horizontal cabe no celular e vira uma grade no desktop. Os álbuns agrupam formatos sob cada modalidade. Nos Lances, a mídia ocupa o quadro central e as turmas creditadas aparecem abaixo do vídeo, com brasões que abrem seus perfis.
+Os 12 brasões são o ponto de entrada de Momentos. A grade usa três colunas no celular, quatro em telas intermediárias e seis no desktop. Álbuns e Lances têm atalhos próprios no topo da grade. Os álbuns agrupam formatos sob cada modalidade. Nos Lances, a mídia ocupa o quadro central e as turmas creditadas aparecem abaixo do vídeo, com brasões que abrem seus perfis.

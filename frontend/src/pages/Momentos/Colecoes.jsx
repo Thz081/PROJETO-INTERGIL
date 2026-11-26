@@ -26,12 +26,18 @@ export function PerfisTurmas({ catalogo }) {
   return <section className="momento-perfis" aria-labelledby="momento-turmas-titulo">
     <div className="momento-perfis-topo">
       <h2 id="momento-turmas-titulo">Turmas</h2>
-      <Link to="/momentos/albuns">Todos os álbuns <FaChevronRight aria-hidden/></Link>
+      <nav className="momento-perfis-atalhos" aria-label="Explorar Momentos">
+        <Link to="/momentos/albuns"><FaRegImages aria-hidden/> Todos os álbuns</Link>
+        <Link to="/momentos/lances"><FaPlay aria-hidden/> Lances</Link>
+      </nav>
     </div>
     <ul className="momento-perfis-lista">
       {catalogo.salas.map(sala => <li key={sala._id}><Link to={'/momentos/turmas/' + sala._id}>
-        {sala.logo_url ? <img src={assetURL(sala.logo_url)} alt="" width="64" height="64" loading="lazy"/> :
-          <span className="momento-brasao-texto" aria-hidden>{sala.nome.slice(0, 2)}</span>}
+        <span className="momento-perfil-brasao" aria-hidden="true">
+          <span>{sala.nome.slice(0, 2)}</span>
+          {sala.logo_url && <img src={assetURL(sala.logo_url)} alt="" width="76" height="76" loading="lazy"
+            decoding="async" onError={evento => { evento.currentTarget.hidden = true; }}/>}
+        </span>
         <strong>{sala.nome}</strong><small>{sala.turma}</small>
       </Link></li>)}
     </ul>

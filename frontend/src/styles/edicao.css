@@ -1,17 +1,17 @@
 .main-content {display:flow-root;min-height:65vh;}
-.main-content :is(.horarios-wrapper,.page-modalidade-wrapper,.ranking-page-container,.historia-container,.galeria-edicao) {
+.main-content :is(.horarios-wrapper,.page-modalidade-wrapper,.historia-container,.galeria-edicao) {
   --text-primary:#2d2223;--text-secondary:#61534a;--neon-cyan:#6f321b;--neon-purple:#a98760;--golden-yellow:#853919;--background-dark:#fff7e8;
   background:#f7eedb;color:var(--text-primary);
 }
 /* Páginas públicas de leitura usam papel sobre o fundo de tinta. */
-.main-content :is(.horarios-wrapper,.ranking-page-container,.historia-container,.galeria-edicao) {
+.main-content :is(.horarios-wrapper,.historia-container,.galeria-edicao) {
   --font-title:var(--arm-display);
   --font-text:var(--arm-text);
   font-family:var(--arm-text);
   background:var(--arm-tinta);
   color:var(--arm-papel);
 }
-.App :is(.horarios-container,.historia-origem,.ranking-page-container .leaderboard-container) {
+.App :is(.horarios-container,.historia-origem) {
   --text-primary:#191e30;
   --text-secondary:#504b56;
   --neon-cyan:#713329;
@@ -27,7 +27,7 @@
 .App .galeria-edicao {max-width:none;padding-inline:max(var(--arm-margem),calc((100vw - 1050px)/2));}
 .App .historia-container {display:flow-root;}
 .App .historia-paragrafo {color:#252539;text-align:left;font:1rem/1.8 var(--arm-text);}
-.App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.ranking-page-container h2,.galeria-edicao h1) {
+.App :is(.historia-titulo-pagina,.timeline-titulo,.horarios-titulo,.galeria-edicao h1) {
   font:400 clamp(2rem,4.4vw,3.55rem)/1.16 var(--arm-display);
   letter-spacing:-.035em;color:var(--arm-tinta);
 }

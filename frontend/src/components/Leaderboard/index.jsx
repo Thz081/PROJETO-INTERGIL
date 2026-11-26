@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa';
 import { useConfig } from '../../context/ConfigContext';
 import TituloArmorial from '../TituloArmorial';
 import Equipe from '../Pontuacao/Equipe';
@@ -17,15 +17,20 @@ export default function Leaderboard({ completo = false }) {
   const Titulo = completo ? 'h1' : 'h2';
   const salas = completo ? dados : dados?.slice(0, 6);
 
-  return <section className="leaderboard-container" aria-labelledby="ranking-titulo">
-    <Titulo id="ranking-titulo"><TituloArmorial arte={completo ? 'ranking-geral' : 'ranking-2026'}>{titulo}</TituloArmorial></Titulo>
+  return <section className={'leaderboard-container' + (completo ? ' leaderboard-completo' : '')} aria-labelledby="ranking-titulo">
+    <header className="leaderboard-cabecalho">
+      <Titulo id="ranking-titulo"><TituloArmorial arte={completo ? 'ranking-geral' : 'ranking-2026'}>{titulo}</TituloArmorial></Titulo>
+      {completo && salas && <p id="ranking-ajuda">Selecione uma sala para ver a origem dos pontos.</p>}
+    </header>
     {config.rankingVisivel === false ? <p>Ranking temporariamente oculto.</p> : estadoConfig === 'erro' && config.rankingVisivel === undefined ?
       <EstadoDados erro={{}} buscar={refreshConfig} texto="Não foi possível consultar o ranking."/> :
       !salas ? <EstadoDados erro={erro} buscar={buscar} texto="Não foi possível carregar o ranking."/> :
-        <table className="leaderboard-table">
+        <table className="leaderboard-table" aria-describedby={completo ? 'ranking-ajuda' : undefined}>
           <thead><tr><th scope="col">Pos.</th><th scope="col">Sala</th><th scope="col">Pontuação</th></tr></thead>
           <tbody>{salas.map((sala, indice) => <tr key={sala._id}>
-            <td>{indice + 1}º</td><th scope="row"><Equipe sala={sala} link/></th><td>{sala.pontos} pts</td>
+            <td><span className="leaderboard-posicao">{indice + 1}º</span></td>
+            <th scope="row"><Equipe sala={sala} link/></th>
+            <td><span className="leaderboard-pontos">{sala.pontos} <small>pts</small><FaChevronRight aria-hidden="true"/></span></td>
           </tr>)}</tbody>
         </table>}
     {completo ? <Link to="/" className="arm-botao arm-botao-contorno leaderboard-acao"><FaArrowLeft aria-hidden="true"/> Voltar ao início</Link> :

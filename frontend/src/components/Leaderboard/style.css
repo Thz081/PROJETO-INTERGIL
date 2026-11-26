@@ -1,10 +1,39 @@
-.leaderboard-container{width:min(calc(100% - var(--arm-margem) * 2),800px);margin:26px auto;padding:clamp(12px,3vw,25px);background:#20263d;border:1px solid #57617e;border-top:3px solid var(--arm-laranja);border-radius:5px;color:var(--arm-papel);font-family:var(--arm-text);}
-.leaderboard-container :is(h1,h2){font:400 clamp(1.35rem,4vw,2rem)/1.25 var(--arm-display);color:var(--arm-papel);text-align:center;margin:0 0 14px;}
-.leaderboard-table{width:100%;border-collapse:collapse;text-align:left;font-size:clamp(.8rem,2vw,1rem);}
-.leaderboard-table :is(td,th){padding:8px 6px;border-bottom:1px solid #57617e;}
-.leaderboard-table thead{color:#ddd2bd;}
-.leaderboard-table tbody tr:hover{background:#27314c;}
-.leaderboard-table tr > :last-child{white-space:nowrap;text-align:right;}
-.leaderboard-table td{color:var(--arm-laranja);font-weight:700;}
-.leaderboard-table small{color:#ddd2bd;font-size:.7rem;font-weight:400;}
-.leaderboard-container .leaderboard-acao{display:flex;width:fit-content;margin:16px auto 0;}
+.leaderboard-container {
+  width:min(calc(100% - var(--arm-margem) * 2),800px);
+  margin:26px auto;
+  padding:clamp(14px,3.8vw,36px);
+  background:#1b2238;
+  border:1px solid #596584;
+  border-top:3px solid var(--arm-laranja);
+  border-radius:6px;
+  color:var(--arm-papel);
+  font-family:var(--arm-text);
+}
+.leaderboard-cabecalho {margin-bottom:18px;text-align:center;}
+.leaderboard-cabecalho :is(h1,h2) {
+  margin:0;
+  color:var(--arm-papel);
+  font:400 clamp(1.75rem,4.7vw,3.25rem)/1.12 var(--arm-display);
+}
+.leaderboard-completo .leaderboard-cabecalho {text-align:left;}
+.leaderboard-cabecalho p {margin:12px 0 0;color:#e0d5be;font-size:.85rem;}
+.leaderboard-table {width:100%;border-collapse:collapse;text-align:left;font-size:clamp(.8rem,2vw,1rem);}
+.leaderboard-table thead {color:#e0d5be;font-size:.76rem;}
+.leaderboard-table :is(td,th) {padding:clamp(8px,1.3vw,14px) 6px;border-bottom:1px solid #46516e;}
+.leaderboard-table tbody tr {position:relative;}
+.leaderboard-table tbody tr:is(:hover,:focus-within,:active) {background:#2a3654;}
+.leaderboard-table .pontuacao-equipe {color:var(--arm-papel);}
+.leaderboard-table .pontuacao-equipe::after {content:'';position:absolute;inset:0;}
+.leaderboard-table .pontuacao-equipe:is(:hover,:focus-visible,:active) strong {color:var(--arm-turquesa);text-decoration:underline;}
+.leaderboard-table .pontuacao-equipe:focus-visible {outline:2px solid var(--arm-turquesa);outline-offset:3px;}
+.leaderboard-table small {color:#e0d5be;font-size:.72rem;font-weight:500;}
+.leaderboard-table tr > :first-child {width:3.3rem;}
+.leaderboard-table tr > :last-child {white-space:nowrap;text-align:right;}
+.leaderboard-posicao {color:#e0d5be;font-weight:600;}
+.leaderboard-pontos {display:inline-flex;align-items:center;gap:5px;color:var(--arm-laranja);font-weight:700;font-variant-numeric:tabular-nums;}
+.leaderboard-pontos svg {margin-left:3px;color:#b2c2dc;font-size:.65rem;}
+.leaderboard-container .leaderboard-acao {display:flex;width:fit-content;margin:18px auto 0;}
+@media(max-width:420px){
+  .leaderboard-table tr > :first-child {width:2.3rem;}
+  .leaderboard-table .pontuacao-equipe img {width:30px;height:30px;}
+}

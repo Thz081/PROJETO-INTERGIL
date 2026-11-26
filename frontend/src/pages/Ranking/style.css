@@ -1,1 +1,2 @@
-.ranking-page-container .leaderboard-container{width:min(calc(100% - var(--arm-margem) * 2),920px);}
+.ranking-page-container{padding-block:clamp(24px,5vw,60px);}
+.ranking-page-container .leaderboard-container{width:min(calc(100% - var(--arm-margem) * 2),920px);margin-block:0;}

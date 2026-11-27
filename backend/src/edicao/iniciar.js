@@ -101,5 +101,19 @@ async function iniciar() {
       { $max: { maxEscolhas: 2 } }, { session });
     await Controle.create([{ _id: 'futmesa-dois-formatos-2026' }], { session });
   });
+  await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'atletismo-provas-independentes-2026' }).session(session)) return;
+    await Controle.updateOne({ _id: 'vagas' }, { $inc: { versao: 1 } }, { session });
+    const corrida = await Modalidade.findOne({ slug: 'corrida' }).select('submodalidades').session(session).lean();
+    if (corrida?.submodalidades?.length) {
+      const codigos = corrida.submodalidades.map((_, indice) => `${corrida._id}-${indice}`);
+      const registros = { $cond: [{ $isArray: '$modalidades' }, '$modalidades', []] };
+      const provas = { $size: { $setIntersection: [registros, codigos] } };
+      await Inscricao.collection.updateMany({ modalidades: { $in: codigos }, pontuacaoTotal: { $gte: 1 },
+        $expr: { $gt: [provas, 1] } },
+      [{ $set: { pontuacaoTotal: { $add: ['$pontuacaoTotal', { $subtract: [provas, 1] }] } } }], { session });
+    }
+    await Controle.create([{ _id: 'atletismo-provas-independentes-2026' }], { session });
+  });
 }
 module.exports = { Controle, iniciar };

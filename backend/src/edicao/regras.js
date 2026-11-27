@@ -1,4 +1,5 @@
 const fim = '2026-12-03T00:00:00-03:00';
+const formatosIndependentes = new Set(['futmesa', 'corrida']);
 
 const chaveTurma = nome => String(nome || '').toUpperCase().replace(/[^1-3ABDSM]/g, '');
 function opcoesDaModalidade(mod, aluno) {
@@ -6,7 +7,7 @@ function opcoesDaModalidade(mod, aluno) {
   return opcoes.flatMap((sub, indice) => {
     if (sub && (sub.inscricao === false || (sub.genero && sub.genero !== 'X' && sub.genero !== aluno.sexo))) return [];
     const codigo = sub ? `${mod._id}-${indice}` : String(mod._id);
-    const grupo = mod.slug === 'futmesa' ? `${mod.slug}:${codigo}` : mod.slug;
+    const grupo = formatosIndependentes.has(mod.slug) ? `${mod.slug}:${codigo}` : mod.slug;
     return [{ codigo, grupo, nome: sub?.nome || mod.nome,
       limite: sub?.max_inscritos ?? mod.max_inscritos ?? null, principal: sub?.isPrincipal === true }];
   }).sort((a, b) => Number(b.principal) - Number(a.principal));

@@ -34,9 +34,9 @@ test('Free Fire mostra Mapa aberto primeiro e aceita os três formatos com conta
   assert.equal(formatosDePodio(modalidades.find(mod => mod.slug === 'free-fire'))[0].nome, 'Mapa aberto');
 });
 test('os 27 esportes e jogos oferecem as combinações previstas ao primeiro e ao terceiro ano', () => {
-  const juntas = { basquete: 2, corrida: 3, 'free-fire': 3, fifa: 2, rpg: 4 };
+  const juntas = { basquete: 2, 'free-fire': 3, fifa: 2, rpg: 4 };
   const exclusivas = new Set(['kata', 'xadrez']);
-  const combinacoes = { ...juntas, futmesa: 2, kata: 3, xadrez: 2 };
+  const combinacoes = { ...juntas, corrida: 3, futmesa: 2, kata: 3, xadrez: 2 };
   assert.equal(modalidades.length, 27);
   for (const sexo of ['F', 'M']) {
     for (const turma of ['1° A ADM', '3° B DS']) {
@@ -46,9 +46,9 @@ test('os 27 esportes e jogos oferecem as combinações previstas ao primeiro e a
         assert.equal(mod.opcoes.length, combinacoes[mod.slug] || 1, mod.slug);
         const outros = ['116-0', '117-0', '121-0'].filter(codigo => !mod.opcoes.some(op => op.codigo === codigo));
         const testarOP = codigos => {
-          const total = mod.slug === 'futmesa' ? codigos.length : 1;
-          const complemento = outros.slice(0, opcoes.minimo - total);
-          assert.equal(validar(opcoes, [...codigos, ...complemento]).total, opcoes.minimo, mod.slug);
+          const total = ['futmesa', 'corrida'].includes(mod.slug) ? codigos.length : 1;
+          const complemento = outros.slice(0, Math.max(0, opcoes.minimo - total));
+          assert.equal(validar(opcoes, [...codigos, ...complemento]).total, Math.max(opcoes.minimo, total), mod.slug);
         };
         for (const opcao of mod.opcoes) testarOP([opcao.codigo]);
         if (mod.opcoes.length > 1) {
@@ -71,8 +71,15 @@ test('sexo, exclusividade do kata, códigos duplicados e mínimo do terceiro ano
     assert.throws(() => validar(escolhas, lista));
   assert.throws(() => validar(ficha(modalidades, { ...aluno, turma:'3° B DS' }), ['117-0','116-0']));
 });
-test('corridas juntas, modalidades livres e limite do UNO', () => {
-  assert.equal(validar(escolhas,['112-0','112-2','112-4','113-0','114-0']).total,3);
+test('100 m, 200 m e revezamento contam como três provas distintas', () => {
+  assert.equal(validar(escolhas, ['112-0','112-2','112-4']).total, 3);
+  assert.throws(() => validar(escolhas, ['112-0','112-2','112-4','113-0']), /Escolha de 2 a 3/);
+  const terceira = ficha(modalidades, { turma: '3° A ADM', sexo: 'F' });
+  assert.equal(validar(terceira, ['112-1','112-3','112-5']).total, 3);
+  assert.equal(validar(terceira, ['112-1','112-3','112-5','114-1']).total, 4);
+  assert.throws(() => validar(terceira, ['112-0','112-3','112-5']), /não está disponível/);
+});
+test('modalidades livres e limite do UNO', () => {
   const op = slug => escolhas.modalidades.find(m => m.slug === slug).opcoes[0];
   assert.equal(op('dama').limite,null);
   assert.equal(op('uno').limite,4);

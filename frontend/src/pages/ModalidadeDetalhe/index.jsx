@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import TituloArmorial from '../../components/TituloArmorial';
 import { useLocation, useParams, Link } from 'react-router-dom';
 import { FaDownload, FaArrowLeft, FaArrowRight, FaStream } from 'react-icons/fa';
@@ -24,7 +24,8 @@ function LinkDocumento({ url, titulo, formato }) {
 export default function ModalidadeDetalhe() {
   const { slug } = useParams();
   const { config } = useConfig();
-  const { state } = useLocation();
+  const { state, hash } = useLocation();
+  const documentos = useRef(null);
   const [resultado, definirResultado] = useState(null);
   const [tentativa, tentar] = useState(0);
 
@@ -37,6 +38,10 @@ export default function ModalidadeDetalhe() {
     }).catch(() => { if (!controller.signal.aborted) definirResultado({ slug, tentativa, erro: true }); });
     return () => controller.abort();
   }, [slug, tentativa]);
+
+  useLayoutEffect(() => {
+    if (hash === '#modalidade-documentos' && resultado?.slug === slug) documentos.current?.scrollIntoView();
+  }, [hash, resultado, slug]);
 
   const voltar = <Link to={{ pathname: '/', search: state?.buscaCarrossel || '', hash: '#modalidades' }} className="modalidade-voltar"><FaArrowLeft aria-hidden="true"/> Modalidades</Link>;
   if (resultado?.slug !== slug || resultado?.tentativa !== tentativa) return <section className="modalidade-armoriar"><p role="status">Carregando modalidade…</p></section>;
@@ -71,7 +76,7 @@ export default function ModalidadeDetalhe() {
       onError={e => {
         if (!e.currentTarget.src.endsWith('/moldura-armorial.webp')) e.currentTarget.src = '/images/marca/moldura-armorial.webp';
       }}/>
-    <section className="modalidade-opcoes" id="modalidade-documentos">
+    <section className="modalidade-opcoes" id="modalidade-documentos" ref={documentos}>
       <h2>Edital e chaveamento</h2>
       <div className="modalidade-acoes">
         <LinkDocumento url={modalidade.linkEdital} titulo="Edital geral da modalidade"/>

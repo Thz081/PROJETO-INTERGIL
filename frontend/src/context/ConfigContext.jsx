@@ -11,7 +11,7 @@ export const ConfigProvider = ({ children }) => {
   const refreshConfig = useCallback(async () => {
     const atual = ++consulta.current;
     try {
-      const { data } = await api.get('/config');
+      const { data } = await api.get('/config', { timeout: 8000 });
       if (atual !== consulta.current) return;
       setConfig(data);
       if (data.siteName) document.title = data.siteName;

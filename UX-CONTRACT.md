@@ -42,6 +42,6 @@
 - As fotos do álbum avançam pelo arraste horizontal ou pelas setas. Lances tem uma área de rolagem vertical, controles por botão e teclado, som inicialmente desligado e um único vídeo ativo. A tela cheia preserva o enquadramento e tenta a orientação horizontal quando o aparelho oferece esse controle.
 
 - No ranking, o link de cada sala se limita à célula com o nome. Voltar do extrato restaura a sala consultada.
-- No Futmesa, Individual e Dupla podem ser marcados juntos e contam como duas modalidades. As categorias por sexo e as regras combinadas dos demais jogos vêm da ficha da API.
+- No Futmesa, Individual e Dupla podem ser marcados juntos e contam como duas modalidades. No Atletismo, 100 m, 200 m e revezamento contam separadamente. As categorias por sexo e as regras combinadas dos demais jogos vêm da ficha da API.
 - A Gestão ativa e desativa a manutenção na Visão geral. Alunos e monitores veem a tela de manutenção. O acesso da Gestão permanece disponível.
 - A Gestão e a AGR TV podem excluir um rascunho do acervo com confirmação. O botão fica indisponível durante o processamento de um arquivo.

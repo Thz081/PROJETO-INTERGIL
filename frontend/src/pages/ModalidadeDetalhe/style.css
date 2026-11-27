@@ -11,21 +11,25 @@
 .modalidade-opcoes ul {list-style:none;border-block:1px solid #656b82;}
 .modalidade-opcoes li {display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;}
 .modalidade-opcoes li+li {border-top:1px solid #444e69;}
-.modalidade-opcoes span {display:block;color:#e4d5bb;font-size:.8rem;}
+.modalidade-opcoes li > div:first-child > span {display:block;color:#e4d5bb;font-size:.8rem;}
 .modalidade-vizinhas {display:flex;justify-content:space-between;gap:18px;margin-top:23px;}
 .modalidade-vizinhas a:last-child {text-align:right;}
 
 #modalidade-documentos { scroll-margin-top: 86px; }
 .modalidade-documento-pendente {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 46px;
   color: var(--arm-papel);
   background: #222a42;
   border: 1px solid #57617e;
   border-radius: 4px;
   padding: 6px 10px;
   font-size: .8rem;
+  line-height: 1.2;
 }
 .modalidade-documento-pendente small { color: #e0d5be; }
 .modalidade-armoriar .arm-botao { touch-action: manipulation; }

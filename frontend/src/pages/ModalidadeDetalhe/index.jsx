@@ -7,9 +7,10 @@ import { useConfig } from '../../context/ConfigContext';
 import './style.css';
 
 function LinkDocumento({ url, titulo, formato }) {
-  if (!url || url === '#') return <span className="modalidade-documento-pendente">
-    <strong>{titulo}</strong><small>Aguardando publicação</small>
-  </span>;
+  if (!url || url === '#') return <div className="modalidade-documento-pendente">
+    <strong>{titulo}</strong>
+    <small>Aguardando publicação</small>
+  </div>;
   const href = assetURL(url);
   const baixar = /\.pdf(?:[?#]|$)/i.test(url) && new URL(href, window.location.origin).origin === window.location.origin;
   const texto = (baixar ? 'Baixar ' : 'Abrir ') + titulo.toLocaleLowerCase('pt-BR');

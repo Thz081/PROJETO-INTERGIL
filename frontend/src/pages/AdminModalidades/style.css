@@ -1,14 +1,16 @@
 .modalidade-editor { scroll-margin-top: 76px; }
-.modalidade-formatos { min-width: 0; padding: 10px; border: 1px solid var(--painel-borda); border-radius: 5px; }
+.modalidade-formatos { grid-column: 1 / -1; min-width: 0; padding: 10px; border: 1px solid var(--painel-borda); border-radius: 5px; }
 .modalidade-formatos legend { padding: 0 5px; }
 .modalidade-formato {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(0, 1fr));
   align-items: end;
   gap: 9px;
   padding: 8px 0;
   border-bottom: 1px solid var(--painel-borda);
 }
+.modalidade-editor .campo-painel :is(input, select) { width: 100%; min-width: 0; }
+.modalidade-formato > button { grid-column: 1 / -1; justify-self: end; }
 .modalidades-catalogo { margin-top: 24px; }
 .modalidades-catalogo > section { margin-top: 20px; }
 .modalidades-catalogo h4 { margin-bottom: 8px; color: var(--golden-yellow); }

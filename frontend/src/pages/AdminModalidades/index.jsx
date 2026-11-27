@@ -145,7 +145,7 @@ export default function AdminModalidades() {
           <input type="number" min="1" max={campos.formatos.length} required value={campos.maxEscolhas}
             onChange={e => atualizar('maxEscolhas', e.target.value)}/>
         </label>}
-        <fieldset className="full-width modalidade-formatos">
+        <fieldset className="modalidade-formatos">
           <legend>Formatos de participação</legend>
           {campos.formatos.map((opcao, indice) => <div className="modalidade-formato" key={indice}>
             <label className="campo-painel">Formato {indice + 1}

@@ -85,6 +85,8 @@ function PainelMomentos() {
   const [envio, definirEnvio] = useState(null);
   const [confirmacao, confirmar] = useState(null);
   const abortar = useRef(null);
+  const dialogoExcluir = useRef(null);
+  const botaoNova = useRef(null);
 
   async function carregarLista(antes, ativos = filtros) {
     definirCarregando(true);
@@ -128,7 +130,7 @@ function PainelMomentos() {
   }, [idAtual, esperando]);
 
   function nova() {
-    selecionar(null); formulario(vazio); definirArquivos([]); definirErro(''); avisar('');
+    selecionar(null); formulario(vazio); definirArquivos([]); definirErro(''); avisar(''); confirmar(null);
   }
 
   async function abrir(id) {
@@ -234,6 +236,21 @@ function PainelMomentos() {
     finally { ocupar(false); }
   }
 
+  async function excluirRascunho() {
+    dialogoExcluir.current.close();
+    definirErro(''); avisar(''); ocupar(true);
+    try {
+      await api.delete(rota + '/' + idAtual);
+      nova();
+      avisar('Rascunho excluído.');
+      await carregarLista();
+    } catch (falha) { definirErro(mensagem(falha, 'Não foi possível excluir o rascunho.')); }
+    finally {
+      ocupar(false);
+      requestAnimationFrame(() => botaoNova.current?.focus());
+    }
+  }
+
   const modalidade = catalogo.modalidades.find(item => String(item._id) === String(form.modalidade));
   const lugares = form.assunto === 'danca' ? 3 : form.assunto === 'mascote' ? 1 : form.assunto === 'modalidade' ? 2 : 0;
   const publicado = selecionado?.estado === 'publicado';
@@ -265,7 +282,7 @@ function PainelMomentos() {
       <section className="momentos-equipe-painel">
         <div className="momentos-equipe-linha">
           <h2>Publicações</h2>
-          <button className="arm-botao" type="button" disabled={bloqueado} onClick={nova}><FaPlus aria-hidden/> Nova</button>
+          <button className="arm-botao" type="button" ref={botaoNova} disabled={bloqueado} onClick={nova}><FaPlus aria-hidden/> Nova</button>
         </div>
         <label className="momentos-equipe-campo">Tipo
           <select value={filtros.tipo} onChange={e => filtrar('tipo', e.target.value)} disabled={carregando}>
@@ -399,6 +416,26 @@ function PainelMomentos() {
               onClick={() => acao('publicado')}>Publicar</button>}
             {!publicado && !pronto && <small>A publicação fica disponível quando os arquivos estiverem prontos.</small>}
           </div>
+          {selecionado.estado === 'rascunho' && <>
+            <div className="momentos-equipe-acoes">
+              <button type="button" className="arm-botao arm-botao-contorno momentos-excluir"
+                disabled={bloqueado || selecionado.midias?.some(midia => midia.estado === 'processando')}
+                onClick={() => {
+                  dialogoExcluir.current.showModal();
+                  dialogoExcluir.current.querySelector('button').focus();
+                }}>Excluir rascunho</button>
+            </div>
+            <dialog className="momentos-dialogo" ref={dialogoExcluir} aria-labelledby="momentos-excluir-titulo"
+              aria-describedby="momentos-excluir-descricao">
+              <h3 id="momentos-excluir-titulo">Excluir rascunho?</h3>
+              <p id="momentos-excluir-descricao">O rascunho “{selecionado.titulo}” e seus arquivos serão apagados.</p>
+              <div className="momentos-equipe-acoes">
+                <button type="button" className="arm-botao arm-botao-contorno"
+                  onClick={() => dialogoExcluir.current.close()}>Manter rascunho</button>
+                <button type="button" className="arm-botao" onClick={excluirRascunho}>Excluir rascunho</button>
+              </div>
+            </dialog>
+          </>}
           {confirmacao && <div className="momentos-confirmacao" role="group" aria-label={confirmacao.texto}>
             <p>{confirmacao.texto}</p>
             <button className="arm-botao arm-botao-contorno" type="button" onClick={() => confirmar(null)}><FaArrowLeft aria-hidden/> Voltar</button>

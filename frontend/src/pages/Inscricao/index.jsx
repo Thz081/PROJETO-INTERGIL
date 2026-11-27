@@ -5,14 +5,11 @@ import { FaArrowRight, FaCheck, FaChevronDown } from 'react-icons/fa6';
 import api from '../../api';
 import { useAuth } from '../../context/AuthProvider';
 import useVagas from './useVagas';
+import { ultimoDiaInscricoes } from './prazo';
 import './style.css';
 
-const diaDoPrazo = new Intl.DateTimeFormat('pt-BR', {
-  day: 'numeric', month: 'long', timeZone: 'America/Recife'
-});
-
 function nomeDaOpcao(modalidade, opcao) {
-  return ['Individual', modalidade.nome].includes(opcao.nome) ? '' : opcao.nome;
+  return opcao.nome === modalidade.nome || (opcao.nome === 'Individual' && modalidade.opcoes.length === 1) ? '' : opcao.nome;
 }
 
 export default function Inscricao() {
@@ -62,7 +59,7 @@ export default function Inscricao() {
     .map(opcao => ({ ...opcao, modalidade })));
   const grupos = new Set([...ficha.creditos, ...marcadas.map(opcao => opcao.grupo)]);
   const faltam = Math.max(0, ficha.minimo - grupos.size);
-  const podeEnviar = escolhas.length > 0 && faltam === 0;
+  const podeEnviar = escolhas.length > 0 && faltam === 0 && grupos.size <= ficha.maximo;
   const conectado = vagas.status === 'Vagas ao vivo';
   const selecionar = codigo => escolher(lista =>
     lista.includes(codigo) ? lista.filter(escolha => escolha !== codigo) : [...lista, codigo]);
@@ -103,11 +100,11 @@ export default function Inscricao() {
     </label>;
   }
 
-  return <form className="inscricao-armoriar" onSubmit={confirmar}>
+  return <form className="inscricao-armoriar" noValidate onSubmit={confirmar}>
     <header className="inscricao-topo">
       <Link to="/meu-perfil">Meu perfil</Link>
       <h1><TituloArmorial arte="inscricao">Inscrição nos jogos</TituloArmorial></h1>
-      <p>Escolha de <strong>{ficha.minimo} a {ficha.maximo} modalidades</strong> até {diaDoPrazo.format(Date.parse(ficha.fim) - 1)}.</p>
+      <p>Escolha de <strong>{ficha.minimo} a {ficha.maximo} modalidades</strong> até {ultimoDiaInscricoes(ficha.fim)}.</p>
       <p className="inscricao-turma"><span>{user.turma}</span>
         <span className={conectado ? 'inscricao-conexao conectada' : 'inscricao-conexao'} role="status">{vagas.status}</span></p>
     </header>
@@ -143,8 +140,8 @@ export default function Inscricao() {
             <select defaultValue="" onChange={evento => {
               const destino = document.getElementById(evento.target.value);
               if (destino) {
-                destino.focus({ preventScroll: true });
                 destino.scrollIntoView();
+                destino.focus({ preventScroll: true });
               }
               evento.target.value = '';
             }}>

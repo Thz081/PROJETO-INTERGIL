@@ -23,11 +23,11 @@ function modalidade(_id, nome, slug, categoria, submodalidades, maxEscolhas = 1)
 const modalidades = [
   modalidade(101, 'Futsal', 'futsal', quadra, porSexo(8)),
   modalidade(102, 'Quadrado', 'quadrado', quadra, porSexo(2)),
-  modalidade(103, 'Futmesa', 'futmesa', quadra, [opcao('Individual', 2), ...porSexo(2, 'Dupla · ')]),
+  modalidade(103, 'Futmesa', 'futmesa', quadra, [opcao('Individual', 2), ...porSexo(2, 'Dupla · ')], 2),
   modalidade(104, 'Vôlei', 'volei', quadra, porSexo(10)),
   modalidade(105, 'Vôleimesa', 'voleimesa', quadra, porSexo(4)),
   modalidade(106, 'Vôlei quase de praia', 'volei-quase-de-praia', quadra, porSexo(4)),
-  modalidade(107, 'Basquete', 'basquete', quadra, [opcao('5×5 masculino', 8, 'M'), ...porSexo(4, '3×3 · ')], 2),
+  modalidade(107, 'Basquete', 'basquete', quadra, [opcao('5×5 masculino', 8, 'M'), ...porSexo(4, '3×3 · '), opcao('5×5 feminino', 8, 'F')], 2),
   modalidade(108, 'Queimado', 'queimado', quadra, [opcao('Misto', 12)]),
   modalidade(109, 'Ping-pong', 'ping-pong', 'Esportes de oposição', porSexo(2)),
   modalidade(110, 'Badminton', 'badminton', 'Esportes de oposição', porSexo(4)),

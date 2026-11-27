@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, Link, useLocation } from 'react-router-dom';
 import './styles/global.css'; 
 
 // === Layouts ===
@@ -40,6 +40,9 @@ import MonitorLinks from './pages/MonitorLinks';
 
 // === Context ===
 import { useAudio } from './context/AudioContext';
+import { useConfig } from './context/ConfigContext';
+import { useAuth } from './context/AuthProvider';
+import './styles/manutencao.css';
 
 const Momentos = lazy(() => import('./pages/Momentos'));
 const AdminMomentos = lazy(() => import('./pages/AdminMomentos'));
@@ -64,6 +67,25 @@ const PublicLayout = () => (
 
 function App() {
   const { playClick } = useAudio();
+  const { config, estadoConfig } = useConfig();
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  const gestao = user?.role === 'gestao';
+  const loginGestao = pathname === '/login-admin';
+  const areaGestao = gestao && /^\/admin-(?:dashboard|salas|pontuacao|log|lista-inscricoes|momentos)(?:\/|$)/.test(pathname);
+  if (!loginGestao && estadoConfig === 'carregando') {
+    return <main className="intergil-manutencao"><p role="status">Carregando o Intergil…</p></main>;
+  }
+  if (config.manutencao && !loginGestao && !areaGestao) {
+    return <main className="intergil-manutencao">
+      <section aria-labelledby="manutencao-titulo">
+        <img src="/images/marca/armoriar-logotipo.webp" alt="Armoriar" width="384" height="81"/>
+        <h1 id="manutencao-titulo">Site em manutenção</h1>
+        <p>Estamos fazendo ajustes no Intergil. Volte daqui a pouco.</p>
+        <Link to={gestao ? '/admin-dashboard' : '/login-admin'}>Acesso da Gestão</Link>
+      </section>
+    </main>;
+  }
 
   return (
     <div className="App" onClickCapture={evento => {
@@ -72,6 +94,7 @@ function App() {
       <ScrollToTop />
       
       <Routes>
+        {config.manutencao && <Route path="/login-admin" element={<LoginAdmin />} />}
         {/* === ÁREA PÚBLICA (COM HEADER/FOOTER) === */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
@@ -87,7 +110,7 @@ function App() {
           <Route path="/ranking/salas/:id" element={<Extrato />} />
           <Route path="/resultados" element={<Resultados />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/login-admin" element={<LoginAdmin />} />
+          {!config.manutencao && <Route path="/login-admin" element={<LoginAdmin />} />}
           <Route path="/login-monitor" element={<LoginMonitor />} />
           
           {/* Rotas Protegidas de Aluno (Dentro do Layout Público) */}

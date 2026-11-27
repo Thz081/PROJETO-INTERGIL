@@ -12,6 +12,15 @@ test('futsal, quadrado e futmesa ocupam três vagas no limite anual', () => {
   assert.equal(validar(escolhas, ['101-0','102-0','103-0']).total, 3);
   assert.throws(() => validar(escolhas, ['101-0','102-0','103-0','117-0']));
 });
+test('Futmesa aceita individual e dupla visível ao aluno e contabiliza duas modalidades', () => {
+  assert.equal(validar(escolhas, ['103-0', '103-1']).total, 2);
+  assert.throws(() => validar(escolhas, ['103-0', '103-2']));
+  const feminina = ficha(modalidades, { ...aluno, sexo: 'F' });
+  assert.equal(validar(feminina, ['103-0', '103-2', '116-0']).total, 3);
+  assert.throws(() => validar(feminina, ['103-0', '103-2', '116-0', '117-0']));
+  assert.deepEqual(feminina.modalidades.find(mod => mod.slug === 'basquete').opcoes.map(op => op.codigo),
+    ['107-2', '107-3']);
+});
 test('FIFA oferece duas vagas para o X1 e duas para a dupla, com contagem única', () => {
   const fifa = escolhas.modalidades.find(mod => mod.slug === 'fifa');
   assert.deepEqual(fifa.opcoes.map(opcao => [opcao.nome, opcao.limite]), [['X1', 2], ['X2', 2]]);
@@ -23,6 +32,33 @@ test('Free Fire mostra Mapa aberto primeiro e aceita os três formatos com conta
   assert.equal(freeFire.opcoes[0].principal,true);
   assert.equal(validar(escolhas, ['125-0','125-1','125-2','117-0']).total, 2);
   assert.equal(formatosDePodio(modalidades.find(mod => mod.slug === 'free-fire'))[0].nome, 'Mapa aberto');
+});
+test('os 27 esportes e jogos oferecem as combinações previstas ao primeiro e ao terceiro ano', () => {
+  const juntas = { basquete: 2, corrida: 3, 'free-fire': 3, fifa: 2, rpg: 4 };
+  const exclusivas = new Set(['kata', 'xadrez']);
+  const combinacoes = { ...juntas, futmesa: 2, kata: 3, xadrez: 2 };
+  assert.equal(modalidades.length, 27);
+  for (const sexo of ['F', 'M']) {
+    for (const turma of ['1° A ADM', '3° B DS']) {
+      const opcoes = ficha(modalidades, { sexo, turma });
+      assert.equal(opcoes.modalidades.length, 27);
+      for (const mod of opcoes.modalidades) {
+        assert.equal(mod.opcoes.length, combinacoes[mod.slug] || 1, mod.slug);
+        const outros = ['116-0', '117-0', '121-0'].filter(codigo => !mod.opcoes.some(op => op.codigo === codigo));
+        const testarOP = codigos => {
+          const total = mod.slug === 'futmesa' ? codigos.length : 1;
+          const complemento = outros.slice(0, opcoes.minimo - total);
+          assert.equal(validar(opcoes, [...codigos, ...complemento]).total, opcoes.minimo, mod.slug);
+        };
+        for (const opcao of mod.opcoes) testarOP([opcao.codigo]);
+        if (mod.opcoes.length > 1) {
+          const todos = mod.opcoes.map(opcao => opcao.codigo);
+          if (exclusivas.has(mod.slug)) assert.throws(() => validar(opcoes, todos), /limite de escolhas/);
+          else testarOP(todos);
+        }
+      }
+    }
+  }
 });
 test('bônus iniciais identificam a origem dos pontos de todas as salas oficiais', () => {
   const saldos = Object.fromEntries(salas.map(sala => [sala.nome, movimentosIniciais(sala).reduce((soma,m) => soma+m.pontos,0)]));
@@ -44,5 +80,5 @@ test('corridas juntas, modalidades livres e limite do UNO', () => {
 test('turmas únicas e encerramento à meia-noite em Pernambuco', () => {
   assert.equal(new Set(salas.map(s => s.turma)).size,12);
   assert.equal(new Set(salas.map(s => s.logo_url)).size,12);
-  assert.equal(new Date(fim).toISOString(), '2026-12-02T03:00:00.000Z');
+  assert.equal(new Date(fim).toISOString(), '2026-12-03T03:00:00.000Z');
 });

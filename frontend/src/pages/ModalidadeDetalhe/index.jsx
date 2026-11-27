@@ -3,17 +3,26 @@ import TituloArmorial from '../../components/TituloArmorial';
 import { useLocation, useParams, Link } from 'react-router-dom';
 import { FaDownload, FaArrowLeft, FaArrowRight, FaStream } from 'react-icons/fa';
 import api, { assetURL } from '../../api';
+import { useConfig } from '../../context/ConfigContext';
 import './style.css';
 
-function LinkDocumento({ url, children }) {
-  if (!url || url === '#') return null;
-  return <a className="arm-botao arm-botao-contorno" href={assetURL(url)} target="_blank" rel="noreferrer">
-    {url.toLowerCase().endsWith('.pdf') ? <FaDownload aria-hidden="true"/> : <FaStream aria-hidden="true"/>}{children}
+function LinkDocumento({ url, titulo, formato }) {
+  if (!url || url === '#') return <span className="modalidade-documento-pendente">
+    <strong>{titulo}</strong><small>Aguardando publicação</small>
+  </span>;
+  const href = assetURL(url);
+  const baixar = /\.pdf(?:[?#]|$)/i.test(url) && new URL(href, window.location.origin).origin === window.location.origin;
+  const texto = (baixar ? 'Baixar ' : 'Abrir ') + titulo.toLocaleLowerCase('pt-BR');
+  return <a className="arm-botao arm-botao-contorno" href={href}
+    download={baixar || undefined} target={baixar ? undefined : '_blank'} rel={baixar ? undefined : 'noreferrer'}
+    aria-label={formato ? `${texto} · ${formato}` : undefined}>
+    {baixar ? <FaDownload aria-hidden="true"/> : <FaStream aria-hidden="true"/>}{texto}
   </a>;
 }
 
 export default function ModalidadeDetalhe() {
   const { slug } = useParams();
+  const { config } = useConfig();
   const { state } = useLocation();
   const [resultado, definirResultado] = useState(null);
   const [tentativa, tentar] = useState(0);
@@ -39,7 +48,7 @@ export default function ModalidadeDetalhe() {
   const capaPadrao = `/images/gravuras/${modalidade.slug}.webp`;
   const bannerPadrao = `/images/gravuras/banners/${modalidade.slug}.webp`;
   const banner = !modalidade.imgDetalhe || modalidade.imgDetalhe === capaPadrao ? bannerPadrao : modalidade.imgDetalhe;
-  const fechada = Date.now() >= Date.parse('2026-12-02T00:00:00-03:00');
+  const fechada = Date.now() >= Date.parse(config.fimInscricoes);
   return <article className="modalidade-armoriar">
     {voltar}
     <div className="modalidade-topo">
@@ -51,8 +60,7 @@ export default function ModalidadeDetalhe() {
         <Link className="arm-botao" to={fechada ? '/meu-perfil' : '/inscricao'}>
           {fechada ? 'Ver minha inscrição' : 'Inscrever-se'}<FaArrowRight aria-hidden="true"/>
         </Link>
-        <LinkDocumento url={modalidade.linkEdital}>Edital da modalidade</LinkDocumento>
-        <LinkDocumento url={modalidade.linkChaveamento}>Chaveamento</LinkDocumento>
+        <a className="arm-botao arm-botao-contorno" href="#modalidade-documentos">Edital e chaveamento</a>
         <Link className="arm-botao arm-botao-contorno" to={`/momentos/albuns?album=${modalidade._id}`}>
           Ver cobertura
         </Link>
@@ -62,6 +70,13 @@ export default function ModalidadeDetalhe() {
       onError={e => {
         if (!e.currentTarget.src.endsWith('/moldura-armorial.webp')) e.currentTarget.src = '/images/marca/moldura-armorial.webp';
       }}/>
+    <section className="modalidade-opcoes" id="modalidade-documentos">
+      <h2>Edital e chaveamento</h2>
+      <div className="modalidade-acoes">
+        <LinkDocumento url={modalidade.linkEdital} titulo="Edital geral da modalidade"/>
+        <LinkDocumento url={modalidade.linkChaveamento} titulo="Chaveamento geral"/>
+      </div>
+    </section>
     {!!modalidade.submodalidades?.length && <section className="modalidade-opcoes">
       <h2>Formatos de participação</h2>
       <ul>{[...modalidade.submodalidades].sort((a, b) => Number(!!b.isPrincipal) - Number(!!a.isPrincipal)).map(opcao => <li key={opcao.nome}>
@@ -69,7 +84,8 @@ export default function ModalidadeDetalhe() {
           <span>{opcao.isPrincipal && 'Principal · '}{opcao.max_inscritos == null ? 'Livre' : `${opcao.max_inscritos} por turma`}</span>
         </div>
         <div className="modalidade-acoes">
-          <LinkDocumento url={opcao.edital}>Edital</LinkDocumento><LinkDocumento url={opcao.chaveamento}>Chaveamento</LinkDocumento>
+          <LinkDocumento url={opcao.edital} titulo="Edital" formato={opcao.nome}/>
+          <LinkDocumento url={opcao.chaveamento} titulo="Chaveamento" formato={opcao.nome}/>
         </div>
       </li>)}</ul>
     </section>}

@@ -19,7 +19,7 @@ function agruparEscolhas(codigos, modalidades) {
       id, nome: modalidade?.nome || `Modalidade ${id}`, formatos: []
     });
     const formato = modalidade?.submodalidades?.[indice]?.nome;
-    if (formato && formato !== 'Individual' && formato !== modalidade.nome) grupos.get(id).formatos.push(formato);
+    if (formato && (formato !== 'Individual' || modalidade.slug === 'futmesa') && formato !== modalidade.nome) grupos.get(id).formatos.push(formato);
   }
   return [...grupos.values()];
 }

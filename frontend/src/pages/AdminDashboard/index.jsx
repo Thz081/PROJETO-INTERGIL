@@ -79,6 +79,35 @@ function NomeEvento() {
   </form>;
 }
 
+function ModoManutencao() {
+  const { config, estadoConfig, refreshConfig } = useConfig();
+  const [ocupado, ocupar] = useState(false);
+  const [retorno, responder] = useState(null);
+  const ativo = config.manutencao === true;
+
+  async function alternar() {
+    ocupar(true);
+    responder(null);
+    try {
+      await api.put('/admin/config', { manutencao: !ativo });
+      await refreshConfig();
+      responder({ texto: ativo ? 'O site voltou ao ar.' : 'Modo manutenção ativado.' });
+    } catch (falha) {
+      responder({ erro: true, texto: falha.response?.data?.message || 'Não foi possível alterar o modo manutenção.' });
+    } finally { ocupar(false); }
+  }
+
+  return <section className="admin-card">
+    <h3>Modo manutenção</h3>
+    <p>{ativo ? 'O site está em manutenção. O acesso da Gestão está disponível.' :
+      'Ao ativar, alunos, monitores e visitantes verão o aviso de manutenção.'}</p>
+    <button type="button" className="painel-primario" onClick={alternar} disabled={ocupado || estadoConfig === 'carregando'}>
+      {ocupado ? 'Salvando…' : ativo ? 'Desativar manutenção' : 'Ativar manutenção'}
+    </button>
+    {retorno && <p role={retorno.erro ? 'alert' : 'status'} className={'painel-retorno' + (retorno.erro ? ' erro' : '')}>{retorno.texto}</p>}
+  </section>;
+}
+
 export default function AdminDashboard() {
   const { config } = useConfig();
   return <>
@@ -92,6 +121,7 @@ export default function AdminDashboard() {
       </Link>
     </div>
     <div className="painel-grade painel-publicacoes">
+      <ModoManutencao/>
       <NomeEvento/>
       <Publicacao tipo="pdf" titulo="Edital geral" legenda="O PDF publicado pode ser baixado na página inicial."
         endpoint="/admin/upload-edital-geral" campo="editalGeral"

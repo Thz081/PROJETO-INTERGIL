@@ -34,3 +34,17 @@
 .momentos-atalho summary { font-family: var(--arm-display, Georgia, serif); font-size: 1.32rem; cursor: pointer; }
 .momentos-atalho fieldset { padding: 0; border: 0; min-width: 0; }
 .momentos-lista-filtros { margin-top: .65rem; }
+
+.momentos-dialogo {
+  width: min(460px, calc(100% - 32px));
+  margin: auto;
+  padding: 22px;
+  color: var(--arm-papel);
+  background: #212841;
+  border: 1px solid #64708d;
+  border-radius: 6px;
+}
+.momentos-dialogo::backdrop { background: #101526bd; }
+.momentos-dialogo p { margin-top: 8px; overflow-wrap: anywhere; }
+.momentos-dialogo .momentos-equipe-acoes { justify-content: end; }
+.momentos-equipe .momentos-excluir { color: #ffc0af; border-color: #ad726a; }

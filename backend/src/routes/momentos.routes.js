@@ -19,7 +19,7 @@ equipe.use(protect, async (req, res, next) => {
 });
 equipe.route('/').get((req, res) => controller.lista(req, res, true)).post(controller.criar);
 equipe.post('/colecoes', controller.abrirAlbum);
-equipe.route('/:id').get((req, res) => controller.detalhe(req, res, true)).patch(controller.editar);
+equipe.route('/:id').get((req, res) => controller.detalhe(req, res, true)).patch(controller.editar).delete(controller.excluirRascunho);
 equipe.patch('/:id/estado', controller.estado);
 equipe.post('/:id/envios', controller.iniciarEnvio);
 equipe.put('/:id/envios/:midia', controller.anexarTrecho);

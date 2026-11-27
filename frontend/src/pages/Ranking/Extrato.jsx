@@ -15,7 +15,7 @@ export default function Extrato() {
   const { dados, erro, buscar } = useDadosPontuacao(config.rankingVisivel === false ? null : '/ranking/salas/' + id);
 
   return <section className="pontuacao-publica pontuacao-extrato">
-    <Link className="arm-botao arm-botao-contorno" to="/ranking"><FaArrowLeft aria-hidden="true"/> Voltar ao ranking</Link>
+    <Link className="arm-botao arm-botao-contorno" to={'/ranking#sala-' + id}><FaArrowLeft aria-hidden="true"/> Voltar ao ranking</Link>
     {config.rankingVisivel === false ? <h1>Ranking temporariamente oculto</h1> : !dados ? <>
       <h1>Extrato de pontuação</h1><EstadoDados erro={erro} buscar={buscar} texto="Não foi possível carregar o extrato."/>
     </> : <>

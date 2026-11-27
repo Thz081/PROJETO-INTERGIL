@@ -29,3 +29,5 @@
   .capa-armoriar-cartaz{grid-column:2;grid-row:3/5;align-self:center;}
 }
 @media(max-width:390px){.capa-armoriar{grid-template-columns:minmax(0,1fr) minmax(0,97px)}.capa-armoriar-acoes .arm-botao{padding-inline:9px;}}
+
+.capa-armoriar-acoes a { touch-action: manipulation; }

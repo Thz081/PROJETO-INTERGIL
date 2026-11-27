@@ -180,6 +180,7 @@ async function editar(req, res) {
   if (doc.albumChave && (valores.assunto !== 'modalidade' || chaveAlbum(valores) !== doc.albumChave))
     atualizacao.$unset = { albumChave: '' };
   const atual = await Momento.findByIdAndUpdate(doc._id, atualizacao, { new: true }).lean();
+  if (!atual) throw erro(404, 'Publicação não encontrada.');
   res.json(ficha(atual, true));
 }
 
@@ -277,6 +278,35 @@ async function anexarTrecho(req, res) {
   } finally { recebendo = false; }
 }
 
+async function limparMidia(arquivo) {
+  await Promise.all([
+    fs.rm(path.join(saida, String(arquivo._id)), { recursive: true, force: true }),
+    arquivo.entrada && fs.rm(path.join(entrada, arquivo.entrada), { force: true })
+  ]);
+}
+
+async function excluirRascunho(req, res) {
+  const id = idMomento(req);
+  if (recebendo) throw erro(429, 'Aguarde o trecho atual antes de excluir o rascunho.');
+  recebendo = true;
+  try {
+    const doc = await Momento.findOneAndDelete({
+      _id: id, estado: 'rascunho', 'midias.estado': { $ne: 'processando' }
+    }).lean();
+    if (!doc && !await Momento.exists({ _id: id })) throw erro(404, 'Rascunho não encontrado.');
+    if (!doc) throw erro(409, 'Só é possível excluir um rascunho fora de processamento.');
+
+    const resultados = await Promise.allSettled([
+      ...(doc.midias || []).map(limparMidia),
+      LogAcao.create({ autor: String(req.user.nome), acao: `Excluiu o rascunho ${doc.titulo} (${id})` })
+    ]);
+    for (const item of resultados) {
+      if (item.status === 'rejected') console.error('Limpeza de rascunho:', id, item.reason.code || item.reason.name);
+    }
+    res.sendStatus(204);
+  } finally { recebendo = false; }
+}
+
 async function removerMidia(req, res) {
   const id = idMomento(req);
   if (recebendo) throw erro(429, 'Aguarde o trecho atual antes de remover o arquivo.');
@@ -293,10 +323,7 @@ async function removerMidia(req, res) {
     }, { $pull: { midias: { _id: midia } } }).lean();
     if (!antigo) throw erro(409, 'Aguarde o processamento ou retire a publicação do ar antes de remover a última mídia.');
     const arquivo = antigo.midias.find(item => String(item._id) === midia);
-    await Promise.all([
-      fs.rm(path.join(saida, midia), { recursive: true, force: true }),
-      arquivo.entrada && fs.rm(path.join(entrada, arquivo.entrada), { force: true })
-    ]);
+    await limparMidia(arquivo);
     res.sendStatus(204);
   } finally { recebendo = false; }
 }
@@ -344,4 +371,4 @@ async function arquivo(req, res) {
   res.sendFile(path.join(saida, midia, nome));
 }
 
-module.exports = { catalogo, colecoes, lista, detalhe, criar, abrirAlbum, editar, iniciarEnvio, anexarTrecho, removerMidia, estado, arquivo };
+module.exports = { catalogo, colecoes, lista, detalhe, criar, abrirAlbum, editar, iniciarEnvio, anexarTrecho, removerMidia, excluirRascunho, estado, arquivo };

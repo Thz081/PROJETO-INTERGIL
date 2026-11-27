@@ -14,3 +14,21 @@
 .modalidade-opcoes span {display:block;color:#e4d5bb;font-size:.8rem;}
 .modalidade-vizinhas {display:flex;justify-content:space-between;gap:18px;margin-top:23px;}
 .modalidade-vizinhas a:last-child {text-align:right;}
+
+#modalidade-documentos { scroll-margin-top: 86px; }
+.modalidade-documento-pendente {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--arm-papel);
+  background: #222a42;
+  border: 1px solid #57617e;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: .8rem;
+}
+.modalidade-documento-pendente small { color: #e0d5be; }
+.modalidade-armoriar .arm-botao { touch-action: manipulation; }
+@media (max-width: 560px) {
+  .modalidade-opcoes li { align-items: start; flex-direction: column; }
+}

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigationType } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa';
 import { useConfig } from '../../context/ConfigContext';
 import TituloArmorial from '../TituloArmorial';
@@ -9,9 +9,25 @@ import useDadosPontuacao from '../Pontuacao/useDados';
 import '../Pontuacao/style.css';
 import './style.css';
 
+let ultimaSalaAberta;
+
 export default function Leaderboard({ completo = false }) {
+  const { hash, key } = useLocation();
+  const navegacao = useNavigationType();
+  const restaurado = useRef(null);
   const { config, estadoConfig, refreshConfig } = useConfig();
   const { dados, erro, buscar } = useDadosPontuacao(config.rankingVisivel === true ? '/ranking/salas' : null);
+  useEffect(() => {
+    if (!completo || !dados || restaurado.current === key) return;
+    const id = hash.startsWith('#sala-') ? hash.slice(1) :
+      navegacao === 'POP' && ultimaSalaAberta?.key === key ? ultimaSalaAberta.id : null;
+    const linha = id && document.getElementById(id);
+    if (linha) {
+      restaurado.current = key;
+      linha.querySelector('a')?.focus({ preventScroll: true });
+      linha.scrollIntoView({ block: 'center' });
+    }
+  }, [completo, dados, hash, key, navegacao]);
   if (!completo && (config.rankingVisivel !== true || erro?.response?.status === 404)) return null;
   const titulo = completo ? 'RANKING GERAL' : 'RANKING 2026';
   const Titulo = completo ? 'h1' : 'h2';
@@ -27,10 +43,13 @@ export default function Leaderboard({ completo = false }) {
       !salas ? <EstadoDados erro={erro} buscar={buscar} texto="Não foi possível carregar o ranking."/> :
         <table className="leaderboard-table" aria-describedby={completo ? 'ranking-ajuda' : undefined}>
           <thead><tr><th scope="col">Pos.</th><th scope="col">Sala</th><th scope="col">Pontuação</th></tr></thead>
-          <tbody>{salas.map((sala, indice) => <tr key={sala._id}>
+          <tbody>{salas.map((sala, indice) => <tr key={sala._id} id={completo ? `sala-${sala._id}` : undefined}>
             <td><span className="leaderboard-posicao">{indice + 1}º</span></td>
-            <th scope="row"><Equipe sala={sala} link/></th>
-            <td><span className="leaderboard-pontos">{sala.pontos} <small>pts</small><FaChevronRight aria-hidden="true"/></span></td>
+            <th scope="row"><Equipe sala={sala} link onClick={completo ?
+              () => { ultimaSalaAberta = { key, id: `sala-${sala._id}` }; } : undefined}>
+              <FaChevronRight aria-hidden="true"/>
+            </Equipe></th>
+            <td><span className="leaderboard-pontos">{sala.pontos} <small>pts</small></span></td>
           </tr>)}</tbody>
         </table>}
     {completo ? <Link to="/" className="arm-botao arm-botao-contorno leaderboard-acao"><FaArrowLeft aria-hidden="true"/> Voltar ao início</Link> :

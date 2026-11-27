@@ -95,11 +95,23 @@ async function testar() {
       throw new Error('Worker não processou o arquivo de teste.');
     }
 
+    const rascunho = await criar({ tipo: 'foto', titulo: 'Rascunho de teste descartável', assunto: 'evento' });
+    const fotoDescartavel = await enviar(rascunho._id, jpeg);
+    const idDaFoto = fotoDescartavel.split('/').at(-2);
+    const pastaDaFoto = path.join('/app/momentos/saida', idDaFoto);
+    await fs.access(pastaDaFoto);
+    await chamar(editor + '/' + rascunho._id, 401, { metodo: 'DELETE' });
+    await chamar(editor + '/' + rascunho._id, 204, { metodo: 'DELETE', token });
+    await chamar(editor + '/' + rascunho._id, 404, { token });
+    await chamar(fotoDescartavel, 404);
+    await assert.rejects(fs.access(pastaDaFoto), { code: 'ENOENT' });
+
     const previaFoto = await enviar(album._id, jpeg);
     const foto = previaFoto.split('?')[0];
     await chamar(previaFoto, 200);
     await chamar(foto, 404);
     await publicar(album._id, 'publicado');
+    await chamar(editor + '/' + album._id, 409, { metodo: 'DELETE', token });
     for (const sala of salas) {
       const { itens } = await chamar(galeria + '?tipo=foto&assunto=danca&sala=' + sala, 200);
       assert(itens.some(item => item._id === album._id));

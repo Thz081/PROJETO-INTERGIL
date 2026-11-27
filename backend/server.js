@@ -17,6 +17,7 @@ const momentosRoutes = require('./src/routes/momentos.routes.js');
 
 const { iniciar } = require('./src/edicao/iniciar');
 const conectarVagas = require('./src/edicao/vagasSocket');
+const { iniciarManutencao, verificarManutencao } = require('./src/controllers/config.controller');
 const app = express();
 
 // 1. LIBERA GERAL (CORS)
@@ -51,6 +52,7 @@ const servirArquivos = express.static(uploadsPath, {
 app.use(['/uploads', '/arquivos', '/api/uploads', '/api/arquivos'], servirArquivos);
 
 // Rotas
+app.use('/api', verificarManutencao);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/monitor', monitorRoutes);
@@ -71,6 +73,7 @@ async function start() {
     await connectDB({ dbName: 'intergil2026' });
     await require('./src/models/momento.model').init();
     await iniciar();
+    await iniciarManutencao();
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🔥 Servidor rodando na porta ${PORT}`);
     });

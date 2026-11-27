@@ -4,7 +4,7 @@ A aplicação usa React com JavaScript e Vite, uma API Express e um MongoDB com 
 
 ## Subir na VPS com GHCR e Atlas
 
-O Silvio recebe `compose.vps.yaml`, `.env.example` e o SHA completo da versão publicado no GitHub Actions. O Compose usa `ghcr.io/thz081/intergil-web` e `ghcr.io/thz081/intergil-api`. As duas imagens têm a mesma tag e foram montadas para `linux/amd64`. Em cada atualização, altere apenas a tag no `.env` e repita os comandos. Para voltar, use o SHA anterior.
+O Silvio recebe `compose.vps.yaml`, `.env.example` e o SHA completo da versão publicado no GitHub Actions. O Compose usa `ghcr.io/thz081/intergil-web` e `ghcr.io/thz081/intergil-api`. As duas imagens têm a mesma tag e foram montadas para `linux/amd64`. Em atualizações que usam o mesmo Compose, altere a tag no `.env` e repita os comandos. Para voltar, use o Compose e o SHA da versão anterior.
 
 1. No Atlas, autorize o IP público de saída da VPS em **Network Access** e crie um usuário da aplicação com acesso de leitura e escrita ao banco `intergil2026`. Copie a string de conexão do próprio Atlas. A API usa `intergil2026`. A coleção antiga permanece na base `test`.
 2. Na VPS, execute `umask 077` e `cp .env.example .env` apenas na primeira instalação. No `.env`, preencha `MONGO_URI` com a string do Atlas, `INTERGIL_VERSAO` com o SHA e `JWT_SECRET` com o resultado de `openssl rand -hex 48`. Use um canal privado para a URI. O ZIP de entrega acompanha apenas o modelo de variáveis.
@@ -18,6 +18,12 @@ curl -fsS https://intergil.etegilrodrigues.com.br/api/config
 ```
 
 O Atlas armazena as contas, as inscrições e o catálogo editável. Os arquivos enviados pelo painel ficam no volume Docker `arquivos`. Uma migração dos envios depende da cópia privada desse volume. As capas, banners, brasões e agenda padrão já vêm na imagem web. [Conexão ao Atlas](https://www.mongodb.com/docs/atlas/connect-to-database-deployment/)
+
+### Modo manutenção
+
+Use **Gestão → Visão geral → Modo manutenção** para pausar o acesso público, as inscrições e a Monitoria. A tela de manutenção oferece o acesso à Gestão para desativar a pausa. O estado fica no Atlas. A rota `/api/config` continua disponível para verificar a aplicação e permitir que o navegador detecte quando o site voltar.
+
+Ao instalar a versão com modo manutenção, use o Compose que consulta `/api/config` no healthcheck da API. Isso permite reiniciar os serviços com a manutenção ativa. Preserve o nome do projeto e os volumes existentes. Desative a manutenção antes de voltar para uma versão que ainda não oferece esse botão.
 
 ## Subir com Mongo local e build na máquina
 

@@ -5,6 +5,7 @@ import Leaderboard from '../../components/Leaderboard';
 import ModalidadesCarousel from '../../components/ModalidadesCarousel';
 import api, { apiURL, assetURL } from '../../api';
 import { useConfig } from '../../context/ConfigContext';
+import { ultimoDiaInscricoes } from '../Inscricao/prazo';
 import './style.css';
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
     return () => controller.abort();
   }, [tentativa]);
 
-  const encerrada = Date.now() >= Date.parse('2026-12-02T00:00:00-03:00');
+  const encerrada = Date.now() >= Date.parse(config.fimInscricoes);
   return <div className="edicao-home">
     <section className="capa-armoriar">
       <div className="capa-armoriar-texto">
@@ -35,7 +36,8 @@ export default function Home() {
           <Link className="arm-botao arm-botao-contorno" to="/horarios"><FaCalendarAlt aria-hidden="true"/> Horários dos jogos</Link>
         </div>
         <div className="capa-armoriar-info">
-          <span>{encerrada ? 'Inscrições encerradas' : 'Inscrições até 1º de dezembro'}</span>
+          {config.fimInscricoes && <span>{encerrada ? 'Inscrições encerradas' :
+            'Inscrições até ' + ultimoDiaInscricoes(config.fimInscricoes)}</span>}
         </div>
         <section className="capa-edital" aria-labelledby="capa-edital-titulo">
           <FaRegFilePdf className="capa-edital-icone" aria-hidden="true"/>

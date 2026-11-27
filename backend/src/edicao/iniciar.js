@@ -94,5 +94,12 @@ async function iniciar() {
       { $push: { submodalidades: freeFireMapaAberto }, $max: { maxEscolhas: 3 } }, { session });
     await Controle.create([{ _id: 'free-fire-mapa-aberto-2026' }], { session });
   });
+  await mongoose.connection.transaction(async session => {
+    if (await Controle.exists({ _id: 'futmesa-dois-formatos-2026' }).session(session)) return;
+    await Controle.updateOne({ _id: 'vagas' }, { $inc: { versao: 1 } }, { session });
+    await Modalidade.updateOne({ slug: 'futmesa', 'submodalidades.1': { $exists: true } },
+      { $max: { maxEscolhas: 2 } }, { session });
+    await Controle.create([{ _id: 'futmesa-dois-formatos-2026' }], { session });
+  });
 }
 module.exports = { Controle, iniciar };

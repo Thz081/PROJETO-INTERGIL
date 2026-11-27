@@ -66,6 +66,21 @@ async function testar() {
   assert.equal((await chamar('/admin/pontuacao','GET',undefined,true))[0],200);
   assert.equal((await chamar('/admin/config','PUT',{rankingVisivel:true},true))[0],200);
   assert.equal((await extrato()).sala.pontos,1050);
+  assert.equal((await chamar('/admin/config', 'PUT', { manutencao: true }))[0], 401);
+  assert.equal((await chamar('/admin/config', 'PUT', { manutencao: 'sim' }, true))[0], 400);
+  assert.equal((await chamar('/config'))[1].manutencao, false);
+  assert.equal((await chamar('/admin/config', 'PUT', { manutencao: true }, true))[0], 200);
+  try {
+    assert.equal((await chamar('/config'))[1].manutencao, true);
+    assert.equal((await chamar('/auth/login-gestao', 'POST', { nome, senha }))[0], 200);
+    assert.equal((await chamar('/auth/login-monitor', 'POST', {}))[0], 503);
+    assert.equal((await chamar('/inscricoes', 'POST', {}))[0], 503);
+    assert.equal((await chamar('/modalidades'))[0], 503);
+    assert.equal((await chamar('/modalidades', 'GET', undefined, true))[0], 200);
+    assert.equal((await chamar('/admin/pontuacao', 'GET', undefined, true))[0], 200);
+  } finally { assert.equal((await chamar('/admin/config', 'PUT', { manutencao: false }, true))[0], 200); }
+  assert.equal((await chamar('/config'))[1].manutencao, false);
+  assert.equal((await chamar('/modalidades'))[0], 200);
   console.log('Bônus iniciais, pódios por formato, correções, versão concorrente, motivos e ocultação conferidos.');
 }
 

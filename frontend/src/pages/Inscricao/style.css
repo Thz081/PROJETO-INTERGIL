@@ -55,6 +55,7 @@
   grid-area: 1 / 2;
   position: sticky;
   top: 86px;
+  max-height: calc(100vh - 102px);
   max-height: calc(100dvh - 102px);
   overflow: auto;
   border: 1px solid #64708d;
@@ -91,7 +92,7 @@
   font: 700 .79rem/1.2 var(--arm-text);
   cursor: pointer;
 }
-.inscricao-confirmacao button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 6px; }
+.inscricao-confirmacao button { touch-action: manipulation; display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 6px; }
 .inscricao-confirmacao button:disabled { background: #30374d; color: #d9d4c8; border-color: #64708d; cursor: default; }
 .inscricao-confirmacao button:hover:enabled, .inscricao-estado button:hover { background: #ffb080; }
 .inscricao-estado button, .inscricao-estado a { margin-top: 10px; }
@@ -165,7 +166,7 @@
 }
 @media (max-width: 760px) {
   .inscricao-layout { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-  .inscricao-resumo { top: 69px; padding: 8px 10px; z-index: 2; }
+  .inscricao-resumo { top: 69px; padding: 8px 10px; z-index: 2; overflow: visible; max-height: none; }
   .inscricao-resumo-contagem { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
   .inscricao-resumo h2 { font-size: 1rem; }
   .inscricao-resumo-contagem p { margin: 0; }
